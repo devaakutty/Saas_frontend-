@@ -4,7 +4,12 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/server/api";
 import { motion } from "framer-motion";
-import { User, ShoppingBag, CreditCard, ChevronRight } from "lucide-react";
+import {
+  User,
+  ShoppingBag,
+  CreditCard,
+  ChevronRight,
+} from "lucide-react";
 
 import CustomerSelector, {
   type Customer,
@@ -15,7 +20,11 @@ import ProductTable, {
 } from "@/components/billing/ProductTable";
 
 import BillingSummary from "@/components/billing/BillingSummary";
-import PaymentMethod from "@/components/billing/PaymentMethod";
+
+import PaymentMethod, {
+  PaymentMethodType,
+  PaymentDetails,
+} from "@/components/billing/PaymentMethod";
 
 /* ================= TYPES ================= */
 
@@ -34,15 +43,17 @@ export default function BillingPage() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(false);
   const [billing, setBilling] = useState<BillingTotals>({
     subTotal: 0,
     tax: 0,
     gst: 0,
     total: 0,
   });
+  const [loading, setLoading] = useState(false);
+  const [lastInvoiceId, setLastInvoiceId] = useState<string | null>(null);
 
-  /* LOAD CUSTOMERS */
+  /* ================= LOAD CUSTOMERS ================= */
+
   useEffect(() => {
     apiFetch<Customer[]>("/customers")
       .then((data) =>
@@ -56,135 +67,195 @@ export default function BillingPage() {
       .catch(() => setCustomers([]));
   }, []);
 
-  /* PAYMENT HANDLER */
-  const handlePayment = async () => {
-    if (!customer || billing.total <= 0) return;
+  /* ================= RESET BILLING ================= */
+
+  const resetBilling = () => {
+    setCustomer(null);
+    setProducts([]);
+    setBilling({
+      subTotal: 0,
+      tax: 0,
+      gst: 0,
+      total: 0,
+    });
+    setLastInvoiceId(null);
+  };
+
+  /* ================= ADD / UPDATE CUSTOMER ================= */
+
+  const handleAddCustomer = (customer: Customer) => {
+    setCustomers((prev) => {
+      const id = customer.id || customer._id;
+      return [
+        ...prev.filter((c) => (c.id || c._id) !== id),
+        customer,
+      ];
+    });
+  };
+
+  /* ================= CREATE INVOICE (NO PAYMENT) ================= */
+
+  const createInvoiceOnly = async () => {
+    if (!customer || products.length === 0) {
+      alert("Customer and products required");
+      return null;
+    }
 
     try {
       setLoading(true);
-      router.push("/invoices");
+
+      const invoice = await apiFetch<any>("/invoices", {
+        method: "POST",
+        body: JSON.stringify({
+          customerId: customer.id || customer._id,
+          items: products.map((p) => ({
+            productId: p.id || p._id,
+            productName: p.name,
+            quantity: p.quantity,
+            rate: p.rate,
+            amount: p.quantity * p.rate,
+          })),
+          total: billing.total,
+          status: "PENDING",
+        }),
+      });
+
+      return invoice.id || invoice._id;
+    } catch (err: any) {
+      alert(err.message || "Invoice creation failed");
+      return null;
     } finally {
       setLoading(false);
     }
   };
 
+  /* ================= PAYMENT HANDLER ================= */
+
+  const handlePayment = async (
+    method: PaymentMethodType,
+    details: PaymentDetails
+  ) => {
+    if (!customer || products.length === 0) {
+      alert("Customer and products required");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const invoice = await apiFetch<any>("/invoices", {
+        method: "POST",
+        body: JSON.stringify({
+          customerId: customer.id || customer._id,
+
+          // ✅ ADD HERE (THIS IS THE PLACE)
+          items: products.map((p) => ({
+            productId: p.productId,   // 🔥 REQUIRED for stock update
+            productName: p.name,
+            quantity: p.quantity,
+            rate: p.rate,
+            amount: p.quantity * p.rate,
+          })),
+
+          total: billing.total,
+          status: "PAID",
+          payment: {
+            method,
+            ...details,
+          },
+        }),
+      });
+
+      setLastInvoiceId(invoice.id || invoice._id);
+
+      alert("Payment successful 🎉");
+
+      // ✅ NEW BILL
+      resetBilling();
+    } catch (err: any) {
+      alert(err.message || "Payment failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /* ================= DOWNLOAD HANDLER ================= */
+
+  const handleDownload = async () => {
+    try {
+      let invoiceId = lastInvoiceId;
+
+      if (!invoiceId) {
+        invoiceId = await createInvoiceOnly();
+        if (!invoiceId) return;
+      }
+
+      const blob = await apiFetch<Blob>(
+        `/invoices/${invoiceId}/pdf`,
+        { method: "GET" },
+        "blob"
+      );
+
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "Invoice.pdf";
+      a.click();
+      window.URL.revokeObjectURL(url);
+
+      // ✅ NEW BILL
+      resetBilling();
+    } catch {
+      alert("Invoice download failed");
+    }
+  };
+
+  /* ================= UI ================= */
+
   return (
     <div className="p-6 bg-[#F4F4F4] min-h-screen">
-      {/* HEADER */}
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <span className="bg-black text-white text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest">
-            POS Terminal
-          </span>
-          <h1 className="text-3xl font-black tracking-tighter mt-1">
-            Billing<span className="text-gray-400">.</span>
-          </h1>
-        </div>
-        <div className="text-right hidden sm:block">
-          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-            ID: QB-01
-          </p>
-          <p className="text-sm font-black">
-            {new Date().toLocaleDateString()}
-          </p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
         {/* LEFT */}
         <div className="xl:col-span-8 space-y-6">
-          {/* CUSTOMER */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-white border-2 border-black rounded-[24px] p-6 shadow-[6px_6px_0px_rgba(0,0,0,1)]"
-          >
-            <div className="flex items-center gap-3 mb-4">
-              <div className="bg-black p-2 rounded-lg text-white">
-                <User size={18} />
+          <CustomerSelector
+            customers={customers}
+            onSelect={setCustomer}
+            onAddCustomer={handleAddCustomer}
+          />
+
+          {customer && (
+            <div className="bg-gray-50 border border-dashed rounded-xl p-3 flex justify-between">
+              <div>
+                <p className="text-xs text-gray-500 uppercase">
+                  Selected Customer
+                </p>
+                <p className="font-semibold">{customer.name}</p>
+                <p className="text-xs">{customer.phone}</p>
               </div>
-              <h2 className="text-lg font-black">Customer</h2>
+              <div className="bg-black text-white h-8 w-8 rounded-full flex items-center justify-center">
+                ✓
+              </div>
             </div>
+          )}
 
-            <CustomerSelector
-              customers={customers}
-              onSelect={setCustomer}
-              onAddCustomer={(c) =>
-                setCustomers((prev) => [...prev, c])
-              }
-            />
-
-            {customer && (
-              <div className="mt-4 flex items-center justify-between bg-gray-50 border border-dashed rounded-xl p-3">
-                <div>
-                  <p className="text-[10px] font-black text-gray-400 uppercase">
-                    Profile
-                  </p>
-                  <p className="text-sm font-black">{customer.name}</p>
-                </div>
-                <div className="bg-black text-white h-8 w-8 rounded-full flex items-center justify-center">
-                  <ChevronRight size={16} />
-                </div>
-              </div>
-            )}
-          </motion.div>
-
-          {/* PRODUCTS */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="bg-white border-2 border-black rounded-[24px] p-6 shadow-[6px_6px_0px_rgba(0,0,0,1)]"
-          >
-            <div className="flex items-center gap-3 mb-4">
-              <div className="bg-black p-2 rounded-lg text-white">
-                <ShoppingBag size={18} />
-              </div>
-              <h2 className="text-lg font-black">Cart Items</h2>
-            </div>
-
-            <ProductTable
-              onProductsChange={setProducts}
-              onBillingChange={setBilling}
-            />
-          </motion.div>
+          <ProductTable
+            onProductsChange={setProducts}
+            onBillingChange={setBilling}
+          />
         </div>
 
         {/* RIGHT */}
-        <div className="xl:col-span-4 sticky top-6">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.98 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="bg-black text-white rounded-[32px] p-6"
-          >
-            <div className="flex items-center gap-3 mb-6">
-              <div className="bg-white p-2 rounded-lg text-black">
-                <CreditCard size={18} />
-              </div>
-              <h2 className="text-lg font-black">Summary</h2>
-            </div>
+        <div className="xl:col-span-4">
+          <BillingSummary billing={billing} />
 
-            <BillingSummary billing={billing} />
-
-            <div className="pt-4 border-t border-gray-800 mt-4">
-              <p className="text-gray-500 text-[10px] font-black uppercase">
-                Total Payable
-              </p>
-              <p className="text-3xl font-black">
-                ₹{billing.total.toLocaleString()}
-              </p>
-            </div>
-
-            {billing.total > 0 && (
-              <div className="mt-6">
-                <PaymentMethod
-                  total={billing.total}
-                  loading={loading}
-                  onConfirm={handlePayment}
-                />
-              </div>
-            )}
-          </motion.div>
+          {billing.total > 0 && (
+            <PaymentMethod
+              total={billing.total}
+              loading={loading}
+              onConfirm={handlePayment}
+              onDownload={handleDownload}
+            />
+          )}
         </div>
       </div>
     </div>

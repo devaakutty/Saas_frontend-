@@ -79,7 +79,8 @@ export default function RecentInvoices() {
                   </Link>
                 </td>
 
-                <td>{inv.customer.name}</td>
+                <td>{inv.customer?.name ?? "—"}</td>
+
 
                 <td>₹{inv.total.toLocaleString()}</td>
 

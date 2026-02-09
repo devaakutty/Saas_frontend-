@@ -3,11 +3,15 @@
 import { useState } from "react";
 import { apiFetch } from "@/server/api";
 
-  export interface Customer {
-    id: string;
-    name: string;
-    phone: string; // ✅ REQUIRED
-  }
+/* ================= TYPES ================= */
+export interface Customer {
+  id?: string;
+  _id?: string;
+  name: string;
+  phone: string;
+}
+
+/* ================= COMPONENT ================= */
 
 export default function CustomerSelector({
   customers = [],
@@ -19,10 +23,15 @@ export default function CustomerSelector({
   onAddCustomer: (customer: Customer) => void;
 }) {
   const [search, setSearch] = useState("");
+  const [selectedCustomer, setSelectedCustomer] =
+    useState<Customer | null>(null);
+
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  /* ================= FILTER ================= */
 
   const filteredCustomers = customers.filter(
     (c) =>
@@ -30,7 +39,9 @@ export default function CustomerSelector({
       c.phone.includes(search)
   );
 
-  const handleAddCustomer = async () => {
+  /* ================= SAVE / UPDATE ================= */
+
+  const handleSaveCustomer = async () => {
     try {
       setError("");
       setLoading(true);
@@ -45,31 +56,48 @@ export default function CustomerSelector({
         return;
       }
 
-      const customer = await apiFetch<Customer>("/customers", {
-        method: "POST",
-        body: JSON.stringify({ name, phone }),
-      });
+      let customer: Customer;
+
+      const customerId =
+        selectedCustomer?.id || selectedCustomer?._id;
+
+      if (customerId) {
+        // UPDATE
+        customer = await apiFetch<Customer>(
+          `/customers/${customerId}`,
+          {
+            method: "PUT",
+            body: JSON.stringify({ name, phone }),
+          }
+        );
+      } else {
+        // CREATE
+        customer = await apiFetch<Customer>("/customers", {
+          method: "POST",
+          body: JSON.stringify({ name, phone }),
+        });
+      }
 
       onAddCustomer(customer);
-      onSelect(customer);
+      onSelect(customer); // ✅ IMPORTANT
 
+      setSelectedCustomer(null);
       setName("");
       setPhone("");
     } catch (err: any) {
-      if (err.message?.includes("Session expired")) {
-        window.location.href = "/login";
-        return;
-      }
-      setError(err.message || "Failed to add customer");
+      setError(err.message || "Failed to save customer");
     } finally {
       setLoading(false);
     }
   };
 
+  /* ================= UI ================= */
+
   return (
     <div className="bg-white border rounded-xl p-4 space-y-4">
       <h3 className="font-semibold text-lg">Customer</h3>
 
+      {/* SEARCH */}
       <input
         placeholder="Search by name or phone"
         value={search}
@@ -77,17 +105,29 @@ export default function CustomerSelector({
         className="w-full border rounded px-3 py-2 text-sm"
       />
 
+      {/* LIST */}
       <div className="border rounded divide-y max-h-48 overflow-y-auto">
-        {filteredCustomers.map((customer) => (
-          <button
-            key={customer.id}
-            onClick={() => onSelect(customer)}
-            className="w-full text-left px-3 py-2 hover:bg-indigo-50"
-          >
-            <div className="font-medium">{customer.name}</div>
-            <div className="text-xs text-gray-500">{customer.phone}</div>
-          </button>
-        ))}
+        {filteredCustomers.map((customer) => {
+          const customerId = customer.id || customer._id;
+
+          return (
+            <button
+              key={customerId}
+              onClick={() => {
+                setSelectedCustomer(customer);
+                setName(customer.name);
+                setPhone(customer.phone);
+                onSelect(customer); // ✅ FIX
+              }}
+              className="w-full text-left px-3 py-2 hover:bg-indigo-50"
+            >
+              <div className="font-medium">{customer.name}</div>
+              <div className="text-xs text-gray-500">
+                {customer.phone}
+              </div>
+            </button>
+          );
+        })}
 
         {filteredCustomers.length === 0 && (
           <div className="p-3 text-sm text-gray-500 text-center">
@@ -96,8 +136,11 @@ export default function CustomerSelector({
         )}
       </div>
 
+      {/* ADD / EDIT */}
       <div className="border rounded-lg p-3 space-y-2">
-        <h4 className="text-sm font-semibold">Add New Customer</h4>
+        <h4 className="text-sm font-semibold">
+          {selectedCustomer ? "Edit Customer" : "Add New Customer"}
+        </h4>
 
         <input
           placeholder="Customer name"
@@ -110,18 +153,26 @@ export default function CustomerSelector({
           placeholder="Mobile number"
           value={phone}
           maxLength={10}
-          onChange={(e) => setPhone(e.target.value.replace(/\D/g, ""))}
+          onChange={(e) =>
+            setPhone(e.target.value.replace(/\D/g, ""))
+          }
           className="w-full border rounded px-3 py-2 text-sm"
         />
 
-        {error && <p className="text-xs text-red-600">{error}</p>}
+        {error && (
+          <p className="text-xs text-red-600">{error}</p>
+        )}
 
         <button
-          onClick={handleAddCustomer}
+          onClick={handleSaveCustomer}
           disabled={loading}
-          className="w-full bg-indigo-600 text-white rounded py-2 text-sm"
+          className="w-full bg-indigo-600 text-white rounded py-2 text-sm disabled:opacity-50"
         >
-          {loading ? "Adding..." : "Add Customer"}
+          {loading
+            ? "Saving..."
+            : selectedCustomer
+            ? "Update Customer"
+            : "Add Customer"}
         </button>
       </div>
     </div>

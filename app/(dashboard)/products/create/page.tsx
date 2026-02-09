@@ -9,7 +9,11 @@ export default function CreateProductPage() {
 
   const [name, setName] = useState("");
   const [rate, setRate] = useState("");
-  const [unit, setUnit] = useState<"pcs" | "kg" | "liter" | "">("");
+  // const [unit, setUnit] = useState<"pcs" | "kg" | "liter" | "">("");
+  // const [unit, setUnit] = useState<"pcs" | "kg" | "liter" | "">("");
+  const [unit, setUnit] = useState("");
+
+
   const [stock, setStock] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -47,6 +51,12 @@ export default function CreateProductPage() {
 
   return (
     <div className="max-w-xl space-y-6">
+       <button
+      onClick={() => router.back()}
+      className="px-3 py-1 border rounded text-sm hover:bg-gray-50"
+    >
+      ← Back
+    </button>
       <h1 className="text-2xl font-bold">Create Product</h1>
 
       {/* PRODUCT NAME */}
@@ -68,18 +78,13 @@ export default function CreateProductPage() {
       />
 
       {/* UNIT SELECT */}
-      <select
-        value={unit}
-        onChange={(e) =>
-          setUnit(e.target.value as "pcs" | "kg" | "liter")
-        }
-        className="border px-3 py-2 rounded w-full"
-      >
-        <option value="">Select unit</option>
-        <option value="pcs">Pieces (pcs)</option>
-        <option value="kg">Kilogram (kg)</option>
-        <option value="liter">Liter</option>
-      </select>
+        <input
+          value={unit}
+          onChange={(e) => setUnit(e.target.value)}
+          placeholder="Unit (eg: pcs, kg, liter)"
+          className="border px-3 py-2 rounded w-full"
+        />
+
 
       {/* OPENING STOCK */}
       <input

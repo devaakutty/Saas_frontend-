@@ -16,7 +16,6 @@ export default function BulkAddProductsPage() {
     setLoading(true);
 
     try {
-      // ✅ Split & clean lines
       const lines = text
         .split("\n")
         .map((l) => l.trim())
@@ -29,27 +28,33 @@ export default function BulkAddProductsPage() {
       const products: {
         name: string;
         stock: number;
-        price: number;
+        rate: number;
+        unit?: string;
       }[] = [];
 
       const invalidLines: number[] = [];
 
-      // ✅ SAFE parsing (never crashes)
       lines.forEach((line, index) => {
         try {
           const parts = line.split(",").map((p) => p.trim());
 
           if (parts.length < 3) throw new Error();
 
-          const price = Number(parts.pop());
+          const unit = parts.length >= 4 ? parts.pop() : undefined;
+          const rate = Number(parts.pop());
           const stock = Number(parts.pop());
           const name = parts.join(",");
 
-          if (!name || isNaN(stock) || isNaN(price)) {
+          if (!name || isNaN(stock) || isNaN(rate)) {
             throw new Error();
           }
 
-          products.push({ name, stock, price });
+          products.push({
+            name,
+            stock,
+            rate,
+            unit,
+          });
         } catch {
           invalidLines.push(index + 1);
         }
@@ -59,13 +64,11 @@ export default function BulkAddProductsPage() {
         throw new Error("No valid products found");
       }
 
-      // ✅ API call (only valid products)
       await apiFetch("/products/bulk", {
         method: "POST",
         body: JSON.stringify({ products }),
       });
 
-      // ⚠️ Inform skipped lines
       if (invalidLines.length) {
         alert(
           `Products added successfully.\nSkipped invalid lines: ${invalidLines.join(
@@ -84,7 +87,6 @@ export default function BulkAddProductsPage() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
-      {/* HEADER */}
       <div className="flex items-center gap-3">
         <button
           onClick={() => router.push("/products")}
@@ -96,34 +98,30 @@ export default function BulkAddProductsPage() {
         <h1 className="text-2xl font-bold">Bulk Add Products</h1>
       </div>
 
-      {/* INFO */}
       <p className="text-sm text-gray-500">
-        Enter one product per line using the format:
+        Enter one product per line:
         <br />
         <span className="font-mono">
-          Product Name, Stock, Price
+          Name, Stock, Price, Unit
         </span>
       </p>
 
-      {/* ERROR */}
       {error && (
         <div className="text-red-600 bg-red-50 border p-2 rounded">
           {error}
         </div>
       )}
 
-      {/* TEXTAREA */}
       <textarea
         rows={14}
         value={text}
         onChange={(e) => setText(e.target.value)}
-        placeholder={`Milk 1L, 50, 45
-Bread White, 100, 30
-Chocolate, Dark 70%, 60, 95`}
+        placeholder={`Apple, 50, 30, kg
+Milk 1L, 40, 45, litre
+Chocolate Dark, 60, 95, pcs`}
         className="w-full border rounded p-3 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-black"
       />
 
-      {/* ACTION */}
       <button
         onClick={handleSubmit}
         disabled={loading}

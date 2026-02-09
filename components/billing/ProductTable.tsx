@@ -6,14 +6,14 @@ import { apiFetch } from "@/server/api";
 /* ================= TYPES ================= */
 
 export interface Product {
-  productId?: number;        // 🔥 IMPORTANT
-  productName: string;
-  qty: number;
+  productId?: string; // ✅ IMPORTANT (Mongo ObjectId)
+  name: string;
+  quantity: number;
   rate: number;
 }
 
 interface DBProduct {
-  id: number;
+  _id: string; // ✅ Mongo _id
   name: string;
   rate: number;
   stock: number;
@@ -38,7 +38,7 @@ export default function ProductTable({
   onBillingChange,
 }: ProductTableProps) {
   const [products, setProducts] = useState<Product[]>([
-    { productName: "", qty: 1, rate: 0 },
+    { name: "", quantity: 1, rate: 0 },
   ]);
 
   const [allProducts, setAllProducts] = useState<DBProduct[]>([]);
@@ -46,17 +46,19 @@ export default function ProductTable({
   const inputRefs = useRef<HTMLInputElement[]>([]);
   const lastValueRef = useRef<string[]>([""]);
 
-  /* ===== LOAD PRODUCTS FROM DB ===== */
+  /* ================= LOAD PRODUCTS ================= */
+
   useEffect(() => {
     apiFetch<DBProduct[]>("/products")
       .then(setAllProducts)
       .catch(() => {});
   }, []);
 
-  /* ===== BILLING CALCULATION ===== */
+  /* ================= BILLING ================= */
+
   useEffect(() => {
     const subTotal = products.reduce(
-      (sum, p) => sum + p.qty * p.rate,
+      (sum, p) => sum + p.quantity * p.rate,
       0
     );
 
@@ -68,26 +70,24 @@ export default function ProductTable({
     onBillingChange({ subTotal, tax, gst, total });
   }, [products, onProductsChange, onBillingChange]);
 
-  /* ===== TYPEAHEAD (PRODUCT AUTOCOMPLETE) ===== */
+  /* ================= TYPEAHEAD ================= */
+
   const handleTypeahead = (index: number, value: string) => {
     const lastValue = lastValueRef.current[index] ?? "";
 
     // allow backspace
     if (value.length < lastValue.length) {
-      updateProduct(index, "productName", value);
+      updateProduct(index, "name", value);
       lastValueRef.current[index] = value;
       return;
     }
 
     if (!value) {
-      const updated = [...products];
-      updated[index] = {
-        ...updated[index],
-        productName: "",
+      updateRow(index, {
+        name: "",
         productId: undefined,
         rate: 0,
-      };
-      setProducts(updated);
+      });
       lastValueRef.current[index] = "";
       return;
     }
@@ -96,41 +96,35 @@ export default function ProductTable({
       p.name.toLowerCase().startsWith(value.toLowerCase())
     );
 
-    // ❌ no match → manual item
+    // ❌ Manual item (not in DB)
     if (!match) {
-      const updated = [...products];
-      updated[index] = {
-        ...updated[index],
-        productName: value,
+      updateRow(index, {
+        name: value,
         productId: undefined,
-      };
-      setProducts(updated);
+      });
       lastValueRef.current[index] = value;
       return;
     }
 
-    // ✅ matched product
-    const completed = match.name;
-
-    const updated = [...products];
-    updated[index] = {
-      ...updated[index],
-      productId: match.id,     // 🔥 KEY FIX
-      productName: completed,
+    // ✅ Matched DB product
+    updateRow(index, {
+      productId: match._id, // 🔥 THIS IS THE KEY FIX
+      name: match.name,
       rate: match.rate,
-    };
-    setProducts(updated);
-    lastValueRef.current[index] = completed;
+    });
+
+    lastValueRef.current[index] = match.name;
 
     requestAnimationFrame(() => {
       const input = inputRefs.current[index];
       if (input) {
-        input.setSelectionRange(value.length, completed.length);
+        input.setSelectionRange(value.length, match.name.length);
       }
     });
   };
 
-  /* ===== UPDATE PRODUCT ===== */
+  /* ================= UPDATE HELPERS ================= */
+
   const updateProduct = (
     index: number,
     field: keyof Product,
@@ -140,20 +134,26 @@ export default function ProductTable({
     updated[index] = {
       ...updated[index],
       [field]:
-        field === "qty" || field === "rate"
+        field === "quantity" || field === "rate"
           ? Number(value) || 0
           : value,
     };
     setProducts(updated);
   };
 
-  /* ===== ADD ROW ===== */
-  const addRow = () => {
-    lastValueRef.current.push("");
-    setProducts([...products, { productName: "", qty: 1, rate: 0 }]);
+  const updateRow = (index: number, data: Partial<Product>) => {
+    const updated = [...products];
+    updated[index] = { ...updated[index], ...data };
+    setProducts(updated);
   };
 
-  /* ===== REMOVE ROW ===== */
+  /* ================= ROW HANDLERS ================= */
+
+  const addRow = () => {
+    lastValueRef.current.push("");
+    setProducts([...products, { name: "", quantity: 1, rate: 0 }]);
+  };
+
   const removeRow = (index: number) => {
     if (products.length === 1) return;
     setProducts(products.filter((_, i) => i !== index));
@@ -167,7 +167,7 @@ export default function ProductTable({
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b">
-            <th>S.No</th>
+            <th>#</th>
             <th>Product</th>
             <th>Qty</th>
             <th>Rate</th>
@@ -183,11 +183,9 @@ export default function ProductTable({
 
               <td>
                 <input
-                  ref={(el) => {
-                    if (el) inputRefs.current[i] = el;
-                  }}
+                  ref={(el) => el && (inputRefs.current[i] = el)}
                   className="border px-2 py-1 w-full"
-                  value={p.productName}
+                  value={p.name}
                   onChange={(e) =>
                     handleTypeahead(i, e.target.value)
                   }
@@ -198,12 +196,15 @@ export default function ProductTable({
                 <input
                   type="number"
                   min={1}
-                  value={p.qty}
+                  value={p.quantity}
                   onChange={(e) =>
-                    updateProduct(i, "qty", Math.max(1, Number(e.target.value)))
+                    updateProduct(
+                      i,
+                      "quantity",
+                      Math.max(1, Number(e.target.value))
+                    )
                   }
                 />
-
               </td>
 
               <td>
@@ -217,7 +218,7 @@ export default function ProductTable({
                 />
               </td>
 
-              <td>₹{p.qty * p.rate}</td>
+              <td>₹{p.quantity * p.rate}</td>
 
               <td>
                 <button

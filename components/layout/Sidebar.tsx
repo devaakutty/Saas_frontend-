@@ -1,21 +1,33 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { sidebarLinks } from "./sidebarConfig";
-import { LayoutDashboard, Settings, LogOut } from "lucide-react";
+import { LayoutDashboard, LogOut } from "lucide-react";
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+
+  /* ================= LOGOUT ================= */
+  const handleLogout = () => {
+    const ok = confirm("Are you sure you want to logout?");
+    if (!ok) return;
+
+    // 🔐 remove auth token
+    localStorage.removeItem("token");
+
+    // 🔁 redirect to login
+    router.replace("/login");
+  };
 
   return (
-    // MAIN WRAPPER: Ensures the sidebar stays fixed and "floating" on the page
-    <div className="hidden md:flex h-screen p-6 bg-[#F8F8F8] sticky top-0"> 
+    <div className="hidden md:flex h-screen p-6 bg-[#F8F8F8] sticky top-0">
       <aside className="w-20 lg:w-64 h-full bg-black text-white rounded-[32px] flex flex-col py-8 shadow-2xl overflow-hidden">
         
-        {/* 1. LOGO SECTION */}
+        {/* LOGO */}
         <div className="mb-10 flex flex-col items-center lg:items-start lg:px-8 w-full shrink-0">
-          <div className="bg-white text-black w-10 h-10 rounded-xl flex items-center justify-center font-black text-xl mb self-center lg:self-start">
+          <div className="bg-white text-black w-10 h-10 rounded-xl flex items-center justify-center font-black text-xl">
             Joe.
           </div>
           <h1 className="hidden lg:block text-xl font-bold tracking-tight">
@@ -26,10 +38,12 @@ export default function Sidebar() {
           </p>
         </div>
 
-        {/* 2. NAVIGATION (Scrollable if links are many, but stays in one container) */}
+        {/* NAVIGATION */}
         <nav className="flex-1 w-full px-4 space-y-2 overflow-y-auto no-scrollbar">
           {sidebarLinks.map((link) => {
-            const active = pathname === link.href || pathname.startsWith(link.href + "/");
+            const active =
+              pathname === link.href ||
+              pathname.startsWith(link.href + "/");
 
             return (
               <Link
@@ -37,13 +51,18 @@ export default function Sidebar() {
                 href={link.href}
                 className={`group relative flex items-center justify-center lg:justify-start gap-4 px-4 py-4 rounded-2xl transition-all duration-300 ${
                   active
-                    ? "bg-white text-black" 
+                    ? "bg-white text-black"
                     : "text-gray-400 hover:text-white hover:bg-white/10"
                 }`}
               >
-                <div className={`${active ? "text-black" : "text-gray-400 group-hover:text-white"}`}>
-                   {/* Replace with link.icon from your config */}
-                   <LayoutDashboard size={22} strokeWidth={2.5} />
+                <div
+                  className={`${
+                    active
+                      ? "text-black"
+                      : "text-gray-400 group-hover:text-white"
+                  }`}
+                >
+                  <LayoutDashboard size={22} strokeWidth={2.5} />
                 </div>
 
                 <span className="hidden lg:block text-sm font-bold tracking-wide">
@@ -58,17 +77,17 @@ export default function Sidebar() {
           })}
         </nav>
 
-        {/* 3. BOTTOM SECTION (Fixed at the bottom of the black sidebar) */}
+        {/* LOGOUT */}
         <div className="w-full px-4 mt-auto pt-3 shrink-0 border-t border-white/10">
-           {/* <button className="flex items-center justify-center lg:justify-start gap-4 w-full px-4 py-4 text-gray-400 hover:text-white transition-colors">
-              <Settings size={22} />
-              <span className="hidden lg:block text-sm font-bold">Settings</span>
-           </button> */}
-
-           <button className="flex items-center justify-center lg:justify-start gap-4 w-full px-4 py-4 bg-white/5 rounded-2xl text-gray-400 hover:bg-red-500 hover:text-white transition-all duration-300 mt-2">
-              <LogOut size={22} />
-              <span className="hidden lg:block text-sm font-bold">Logout</span>
-           </button>
+          <button
+            onClick={handleLogout}
+            className="flex items-center justify-center lg:justify-start gap-4 w-full px-4 py-4 bg-white/5 rounded-2xl text-gray-400 hover:bg-red-500 hover:text-white transition-all duration-300 mt-2"
+          >
+            <LogOut size={22} />
+            <span className="hidden lg:block text-sm font-bold">
+              Logout
+            </span>
+          </button>
         </div>
       </aside>
     </div>

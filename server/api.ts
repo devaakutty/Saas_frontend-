@@ -1,9 +1,7 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 if (!API_URL) {
-  throw new Error(
-    "NEXT_PUBLIC_API_URL is not defined in environment variables"
-  );
+  throw new Error("NEXT_PUBLIC_API_URL is not defined");
 }
 
 export async function apiFetch<T>(
@@ -11,6 +9,8 @@ export async function apiFetch<T>(
   options: RequestInit = {},
   responseType: "json" | "blob" = "json"
 ): Promise<T> {
+  console.log("API CALL →", `${API_URL}/api${url}`);
+
   const token =
     typeof window !== "undefined"
       ? localStorage.getItem("token")
@@ -25,16 +25,13 @@ export async function apiFetch<T>(
     },
   });
 
-  if (res.status === 401) {
-    throw new Error("Unauthorized");
-  }
-
   if (!res.ok) {
     const msg = await res.text();
+    console.error("API ERROR →", url, msg);
     throw new Error(msg || `Request failed (${res.status})`);
   }
 
-  // ✅ IMPORTANT PART
+  // Support blob if needed later (PDF invoices etc.)
   if (responseType === "blob") {
     return (await res.blob()) as T;
   }

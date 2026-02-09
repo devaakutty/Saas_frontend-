@@ -17,8 +17,9 @@ export type PaymentDetails = {
 
 export default function PaymentMethod({
   total,
-  onConfirm,
   loading = false,
+  onConfirm,
+  onDownload,
 }: {
   total: number;
   loading?: boolean;
@@ -26,14 +27,15 @@ export default function PaymentMethod({
     method: PaymentMethodType,
     details: PaymentDetails
   ) => void;
+  onDownload: () => void;
 }) {
   const [method, setMethod] =
     useState<PaymentMethodType | null>(null);
+
   const [upiApp, setUpiApp] =
     useState<"GPay" | "PhonePe" | "Paytm">("GPay");
-  const [cashPart, setCashPart] = useState<number>(0);
 
-  /* ================= CALCULATIONS ================= */
+  const [cashPart, setCashPart] = useState(0);
 
   const upiAmount = Math.max(total - cashPart, 0);
 
@@ -42,30 +44,30 @@ export default function PaymentMethod({
     setUpiApp("GPay");
   }, [method]);
 
-  /* ================= UI ================= */
-
   return (
-    <div className="bg-white rounded-[18px] p-5 shadow-[0_10px_30px_rgba(0,0,0,0.05)] space-y-5">
-      <h3 className="font-semibold text-lg text-black">
+    <div className="bg-white rounded-xl p-4 space-y-4 shadow">
+      <h3 className="font-semibold text-lg">
         Payment Method
       </h3>
 
-      {/* METHOD SELECT */}
-      <div className="flex gap-3">
-        {(["CASH", "UPI", "CARD"] as PaymentMethodType[]).map((m) => (
-          <button
-            key={m}
-            disabled={loading}
-            onClick={() => setMethod(m)}
-            className={`px-5 py-2 rounded-full border text-sm font-medium transition ${
-              method === m
-                ? "bg-black text-white"
-                : "bg-white hover:bg-gray-100"
-            }`}
-          >
-            {m}
-          </button>
-        ))}
+      {/* ================= METHOD SELECT ================= */}
+      <div className="flex gap-2">
+        {(["CASH", "UPI", "CARD"] as PaymentMethodType[]).map(
+          (m) => (
+            <button
+              key={m}
+              disabled={loading}
+              onClick={() => setMethod(m)}
+              className={`px-4 py-2 rounded border text-sm font-medium ${
+                method === m
+                  ? "bg-black text-white"
+                  : "bg-white hover:bg-gray-100"
+              }`}
+            >
+              {m}
+            </button>
+          )
+        )}
       </div>
 
       {/* ================= CASH ================= */}
@@ -75,7 +77,7 @@ export default function PaymentMethod({
           onClick={() =>
             onConfirm("CASH", { amount: total })
           }
-          className="w-full py-3 bg-black text-white rounded-full disabled:opacity-50"
+          className="w-full bg-black text-white py-2 rounded"
         >
           Confirm Cash Payment ₹{total}
         </button>
@@ -83,60 +85,58 @@ export default function PaymentMethod({
 
       {/* ================= UPI ================= */}
       {method === "UPI" && (
-        <div className="space-y-5">
+        <div className="space-y-4">
           {/* UPI APPS */}
-          <div className="flex gap-3">
-            {(["GPay", "PhonePe", "Paytm"] as const).map((app) => (
-              <button
-                key={app}
-                disabled={loading}
-                onClick={() => setUpiApp(app)}
-                className={`px-4 py-2 rounded-full border text-sm ${
-                  upiApp === app
-                    ? "bg-black text-white"
-                    : "hover:bg-gray-100"
-                }`}
-              >
-                {app}
-              </button>
-            ))}
+          <div className="flex gap-2">
+            {(["GPay", "PhonePe", "Paytm"] as const).map(
+              (app) => (
+                <button
+                  key={app}
+                  disabled={loading}
+                  onClick={() => setUpiApp(app)}
+                  className={`px-3 py-1 rounded border text-sm ${
+                    upiApp === app
+                      ? "bg-black text-white"
+                      : "hover:bg-gray-100"
+                  }`}
+                >
+                  {app}
+                </button>
+              )
+            )}
           </div>
 
-          {/* QR CODE */}
-          <div className="flex flex-col items-center gap-3 border rounded-xl p-4">
+          {/* YOUR OWN QR */}
+          <div className="flex flex-col items-center border rounded-lg p-4">
             <img
-              src="/qr.png"
-              alt="UPI QR Code"
+              src="/qr.png"  
+              alt="UPI QR"
               className="w-40 h-40 object-contain"
             />
 
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 mt-2">
               Scan with <b>{upiApp}</b> or any UPI app
             </p>
 
-            <p className="text-lg font-semibold text-black">
+            <p className="text-lg font-semibold mt-1">
               ₹{upiAmount}
             </p>
           </div>
 
           {/* SPLIT CASH */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium">
-              Cash Amount (optional)
-            </label>
-            <input
-              type="number"
-              min={0}
-              max={total}
-              value={cashPart}
-              onChange={(e) =>
-                setCashPart(
-                  Math.min(Number(e.target.value) || 0, total)
-                )
-              }
-              className="w-full border rounded-full px-4 py-2"
-            />
-          </div>
+          <input
+            type="number"
+            min={0}
+            max={total}
+            placeholder="Cash part (optional)"
+            value={cashPart}
+            onChange={(e) =>
+              setCashPart(
+                Math.min(Number(e.target.value) || 0, total)
+              )
+            }
+            className="w-full border px-3 py-2 rounded"
+          />
 
           {/* CONFIRM */}
           <button
@@ -149,7 +149,7 @@ export default function PaymentMethod({
                 amount: total,
               })
             }
-            className="w-full py-3 bg-black text-white rounded-full disabled:opacity-50"
+            className="w-full bg-black text-white py-2 rounded"
           >
             Confirm UPI Payment ₹{total}
           </button>
@@ -161,16 +161,16 @@ export default function PaymentMethod({
         <div className="space-y-3">
           <input
             placeholder="Card Number"
-            className="w-full border rounded-full px-4 py-2"
+            className="w-full border px-3 py-2 rounded"
           />
           <input
             placeholder="Expiry (MM/YY)"
-            className="w-full border rounded-full px-4 py-2"
+            className="w-full border px-3 py-2 rounded"
           />
           <input
             placeholder="CVV"
             type="password"
-            className="w-full border rounded-full px-4 py-2"
+            className="w-full border px-3 py-2 rounded"
           />
 
           <button
@@ -181,12 +181,21 @@ export default function PaymentMethod({
                 amount: total,
               })
             }
-            className="w-full py-3 bg-black text-white rounded-full disabled:opacity-50"
+            className="w-full bg-black text-white py-2 rounded"
           >
             Pay ₹{total} by Card
           </button>
         </div>
       )}
+
+      {/* ================= DOWNLOAD ONLY ================= */}
+      <button
+        disabled={loading}
+        onClick={onDownload}
+        className="w-full border border-black py-2 rounded text-sm font-medium"
+      >
+        Download Invoice (No Payment)
+      </button>
     </div>
   );
 }

@@ -17,7 +17,7 @@ interface Invoice {
   invoiceNo: string;
   customer?: Customer | null;
   total: number;
-  status: "PAID" | "UNPAID";
+  status: "PAID" | "PENDING"; // ✅ FIXED
   createdAt: string;
 }
 
@@ -49,7 +49,7 @@ export default function InvoicesPage() {
       setLoading(true);
       const data = await apiFetch<Invoice[]>("/invoices");
       setInvoices(Array.isArray(data) ? data : []);
-    } catch (err) {
+    } catch {
       alert("Failed to load invoices");
     } finally {
       setLoading(false);
@@ -57,7 +57,12 @@ export default function InvoicesPage() {
   };
 
   /* 🗑️ DELETE INVOICE */
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (
+    e: React.MouseEvent,
+    id: string
+  ) => {
+    e.stopPropagation(); // ✅ IMPORTANT
+
     if (!confirm("Are you sure you want to delete this invoice?")) return;
 
     try {
@@ -81,7 +86,7 @@ export default function InvoicesPage() {
         <h1 className="text-3xl font-bold">Invoices</h1>
 
         <button
-          onClick={() => router.push("/invoices/create")}
+          onClick={() => router.push("/billing")}
           className="px-4 py-2 bg-black text-white rounded"
         >
           + New Invoice
@@ -109,8 +114,9 @@ export default function InvoicesPage() {
                 onClick={() => router.push(`/invoices/${inv.id}`)}
                 className="border-t hover:bg-gray-50 cursor-pointer"
               >
-
-                <td className="p-4 font-mono">{inv.invoiceNo}</td>
+                <td className="p-4 font-mono">
+                  {inv.invoiceNo}
+                </td>
 
                 <td className="p-4">
                   {inv.customer?.name ?? "—"}
@@ -136,19 +142,26 @@ export default function InvoicesPage() {
                   {new Date(inv.createdAt).toLocaleDateString()}
                 </td>
 
-                <td className="p-4 text-right space-x-4">
+                <td
+                  className="p-4 text-right space-x-4"
+                  onClick={(e) => e.stopPropagation()} // ✅ stop row click
+                >
                   {/* VIEW */}
                   <button
-                    onClick={() => router.push(`/invoices/${inv.id}`)}
+                    onClick={() =>
+                      router.push(`/invoices/${inv.id}`)
+                    }
                     className="text-blue-600 hover:underline"
                   >
                     View
                   </button>
 
                   {/* PAY NOW */}
-                  {inv.status === "UNPAID" && (
+                  {inv.status === "PENDING" && (
                     <button
-                      onClick={() => router.push(`/invoices/${inv.id}`)}
+                      onClick={() =>
+                        router.push(`/invoices/${inv.id}`)
+                      }
                       className="text-green-600 font-semibold hover:underline"
                     >
                       Pay Now
@@ -157,7 +170,9 @@ export default function InvoicesPage() {
 
                   {/* DELETE */}
                   <button
-                    onClick={() => handleDelete(inv.id)}
+                    onClick={(e) =>
+                      handleDelete(e, inv.id)
+                    }
                     className="text-red-600 hover:underline"
                   >
                     Delete
@@ -168,7 +183,10 @@ export default function InvoicesPage() {
 
             {invoices.length === 0 && (
               <tr>
-                <td colSpan={6} className="p-12 text-center text-gray-400">
+                <td
+                  colSpan={6}
+                  className="p-12 text-center text-gray-400"
+                >
                   No invoices found
                 </td>
               </tr>

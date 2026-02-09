@@ -7,7 +7,8 @@ import { apiFetch } from "@/server/api";
 /* ================= TYPES ================= */
 
 interface Customer {
-  id: string;
+  id?: string;
+  _id?: string;
   name: string;
   email?: string;
   phone?: string;
@@ -66,21 +67,25 @@ export default function CustomersPage() {
 
   /* ================= DELETE ================= */
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this customer?"))
-      return;
+    const handleDelete = async (id?: string) => {
+      if (!id) {
+        console.error("Delete failed: customer id is undefined");
+        return;
+      }
 
-    try {
-      await apiFetch(`/customers/${id}`, {
-        method: "DELETE",
-      });
-      setCustomers((prev) =>
-        prev.filter((c) => c.id !== id)
-      );
-    } catch (err: any) {
-      alert(err.message || "Delete failed");
-    }
-  };
+      if (!confirm("Are you sure you want to delete this customer?")) return;
+
+      try {
+        await apiFetch(`/customers/${id}`, { method: "DELETE" });
+
+        setCustomers((prev) =>
+          prev.filter((c) => (c.id || c._id) !== id)
+        );
+      } catch (err: any) {
+        alert(err.message || "Delete failed");
+      }
+    };
+
 
   /* ================= FILTER ================= */
 
@@ -187,7 +192,7 @@ export default function CustomersPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {filteredCustomers.map((c) => (
           <div
-            key={c.id}
+            key={c.id || c._id}
             className="
               bg-white
               rounded-[18px]
@@ -223,7 +228,7 @@ export default function CustomersPage() {
 
               <button
                 onClick={() =>
-                  router.push(`/customers/${c.id}/edit`)
+                 router.push(`/customers/${c.id || c._id}`)
                 }
                 className="text-gray-500 hover:underline"
               >
@@ -231,7 +236,7 @@ export default function CustomersPage() {
               </button>
 
               <button
-                onClick={() => handleDelete(c.id)}
+                onClick={() => handleDelete(c.id || c._id)}
                 className="text-red-600 hover:underline"
               >
                 Delete
