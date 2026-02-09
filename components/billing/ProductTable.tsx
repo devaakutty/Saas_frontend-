@@ -182,14 +182,16 @@ export default function ProductTable({
               <td>{i + 1}</td>
 
               <td>
-                <input
-                  ref={(el) => el && (inputRefs.current[i] = el)}
-                  className="border px-2 py-1 w-full"
-                  value={p.name}
-                  onChange={(e) =>
-                    handleTypeahead(i, e.target.value)
-                  }
-                />
+              <input
+                ref={(el) => {
+                  if (el) inputRefs.current[i] = el;
+                }}
+                className="border px-2 py-1 w-full"
+                value={p.name}
+                onChange={(e) =>
+                  handleTypeahead(i, e.target.value)
+                }
+              />
               </td>
 
               <td>

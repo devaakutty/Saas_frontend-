@@ -13,6 +13,18 @@ export type PaymentDetails = {
   upiAmount?: number;
 };
 
+/* ================= PROPS ================= */
+
+interface PaymentMethodProps {
+  total: number;
+  loading?: boolean;
+  onConfirm: (
+    method: PaymentMethodType,
+    details: PaymentDetails
+  ) => void;
+  onDownload?: () => void; // ✅ OPTIONAL (THIS IS THE FIX)
+}
+
 /* ================= COMPONENT ================= */
 
 export default function PaymentMethod({
@@ -20,15 +32,7 @@ export default function PaymentMethod({
   loading = false,
   onConfirm,
   onDownload,
-}: {
-  total: number;
-  loading?: boolean;
-  onConfirm: (
-    method: PaymentMethodType,
-    details: PaymentDetails
-  ) => void;
-  onDownload: () => void;
-}) {
+}: PaymentMethodProps) {
   const [method, setMethod] =
     useState<PaymentMethodType | null>(null);
 
@@ -86,7 +90,6 @@ export default function PaymentMethod({
       {/* ================= UPI ================= */}
       {method === "UPI" && (
         <div className="space-y-4">
-          {/* UPI APPS */}
           <div className="flex gap-2">
             {(["GPay", "PhonePe", "Paytm"] as const).map(
               (app) => (
@@ -106,10 +109,9 @@ export default function PaymentMethod({
             )}
           </div>
 
-          {/* YOUR OWN QR */}
           <div className="flex flex-col items-center border rounded-lg p-4">
             <img
-              src="/qr.png"  
+              src="/qr.png"
               alt="UPI QR"
               className="w-40 h-40 object-contain"
             />
@@ -123,7 +125,6 @@ export default function PaymentMethod({
             </p>
           </div>
 
-          {/* SPLIT CASH */}
           <input
             type="number"
             min={0}
@@ -138,7 +139,6 @@ export default function PaymentMethod({
             className="w-full border px-3 py-2 rounded"
           />
 
-          {/* CONFIRM */}
           <button
             disabled={loading}
             onClick={() =>
@@ -188,14 +188,16 @@ export default function PaymentMethod({
         </div>
       )}
 
-      {/* ================= DOWNLOAD ONLY ================= */}
-      <button
-        disabled={loading}
-        onClick={onDownload}
-        className="w-full border border-black py-2 rounded text-sm font-medium"
-      >
-        Download Invoice (No Payment)
-      </button>
+      {/* ================= DOWNLOAD (OPTIONAL) ================= */}
+      {onDownload && (
+        <button
+          disabled={loading}
+          onClick={onDownload}
+          className="w-full border border-black py-2 rounded text-sm font-medium"
+        >
+          Download Invoice (No Payment)
+        </button>
+      )}
     </div>
   );
 }

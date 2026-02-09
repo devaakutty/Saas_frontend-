@@ -3,13 +3,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/server/api";
-import { motion } from "framer-motion";
-import {
-  User,
-  ShoppingBag,
-  CreditCard,
-  ChevronRight,
-} from "lucide-react";
 
 import CustomerSelector, {
   type Customer,
@@ -109,7 +102,7 @@ export default function BillingPage() {
         body: JSON.stringify({
           customerId: customer.id || customer._id,
           items: products.map((p) => ({
-            productId: p.id || p._id,
+            productId: p.productId, // ✅ FIXED
             productName: p.name,
             quantity: p.quantity,
             rate: p.rate,
@@ -147,16 +140,13 @@ export default function BillingPage() {
         method: "POST",
         body: JSON.stringify({
           customerId: customer.id || customer._id,
-
-          // ✅ ADD HERE (THIS IS THE PLACE)
           items: products.map((p) => ({
-            productId: p.productId,   // 🔥 REQUIRED for stock update
+            productId: p.productId, // ✅ REQUIRED
             productName: p.name,
             quantity: p.quantity,
             rate: p.rate,
             amount: p.quantity * p.rate,
           })),
-
           total: billing.total,
           status: "PAID",
           payment: {
@@ -167,10 +157,7 @@ export default function BillingPage() {
       });
 
       setLastInvoiceId(invoice.id || invoice._id);
-
       alert("Payment successful 🎉");
-
-      // ✅ NEW BILL
       resetBilling();
     } catch (err: any) {
       alert(err.message || "Payment failed");
@@ -203,7 +190,6 @@ export default function BillingPage() {
       a.click();
       window.URL.revokeObjectURL(url);
 
-      // ✅ NEW BILL
       resetBilling();
     } catch {
       alert("Invoice download failed");
@@ -215,7 +201,6 @@ export default function BillingPage() {
   return (
     <div className="p-6 bg-[#F4F4F4] min-h-screen">
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
-        {/* LEFT */}
         <div className="xl:col-span-8 space-y-6">
           <CustomerSelector
             customers={customers}
@@ -244,7 +229,6 @@ export default function BillingPage() {
           />
         </div>
 
-        {/* RIGHT */}
         <div className="xl:col-span-4">
           <BillingSummary billing={billing} />
 

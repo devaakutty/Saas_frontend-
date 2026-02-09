@@ -194,13 +194,17 @@ export default function InvoiceDetailsPage() {
           Download Invoice (PDF)
         </button>
 
-        {invoice.status === "PENDING" && (
-          <PaymentMethod
-            total={grandTotal}
-            loading={paying}
-            onConfirm={handlePayment}
-          />
-        )}
+          {invoice.status === "PENDING" && (
+            <PaymentMethod
+              total={grandTotal}
+              loading={paying}
+              onConfirm={handlePayment}
+              onDownload={() => {
+                // optional: you can implement later
+                console.log("Download clicked");
+              }}
+            />
+          )}
       </div>
     </div>
   );
