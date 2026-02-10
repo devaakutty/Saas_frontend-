@@ -85,6 +85,7 @@ export default function LoginPage() {
           disabled={loading}
           className="w-full py-2 bg-indigo-600 text-white rounded-md font-semibold disabled:opacity-50 hover:bg-indigo-700 transition-all active:scale-[0.98]"
         >
+          {/* {loading ? "Verifying..." : "Sign In"} */}
           {loading ? "Verifying..." : "Sign In"}
         </button>
       </form>
