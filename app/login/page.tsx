@@ -68,6 +68,7 @@ export default function LoginPage() {
 
         <div className="space-y-1">
           <label className="text-sm font-medium text-gray-700">
+            {/* Password */}
             Password
           </label>
           <input
