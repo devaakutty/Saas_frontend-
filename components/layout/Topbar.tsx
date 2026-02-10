@@ -21,9 +21,13 @@ export default function Topbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const fullName = user?.name || "Deva";
-  const firstName = fullName.split(" ")[0];
+  const displayName = user?.email
+    ? user.email.split("@")[0]
+    : "Deva";
+
+  const firstName = displayName.charAt(0).toUpperCase() + displayName.slice(1);
   const avatarLetter = firstName.charAt(0).toUpperCase();
+
 
   return (
     /* Changed justify-between to justify-end to push everything to the right */
