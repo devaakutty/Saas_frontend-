@@ -14,6 +14,7 @@ const tabs = [
   { label: "Integrations", href: "/settings/integrations" },
   { label: "API", href: "/settings/api" },
   { label: "Audit", href: "/settings/audit" },
+  // { label: "User Reference", href: "/settings/user-reference" },
 ];
 
 export default function SettingsLayout({

@@ -1,9 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { apiFetch } from "@/server/api";
 
 export default function SecuritySettingsPage() {
+  const router = useRouter();
+
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -48,7 +51,7 @@ export default function SecuritySettingsPage() {
     }
   };
 
-  /* ================= OTP ================= */
+  /* ================= OTP DELETE ================= */
 
   const sendOtp = async () => {
     if (!/^\d{10}$/.test(phone)) {
@@ -110,7 +113,17 @@ export default function SecuritySettingsPage() {
 
   return (
     <div className="max-w-3xl space-y-8">
-      <h1 className="text-2xl font-bold">Security</h1>
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold">Security</h1>
+
+        {/* 🔥 CREATE USER BUTTON */}
+        <button
+          onClick={() => router.push("/settings/create-user")}
+          className="bg-black text-white px-4 py-2 rounded"
+        >
+          + Create User
+        </button>
+      </div>
 
       {/* ================= CHANGE PASSWORD ================= */}
       <div className="bg-white border rounded-xl p-6 space-y-4">
@@ -159,7 +172,7 @@ export default function SecuritySettingsPage() {
           placeholder="Mobile number"
           value={phone}
           onChange={(e) =>
-            setPhone(e.target.value.replace(/\D/g, ""))
+            setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))
           }
           maxLength={10}
           className="w-full border p-2 rounded"

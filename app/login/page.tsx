@@ -1,17 +1,9 @@
 "use client";
 
-import { useState} from "react";
-// import { FormEvent } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { apiFetch } from "@/server/api";
-// 1. Define the User type so TypeScript knows what 'receivedUser' is
-interface User {
-  id: string;
-  email: string;
-  name?: string;
-  // add any other fields your API returns
-}
 
 export default function LoginPage() {
   const router = useRouter();
@@ -22,37 +14,34 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-// import { apiFetch } from "@/server/api";
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
 
-    const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
-      e.preventDefault();
-      setLoading(true);
-      setError("");
+    try {
+      // 1️⃣ Call login API (cookie is set by backend)
+      await apiFetch("/auth/login", {
+        method: "POST",
+        body: JSON.stringify({ email, password }),
+      });
 
-      try {
-        const data = await apiFetch<{
-          token: string;
-          user: { id: string; email: string };
-        }>("/auth/login", {
-          method: "POST",
-          body: JSON.stringify({ email, password }),
-        });
+      // 2️⃣ Tell AuthProvider to refresh user state
+      await login(); // 🔥 IMPORTANT
 
-        // 🔥 THIS MUST HAPPEN
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("user", JSON.stringify(data.user));
+      // 3️⃣ Redirect handled inside login()
+      router.replace("/dashboard");
+    } catch (err: any) {
+      setError(err.message || "Login failed");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-        router.replace("/dashboard");
-      } catch (err: any) {
-        setError(err.message || "Login failed");
-      } finally {
-        setLoading(false);
-      }
-    };
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <form 
-        onSubmit={handleLogin} 
+      <form
+        onSubmit={handleLogin}
         className="bg-white p-8 rounded-xl w-full max-w-sm space-y-4 shadow-lg"
       >
         <h1 className="text-2xl font-bold text-center text-gray-800">Login</h1>
@@ -64,7 +53,9 @@ export default function LoginPage() {
         )}
 
         <div className="space-y-1">
-          <label className="text-sm font-medium text-gray-700">Email Address</label>
+          <label className="text-sm font-medium text-gray-700">
+            Email Address
+          </label>
           <input
             type="email"
             placeholder="name@company.com"
@@ -76,7 +67,9 @@ export default function LoginPage() {
         </div>
 
         <div className="space-y-1">
-          <label className="text-sm font-medium text-gray-700">Password</label>
+          <label className="text-sm font-medium text-gray-700">
+            Password
+          </label>
           <input
             type="password"
             placeholder="••••••••"

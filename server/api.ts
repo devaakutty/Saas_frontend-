@@ -9,29 +9,34 @@ export async function apiFetch<T>(
   options: RequestInit = {},
   responseType: "json" | "blob" = "json"
 ): Promise<T> {
-  console.log("API CALL →", `${API_URL}/api${url}`);
-
-  const token =
-    typeof window !== "undefined"
-      ? localStorage.getItem("token")
-      : null;
-
   const res = await fetch(`${API_URL}/api${url}`, {
     ...options,
+    credentials: "include", // 🔥 REQUIRED for cookie auth
     headers: {
       ...(responseType === "json" && { "Content-Type": "application/json" }),
-      ...(token && { Authorization: `Bearer ${token}` }),
       ...options.headers,
     },
   });
 
   if (!res.ok) {
-    const msg = await res.text();
-    console.error("API ERROR →", url, msg);
-    throw new Error(msg || `Request failed (${res.status})`);
+    let errorMessage = "Request failed";
+
+    try {
+      const data = await res.json();
+      errorMessage = data.message || errorMessage;
+    } catch {
+      const text = await res.text();
+      if (text) errorMessage = text;
+    }
+
+    // ✅ Do NOT spam console for expected auth errors
+    if (res.status !== 401) {
+      console.error(`API ERROR → ${url}:`, errorMessage);
+    }
+
+    throw new Error(errorMessage);
   }
 
-  // Support blob if needed later (PDF invoices etc.)
   if (responseType === "blob") {
     return (await res.blob()) as T;
   }

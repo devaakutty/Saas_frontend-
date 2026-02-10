@@ -13,15 +13,16 @@ import { apiFetch } from "@/server/api";
 
 type User = {
   id: string;
-  name: string;
   email: string;
+  role: "ADMIN" | "USER";
 };
+
 
 type AuthContextType = {
   user: User | null;
   isAuthenticated: boolean;
-  login: (token: string) => Promise<void>;
-  logout: () => void;
+  login: () => Promise<void>;
+  logout: () => Promise<void>;
   loading: boolean;
 };
 
@@ -40,38 +41,35 @@ export function AuthProvider({
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  /* 🔄 RESTORE SESSION */
+  /* 🔄 RESTORE SESSION ON REFRESH */
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const checkAuth = async () => {
+      try {
+        const me = await apiFetch<User>("/users/me");
+        setUser(me); // ✅ cookie valid
+      } catch {
+        setUser(null); // ❌ not logged in
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    if (!token) {
-      setLoading(false);
-      return;
-    }
-
-    apiFetch<User>("/users/me")
-      .then((u) => setUser(u))
-      .catch(() => {
-        // token invalid
-        localStorage.removeItem("token");
-        setUser(null);
-      })
-      .finally(() => setLoading(false));
+    checkAuth();
   }, []);
 
-  /* ✅ LOGIN */
-  const login = async (token: string) => {
-    localStorage.setItem("token", token);
-
+  /* ✅ LOGIN (cookie already set by backend) */
+  const login = async () => {
     const me = await apiFetch<User>("/users/me");
     setUser(me);
-
     router.replace("/dashboard");
   };
 
   /* 🚪 LOGOUT */
-  const logout = () => {
-    localStorage.removeItem("token");
+  const logout = async () => {
+    await apiFetch("/auth/logout", {
+      method: "POST",
+    });
+
     setUser(null);
     router.replace("/login");
   };

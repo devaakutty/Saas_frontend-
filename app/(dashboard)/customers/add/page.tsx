@@ -11,7 +11,7 @@ export default function AddCustomerPage() {
     name: "",
     email: "",
     phone: "",
-    country: "",
+    country: "India", // ✅ default India
     company: "",
     status: "Active",
   });
@@ -22,8 +22,22 @@ export default function AddCustomerPage() {
   const handleSave = async () => {
     setError("");
 
+    /* ================= VALIDATIONS ================= */
+
     if (!form.name || !form.email) {
       setError("Name and Email are required");
+      return;
+    }
+
+    // Gmail only
+    if (!/^[^\s@]+@gmail\.com$/.test(form.email)) {
+      setError("Email must be a valid @gmail.com address");
+      return;
+    }
+
+    // Exactly 10 digits
+    if (form.phone && !/^\d{10}$/.test(form.phone)) {
+      setError("Mobile number must be exactly 10 digits");
       return;
     }
 
@@ -44,7 +58,7 @@ export default function AddCustomerPage() {
 
       router.push("/customers");
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || "Failed to save customer");
     } finally {
       setLoading(false);
     }
@@ -75,24 +89,30 @@ export default function AddCustomerPage() {
           />
 
           <Input
-            label="Email"
+            label="Email (@gmail.com only)"
+            type="email"
             value={form.email}
             onChange={(v) => setForm({ ...form, email: v })}
             placeholder="elon@gmail.com"
           />
 
           <Input
-            label="Phone"
+            label="Mobile Number"
+            type="tel"
             value={form.phone}
-            onChange={(v) => setForm({ ...form, phone: v })}
+            onChange={(v) => {
+              const digitsOnly = v.replace(/\D/g, "").slice(0, 10);
+              setForm({ ...form, phone: digitsOnly });
+            }}
             placeholder="9876543210"
+            maxLength={10}
           />
 
           <Input
             label="Country"
             value={form.country}
             onChange={(v) => setForm({ ...form, country: v })}
-            placeholder="United States"
+            placeholder="India"
           />
 
           <Input
@@ -145,18 +165,22 @@ export default function AddCustomerPage() {
   );
 }
 
-/* ================= INPUT ================= */
+/* ================= INPUT COMPONENT ================= */
 
 function Input({
   label,
   value,
   onChange,
   placeholder,
+  maxLength,
+  type = "text",
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
   placeholder?: string;
+  maxLength?: number;
+  type?: string;
 }) {
   return (
     <div>
@@ -164,8 +188,10 @@ function Input({
         {label}
       </label>
       <input
+        type={type}
         value={value}
         placeholder={placeholder}
+        maxLength={maxLength}
         onChange={(e) => onChange(e.target.value)}
         className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500"
       />

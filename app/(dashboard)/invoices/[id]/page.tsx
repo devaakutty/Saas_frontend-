@@ -96,25 +96,31 @@ export default function InvoiceDetailsPage() {
 
   /* ================= DOWNLOAD PDF ================= */
 
-  const handleDownload = async () => {
-    try {
-      const blob = await apiFetch<Blob>(
-        `/invoices/${invoice._id}/pdf`,
-        { method: "GET" },
-        "blob"
-      );
+    const handleDownload = async () => {
+      try {
+        if (!invoiceId) {
+          alert("Invalid invoice ID");
+          return;
+        }
 
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `Invoice-${invoice.invoiceNo}.pdf`;
-      a.click();
-      window.URL.revokeObjectURL(url);
-    } catch (err: any) {
-      alert(err.message || "Invoice download failed");
-    }
-  };
+        const blob = await apiFetch<Blob>(
+          `/invoices/${invoiceId}/pdf`,
+          { method: "GET" },
+          "blob"
+        );
 
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `Invoice-${invoice.invoiceNo}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+      } catch (err: any) {
+        alert(err.message || "Invoice download failed");
+      }
+    };
   /* ================= UI ================= */
 
   return (
