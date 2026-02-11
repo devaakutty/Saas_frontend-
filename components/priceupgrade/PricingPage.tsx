@@ -2,6 +2,8 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
+import { apiFetch } from "@/server/api";
+
 
 type BillingCycle = "monthly" | "yearly";
 type PlanId = "starter" | "pro" | "business";
@@ -88,32 +90,28 @@ export default function PricingPage() {
   };
 
   /* ================= PAYMENT SUCCESS ================= */
-  const handlePaymentSuccess = async () => {
-    if (!selectedPlan.plan) return;
+      const handlePaymentSuccess = async () => {
+        if (!selectedPlan.plan) return;
 
-    try {
-      setLoading(true);
+        try {
+          setLoading(true);
 
-      await fetch("http://localhost:5000/api/payments/verify", {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          plan: selectedPlan.plan,
-        }),
-      });
+          await apiFetch("/payments/verify", {
+            method: "POST",
+            body: JSON.stringify({
+              plan: selectedPlan.plan,
+            }),
+          });
 
-      setShowPayment(false);
-      router.push("/dashboard");
-    } catch (error) {
-      console.error("Payment failed", error);
-      alert("Payment failed. Try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
+          setShowPayment(false);
+          router.push("/dashboard");
+        } catch (error: any) {
+          console.error("Payment failed:", error.message);
+          alert(error.message || "Payment failed");
+        } finally {
+          setLoading(false);
+        }
+      };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 overflow-hidden">
