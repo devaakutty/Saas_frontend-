@@ -64,6 +64,7 @@ export default function Topbar() {
             {open && (
               <motion.div
                 initial={{ opacity: 0, y: 12, scale: 0.95 }}
+                // initial={{ opacity: 0, y: 12, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 12, scale: 0.95 }}
                 className="absolute right-0 mt-4 w-56 bg-white rounded-[24px] shadow-2xl border border-gray-50 overflow-hidden py-2"
