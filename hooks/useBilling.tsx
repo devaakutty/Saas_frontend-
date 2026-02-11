@@ -10,6 +10,7 @@ export interface BillItem {
 
 export function useBilling() {
   const [customer, setCustomer] = useState<any>(null);
+  // const [items, setItems] = useState<BillItem[]>([]);
   const [items, setItems] = useState<BillItem[]>([]);
   // const [items, setItems] = useState<BillItem[]>([]);
   const [payment, setPayment] = useState<any>(null);
