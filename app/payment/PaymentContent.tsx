@@ -104,7 +104,7 @@ export default function PaymentContent() {
         }),
       });
 
-      router.push("/dashboard/settings/company");
+      router.push("/dashboard");
 
     } catch (err: any) {
       alert(err.message || "Payment failed");
