@@ -27,7 +27,7 @@ export default function UserReferencePage() {
       return;
     }
 
-    if (user.role !== "ADMIN") {
+    if (user.role !== "owner") {
       router.replace("/dashboard");
       return;
     }
