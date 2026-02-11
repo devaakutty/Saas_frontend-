@@ -151,6 +151,7 @@ export default function PricingPage() {
               </span>
             </p>
 
+            {/* <ul className="text-left space-y-2 border-t pt-4 text-gray-700"> */}
             <ul className="text-left space-y-2 border-t pt-4 text-gray-700">
               {plan.features.map((f, i) => (
                 <li key={i}>• {f}</li>
