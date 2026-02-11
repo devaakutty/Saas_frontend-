@@ -4,37 +4,39 @@ import { useEffect, useState } from "react";
 import { apiFetch } from "@/server/api";
 import { useAuth } from "@/hooks/useAuth";
 
-/* ================= PLANS ================= */
+/* ================= PLANS (MATCH BACKEND) ================= */
 
 const plans = [
   {
-    id: "core",
-    name: "Core",
-    price: 99,
-    features: ["10 users", "50 GB bandwidth", "Basic support"],
+    id: "starter",
+    name: "Starter",
+    price: 0,
+    features: ["1 user", "10 invoices", "Email support"],
   },
   {
-    id: "growth",
-    name: "Growth",
-    price: 399,
-    features: ["20 users", "100 GB bandwidth", "Priority support"],
+    id: "pro",
+    name: "Pro",
+    price: 499,
+    features: ["5 users", "Unlimited invoices", "Priority support"],
   },
   {
-    id: "unlimited",
-    name: "Unlimited",
-    price: 799,
-    features: ["Unlimited users", "200 GB bandwidth", "24/7 support"],
+    id: "business",
+    name: "Business",
+    price: 999,
+    features: ["10 users", "AI insights", "24/7 support"],
   },
-];
+] as const;
+
+type PlanId = (typeof plans)[number]["id"];
 
 /* ================= PAGE ================= */
 
 export default function CompanySettingsPage() {
-  const { isAuthenticated } = useAuth(); // ✅ FIX
+  const { isAuthenticated } = useAuth();
 
-  const [company, setCompany] = useState<any>(null);
+  // const [company, setCompany] = useState<any>(null);
   const [currentPlan, setCurrentPlan] =
-    useState<"core" | "growth" | "unlimited">("core");
+    useState<PlanId>("starter");
 
   const [loadingProfile, setLoadingProfile] = useState(true);
 
@@ -42,16 +44,21 @@ export default function CompanySettingsPage() {
 
   const [showPayment, setShowPayment] = useState(false);
   const [selectedPlan, setSelectedPlan] =
-    useState<(typeof plans)[0] | null>(null);
-  const [paymentMethod, setPaymentMethod] =
-    useState<"upi" | "card">("upi");
+    useState<(typeof plans)[number] | null>(null);
   const [paying, setPaying] = useState(false);
+    const [company, setCompany] = useState<any>({
+    company: "-",
+    email: "-",
+    gstNumber: "-",
+    address: "-",
+  });
 
-  /* ================= LOAD COMPANY ================= */
+
+  /* ================= LOAD COMPANY + PLAN ================= */
 
   useEffect(() => {
     if (!isAuthenticated) {
-      setLoadingProfile(false); // ✅ IMPORTANT
+      setLoadingProfile(false);
       return;
     }
 
@@ -70,14 +77,17 @@ export default function CompanySettingsPage() {
         gstNumber: data.gstNumber || "-",
         address: data.address || "-",
       });
+
+      // 🔥 REAL SOURCE OF TRUTH
+      setCurrentPlan(data.plan || "starter");
     } finally {
       setLoadingProfile(false);
     }
   };
 
-  /* ================= UPGRADE HANDLER ================= */
+  /* ================= PAYMENT ================= */
 
-  const openPayment = (plan: (typeof plans)[0]) => {
+  const openPayment = (plan: (typeof plans)[number]) => {
     setSelectedPlan(plan);
     setShowPayment(true);
   };
@@ -88,15 +98,20 @@ export default function CompanySettingsPage() {
     try {
       setPaying(true);
 
-      // 🔜 Backend integration later
-      // await apiFetch("/company/upgrade", {
-      //   method: "POST",
-      //   body: JSON.stringify({ plan: selectedPlan.id }),
-      // });
+      // 🔥 REAL BACKEND UPGRADE
+      await apiFetch("/payments/verify", {
+        method: "POST",
+        body: JSON.stringify({
+          plan: selectedPlan.id,
+        }),
+      });
 
-      setCurrentPlan(selectedPlan.id as any);
       setShowPayment(false);
-      alert("Payment successful 🎉 Plan upgraded!");
+      await loadCompany(); // refresh plan from backend
+
+      alert("🎉 Plan upgraded successfully!");
+    } catch (err: any) {
+      alert(err.message || "Payment failed");
     } finally {
       setPaying(false);
     }
@@ -120,18 +135,20 @@ export default function CompanySettingsPage() {
 
   return (
     <div className="space-y-10 max-w-5xl">
-      {/* ================= COMPANY OVERVIEW ================= */}
+      {/* ================= COMPANY ================= */}
       <section>
         <h1 className="text-2xl font-bold text-white mb-4">
           Company Overview
         </h1>
 
+      {company && (
         <div className="bg-[#0e1117] border border-white/20 rounded-xl p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
           <Info label="Company Name" value={company.company} />
           <Info label="Email" value={company.email} />
           <Info label="GST Number" value={company.gstNumber} />
           <Info label="Address" value={company.address} />
         </div>
+      )}
       </section>
 
       {/* ================= PLANS ================= */}
@@ -199,32 +216,12 @@ export default function CompanySettingsPage() {
               Upgrade to {selectedPlan.name}
             </h3>
 
-            <p className="text-white text-lg mb-4">
+            <p className="text-white text-lg mb-6">
               Amount:{" "}
               <span className="font-bold">
                 ₹{selectedPlan.price}
               </span>
             </p>
-
-            <div className="space-y-3 mb-6">
-              <label className="flex items-center gap-2 text-white">
-                <input
-                  type="radio"
-                  checked={paymentMethod === "upi"}
-                  onChange={() => setPaymentMethod("upi")}
-                />
-                UPI
-              </label>
-
-              <label className="flex items-center gap-2 text-white">
-                <input
-                  type="radio"
-                  checked={paymentMethod === "card"}
-                  onChange={() => setPaymentMethod("card")}
-                />
-                Credit / Debit Card
-              </label>
-            </div>
 
             <div className="flex gap-3">
               <button

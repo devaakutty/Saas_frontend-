@@ -82,8 +82,8 @@ export default function Topbar() {
                     onClick={logout}
                     className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-red-500 hover:bg-red-50 rounded-xl transition-colors mt-2"
                   >
-                    <LogOut size={16} />
-                    Logout
+                    {/* <LogOut size={16} />
+                    Logout */}
                   </button>
                 </div>
               </motion.div>

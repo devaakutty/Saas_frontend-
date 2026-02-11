@@ -18,7 +18,7 @@ export default function Sidebar() {
     localStorage.removeItem("token");
 
     // 🔁 redirect to login
-    router.replace("/login");
+    router.replace("/register");
   };
 
   return (

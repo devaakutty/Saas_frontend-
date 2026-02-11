@@ -11,35 +11,38 @@ export async function apiFetch<T>(
 ): Promise<T> {
   const res = await fetch(`${API_URL}/api${url}`, {
     ...options,
-    credentials: "include", // 🔥 REQUIRED for cookie auth
+    credentials: "include",
     headers: {
-      ...(responseType === "json" && { "Content-Type": "application/json" }),
+      ...(responseType === "json" && {
+        "Content-Type": "application/json",
+      }),
       ...options.headers,
     },
   });
 
+  // ✅ READ BODY ONLY ONCE
+  let data: any = null;
+
+  try {
+    data =
+      responseType === "blob"
+        ? await res.blob()
+        : await res.json();
+  } catch {
+    data = null;
+  }
+
+  // ❌ HANDLE ERRORS USING SAME BODY
   if (!res.ok) {
-    let errorMessage = "Request failed";
+    const message =
+      (data && data.message) || "Request failed";
 
-    try {
-      const data = await res.json();
-      errorMessage = data.message || errorMessage;
-    } catch {
-      const text = await res.text();
-      if (text) errorMessage = text;
-    }
-
-    // ✅ Do NOT spam console for expected auth errors
     if (res.status !== 401) {
-      console.error(`API ERROR → ${url}:`, errorMessage);
+      console.error(`API ERROR → ${url}:`, message);
     }
 
-    throw new Error(errorMessage);
+    throw new Error(message);
   }
 
-  if (responseType === "blob") {
-    return (await res.blob()) as T;
-  }
-
-  return (await res.json()) as T;
+  return data as T;
 }
