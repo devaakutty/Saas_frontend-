@@ -8,16 +8,18 @@ import { useAuth } from "@/hooks/useAuth";
 /* ================= TYPES ================= */
 
 interface Customer {
-  id: string;
+  id?: string;
+  _id?: string;
   name: string;
 }
 
 interface Invoice {
-  id: string;
+  id?: string;
+  _id?: string;
   invoiceNo: string;
   customer?: Customer | null;
   total: number;
-  status: "PAID" | "PENDING"; // ✅ FIXED
+  status: "PAID" | "PENDING";
   createdAt: string;
 }
 
@@ -47,9 +49,19 @@ export default function InvoicesPage() {
   const loadInvoices = async () => {
     try {
       setLoading(true);
-      const data = await apiFetch<Invoice[]>("/invoices");
-      setInvoices(Array.isArray(data) ? data : []);
-    } catch {
+
+      const data = await apiFetch<any[]>("/invoices");
+
+      // Normalize _id → id
+      const normalized = (data || []).map((inv) => ({
+        ...inv,
+        id: inv.id || inv._id,
+      }));
+
+      setInvoices(normalized);
+
+    } catch (err) {
+      console.error(err);
       alert("Failed to load invoices");
     } finally {
       setLoading(false);
@@ -61,20 +73,29 @@ export default function InvoicesPage() {
     e: React.MouseEvent,
     id: string
   ) => {
-    e.stopPropagation(); // ✅ IMPORTANT
+    e.stopPropagation();
 
     if (!confirm("Are you sure you want to delete this invoice?")) return;
 
     try {
-      await apiFetch(`/invoices/${id}`, { method: "DELETE" });
+      await apiFetch(`/invoices/${id}`, {
+        method: "DELETE",
+      });
+
       setInvoices((prev) => prev.filter((i) => i.id !== id));
-    } catch {
+
+    } catch (err) {
+      console.error(err);
       alert("Failed to delete invoice");
     }
   };
 
   if (loading) {
-    return <div className="p-6 text-gray-500">Loading invoices…</div>;
+    return (
+      <div className="p-6 text-gray-500">
+        Loading invoices…
+      </div>
+    );
   }
 
   /* ================= UI ================= */
@@ -86,7 +107,7 @@ export default function InvoicesPage() {
         <h1 className="text-3xl font-bold">Invoices</h1>
 
         <button
-          onClick={() => router.push("/billing")}
+          onClick={() => router.push("/dashboard/billing")}
           className="px-4 py-2 bg-black text-white rounded"
         >
           + New Invoice
@@ -111,7 +132,11 @@ export default function InvoicesPage() {
             {invoices.map((inv) => (
               <tr
                 key={inv.id}
-                onClick={() => router.push(`/invoices/${inv.id}`)}
+                onClick={() =>
+                  router.push(
+                    `/dashboard/invoices/${inv.id}`
+                  )
+                }
                 className="border-t hover:bg-gray-50 cursor-pointer"
               >
                 <td className="p-4 font-mono">
@@ -144,12 +169,14 @@ export default function InvoicesPage() {
 
                 <td
                   className="p-4 text-right space-x-4"
-                  onClick={(e) => e.stopPropagation()} // ✅ stop row click
+                  onClick={(e) => e.stopPropagation()}
                 >
                   {/* VIEW */}
                   <button
                     onClick={() =>
-                      router.push(`/invoices/${inv.id}`)
+                      router.push(
+                        `/dashboard/invoices/${inv.id}`
+                      )
                     }
                     className="text-blue-600 hover:underline"
                   >
@@ -160,7 +187,9 @@ export default function InvoicesPage() {
                   {inv.status === "PENDING" && (
                     <button
                       onClick={() =>
-                        router.push(`/invoices/${inv.id}`)
+                        router.push(
+                          `/dashboard/invoices/${inv.id}`
+                        )
                       }
                       className="text-green-600 font-semibold hover:underline"
                     >
@@ -171,7 +200,7 @@ export default function InvoicesPage() {
                   {/* DELETE */}
                   <button
                     onClick={(e) =>
-                      handleDelete(e, inv.id)
+                      handleDelete(e, inv.id!)
                     }
                     className="text-red-600 hover:underline"
                   >

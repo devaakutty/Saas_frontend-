@@ -4,21 +4,24 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { sidebarLinks } from "./sidebarConfig";
 import { LayoutDashboard, LogOut } from "lucide-react";
+import { apiFetch } from "@/server/api";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const { logout } = useAuth(); // ✅ use auth logout
 
   /* ================= LOGOUT ================= */
-  const handleLogout = () => {
+  const handleLogout = async () => {
     const ok = confirm("Are you sure you want to logout?");
     if (!ok) return;
 
-    // 🔐 remove auth token
-    localStorage.removeItem("token");
-
-    // 🔁 redirect to login
-    router.replace("/register");
+    try {
+      await logout(); // 🔥 calls backend logout properly
+    } catch (err) {
+      console.error("Logout failed");
+    }
   };
 
   return (
@@ -28,7 +31,7 @@ export default function Sidebar() {
         {/* LOGO */}
         <div className="mb-10 flex flex-col items-center lg:items-start lg:px-8 w-full shrink-0">
           <div className="bg-white text-black w-10 h-10 rounded-xl flex items-center justify-center font-black text-xl">
-            Joe.
+            QB
           </div>
           <h1 className="hidden lg:block text-xl font-bold tracking-tight">
             QuickBillz

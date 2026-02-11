@@ -6,7 +6,7 @@ import {
   useEffect,
   useState,
 } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { apiFetch } from "@/server/api";
 
 /* ================= TYPES ================= */
@@ -14,9 +14,10 @@ import { apiFetch } from "@/server/api";
 type User = {
   id: string;
   email: string;
-  role: "ADMIN" | "USER";
+  role: "owner" | "member";
+  plan?: string;
+  userLimit?: number;
 };
-
 
 type AuthContextType = {
   user: User | null;
@@ -38,37 +39,56 @@ export function AuthProvider({
   children: React.ReactNode;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
+
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  /* 🔄 RESTORE SESSION ON REFRESH */
+  /* 🔄 RESTORE SESSION SAFELY */
   useEffect(() => {
+    const publicRoutes = ["/login", "/register"];
+
+    // Skip auth check on public pages
+    if (publicRoutes.includes(pathname)) {
+      setLoading(false);
+      return;
+    }
+
     const checkAuth = async () => {
       try {
         const me = await apiFetch<User>("/users/me");
-        setUser(me); // ✅ cookie valid
-      } catch {
-        setUser(null); // ❌ not logged in
+        setUser(me);
+      } catch (err) {
+        console.log("Auth restore failed");
+        setUser(null);
       } finally {
         setLoading(false);
       }
     };
 
     checkAuth();
-  }, []);
+  }, [pathname]);
 
-  /* ✅ LOGIN (cookie already set by backend) */
+  /* ✅ LOGIN */
   const login = async () => {
-    const me = await apiFetch<User>("/users/me");
-    setUser(me);
-    router.replace("/dashboard");
+    try {
+      const me = await apiFetch<User>("/users/me");
+      setUser(me);
+      router.replace("/dashboard");
+    } catch (err) {
+      console.error("Login restore failed");
+    }
   };
 
   /* 🚪 LOGOUT */
   const logout = async () => {
-    await apiFetch("/auth/logout", {
-      method: "POST",
-    });
+    try {
+      await apiFetch("/auth/logout", {
+        method: "POST",
+      });
+    } catch (err) {
+      console.error("Logout failed");
+    }
 
     setUser(null);
     router.replace("/login");

@@ -9,33 +9,43 @@ import StockAlert from "@/components/dashboard/StockAlert";
 import { apiFetch } from "@/server/api";
 import { useAuth } from "@/hooks/useAuth";
 
-/* ===== TYPES ===== */
+/* ================= TYPES ================= */
+
 type Invoice = {
-  id: string;
-  status: "PAID" | "UNPAID";
+  _id: string;
+  status: "PAID" | "PENDING";
   total: number;
 };
 
+/* ================= COMPONENT ================= */
+
 export default function DashboardPage() {
+  const { user, loading: authLoading } = useAuth();
+
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
 
-  /* ===== LOAD YOUR DATA ===== */
+  /* ================= LOAD INVOICES ================= */
+
   useEffect(() => {
-    loadInvoices();
-  }, []);
+    if (!user) return;
 
-  const loadInvoices = async () => {
-    try {
-      const data = await apiFetch<Invoice[]>("/invoices");
-      setInvoices(data);
-    } catch {
-      setInvoices([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+    const loadInvoices = async () => {
+      try {
+        const data = await apiFetch<Invoice[]>("/invoices");
+        setInvoices(data || []);
+      } catch (error) {
+        console.error("Failed to load invoices", error);
+        setInvoices([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadInvoices();
+  }, [user]);
+
+  /* ================= KPI CALCULATION ================= */
 
   const kpis = useMemo(() => {
     let totalSales = 0;
@@ -57,29 +67,50 @@ export default function DashboardPage() {
     };
   }, [invoices]);
 
-  if (loading) {
+  /* ================= LOADING STATES ================= */
+
+  if (authLoading || loading) {
     return (
       <div className="p-10 flex items-center justify-center min-h-screen bg-[#F8F8F8]">
         <div className="flex flex-col items-center gap-4">
-           <div className="w-12 h-12 border-4 border-black border-t-transparent rounded-full animate-spin" />
-           <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">Initialising QuickBillz...</p>
+          <div className="w-12 h-12 border-4 border-black border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">
+            Initialising QuickBillz...
+          </p>
         </div>
       </div>
     );
   }
 
+  /* ================= DASHBOARD UI ================= */
+
   return (
     <div className="p-8 bg-[#F8F8F8] min-h-screen space-y-8">
-
-      {/* 2. KPI GRID (High Contrast Stat Cards) */}
+      {/* KPI GRID */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard title="Total Sales" value={kpis.totalSales} type="totalSales" />
-        <StatCard title="Total Expense" value={kpis.totalExpense} type="totalExpense" />
-        <StatCard title="Pending Amount" value={kpis.pendingAmount} type="pendingPayment" />
-        <StatCard title="Received Amount" value={kpis.receivedAmount} type="paymentReceived" />
+        <StatCard
+          title="Total Sales"
+          value={kpis.totalSales}
+          type="totalSales"
+        />
+        <StatCard
+          title="Total Expense"
+          value={kpis.totalExpense}
+          type="totalExpense"
+        />
+        <StatCard
+          title="Pending Amount"
+          value={kpis.pendingAmount}
+          type="pendingPayment"
+        />
+        <StatCard
+          title="Received Amount"
+          value={kpis.receivedAmount}
+          type="paymentReceived"
+        />
       </div>
 
-      {/* 3. CHART SECTION (Two-thirds / One-third split) */}
+      {/* CHART SECTION */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 bg-white rounded-[32px] p-8 shadow-sm border border-gray-50 h-[400px]">
           <h3 className="text-lg font-black mb-6">Sales Analytics</h3>
@@ -92,7 +123,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* 4. RECENT ACTIVITY & ALERTS */}
+      {/* RECENT + ALERTS */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 bg-white rounded-[32px] p-8 shadow-sm border border-gray-50">
           <h3 className="text-lg font-black mb-6">Recent Invoices</h3>

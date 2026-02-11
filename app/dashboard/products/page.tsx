@@ -8,8 +8,7 @@ import { apiFetch } from "@/server/api";
 /* ================= TYPES ================= */
 
 interface Product {
-  id?: number;          // for SQL / legacy
-  _id?: string;         // ✅ MongoDB
+  _id: string;
   name: string;
   rate: number;
   unit?: string | null;
@@ -28,8 +27,9 @@ export default function ProductsPage() {
 
   /* LOAD PRODUCTS */
   useEffect(() => {
-    apiFetch<Product[]>("/products")
+    apiFetch<Product[]>("/products") // ✅ Correct backend route
       .then((data) => setProducts(Array.isArray(data) ? data : []))
+      .catch(() => setProducts([]))
       .finally(() => setLoading(false));
   }, []);
 
@@ -42,10 +42,10 @@ export default function ProductsPage() {
       await apiFetch(`/products/${id}`, { method: "DELETE" });
 
       setProducts((prev) =>
-        prev.filter(
-          (p) => (p.id?.toString() || p._id) !== id
-        )
+        prev.filter((p) => p._id !== id)
       );
+    } catch (err) {
+      console.error("Delete failed", err);
     } finally {
       setDeletingId(null);
     }
@@ -82,14 +82,14 @@ export default function ProductsPage() {
 
           <div className="flex gap-3">
             <Link
-              href="/products/bulk"
+              href="/dashboard/products/bulk"
               className="px-4 py-2 border rounded hover:bg-gray-50"
             >
               Bulk Add
             </Link>
 
             <Link
-              href="/products/create"
+              href="/dashboard/products/create"
               className="px-4 py-2 bg-black text-white rounded"
             >
               + Add Product
@@ -125,68 +125,64 @@ export default function ProductsPage() {
           </thead>
 
           <tbody>
-            {products.map((p) => {
-              const productId = p.id?.toString() || p._id;
+            {products.map((p) => (
+              <tr
+                key={p._id}
+                onClick={() =>
+                  router.push(`/dashboard/products/${p._id}`)
+                }
+                className="border-t hover:bg-gray-50 cursor-pointer"
+              >
+                <td className="p-4 font-medium">
+                  {p.name}
+                </td>
 
-              return (
-                <tr
-                  key={productId} 
-                  onClick={() =>
-                    router.push(`/products/${productId}`)
-                  }
-                  className="border-t hover:bg-gray-50 cursor-pointer"
+                <td className="p-4">
+                  ₹{p.rate.toLocaleString("en-IN")}
+                </td>
+
+                <td
+                  className={`p-4 font-semibold ${
+                    p.stock <= 5
+                      ? "text-red-600"
+                      : "text-gray-900"
+                  }`}
                 >
-                  <td className="p-4 font-medium">
-                    {p.name}
-                  </td>
+                  {p.stock}
+                </td>
 
-                  <td className="p-4">
-                    ₹{p.rate.toLocaleString("en-IN")}
-                  </td>
+                <td className="p-4">
+                  {p.unit ?? "—"}
+                </td>
 
-                  <td
-                    className={`p-4 font-semibold ${
-                      p.stock <= 5
-                        ? "text-red-600"
-                        : "text-gray-900"
+                <td className="p-4">
+                  <span
+                    className={`px-2 py-1 rounded text-xs font-medium ${
+                      p.isActive
+                        ? "bg-green-100 text-green-700"
+                        : "bg-gray-200 text-gray-600"
                     }`}
                   >
-                    {p.stock}
-                  </td>
+                    {p.isActive ? "Active" : "Inactive"}
+                  </span>
+                </td>
 
-                  <td className="p-4">
-                    {p.unit ?? "—"}
-                  </td>
-
-                  <td className="p-4">
-                    <span
-                      className={`px-2 py-1 rounded text-xs font-medium ${
-                        p.isActive
-                          ? "bg-green-100 text-green-700"
-                          : "bg-gray-200 text-gray-600"
-                      }`}
-                    >
-                      {p.isActive ? "Active" : "Inactive"}
-                    </span>
-                  </td>
-
-                  <td className="p-4 text-right">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDelete(productId!);
-                      }}
-                      disabled={deletingId === productId}
-                      className="text-red-600 hover:underline disabled:opacity-50"
-                    >
-                      {deletingId === productId
-                        ? "Deleting…"
-                        : "Delete"}
-                    </button>
-                  </td>
-                </tr>
-              );
-            })}
+                <td className="p-4 text-right">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(p._id);
+                    }}
+                    disabled={deletingId === p._id}
+                    className="text-red-600 hover:underline disabled:opacity-50"
+                  >
+                    {deletingId === p._id
+                      ? "Deleting…"
+                      : "Delete"}
+                  </button>
+                </td>
+              </tr>
+            ))}
 
             {products.length === 0 && (
               <tr>

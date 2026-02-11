@@ -48,13 +48,30 @@ export default function InvoiceDetailsPage() {
   useEffect(() => {
     if (!invoiceId) return;
 
-    apiFetch<Invoice>(`/invoices/${invoiceId}`)
-      .then(setInvoice)
-      .finally(() => setLoading(false));
+    const loadInvoice = async () => {
+      try {
+        const data = await apiFetch<Invoice>(
+          `/invoices/${invoiceId}`
+        );
+        setInvoice(data);
+      } catch (err) {
+        console.error(err);
+        setInvoice(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadInvoice();
   }, [invoiceId]);
 
-  if (loading) return <div className="p-6">Loading invoice…</div>;
-  if (!invoice) return <div className="p-6">Invoice not found</div>;
+  if (loading) {
+    return <div className="p-6">Loading invoice…</div>;
+  }
+
+  if (!invoice) {
+    return <div className="p-6">Invoice not found</div>;
+  }
 
   /* ================= CALCULATIONS ================= */
 
@@ -85,8 +102,14 @@ export default function InvoiceDetailsPage() {
 
       alert("Payment successful ✅");
 
-      setInvoice({ ...invoice, status: "PAID" });
-      router.push("/billing");
+      // Update UI immediately
+      setInvoice((prev) =>
+        prev ? { ...prev, status: "PAID" } : prev
+      );
+
+      // Redirect to invoice list
+      router.push("/dashboard/invoices");
+
     } catch (err: any) {
       alert(err.message || "Payment failed");
     } finally {
@@ -96,40 +119,37 @@ export default function InvoiceDetailsPage() {
 
   /* ================= DOWNLOAD PDF ================= */
 
-    const handleDownload = async () => {
-      try {
-        if (!invoiceId) {
-          alert("Invalid invoice ID");
-          return;
-        }
+  const handleDownload = async () => {
+    try {
+      const blob = await apiFetch<Blob>(
+        `/invoices/${invoice._id}/pdf`,
+        { method: "GET" },
+        "blob"
+      );
 
-        const blob = await apiFetch<Blob>(
-          `/invoices/${invoiceId}/pdf`,
-          { method: "GET" },
-          "blob"
-        );
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Invoice-${invoice.invoiceNo}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
 
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `Invoice-${invoice.invoiceNo}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        window.URL.revokeObjectURL(url);
-      } catch (err: any) {
-        alert(err.message || "Invoice download failed");
-      }
-    };
+    } catch (err: any) {
+      alert(err.message || "Invoice download failed");
+    }
+  };
+
   /* ================= UI ================= */
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto p-6 bg-gray-50">
       <button
-        onClick={() => router.back()}
+        onClick={() => router.push("/dashboard/invoices")}
         className="text-sm text-gray-600 hover:text-black"
       >
-        ← Back
+        ← Back to Invoices
       </button>
 
       <div className="flex justify-between items-center">
@@ -181,10 +201,12 @@ export default function InvoiceDetailsPage() {
           <span>Sub Total</span>
           <span>₹{subTotal.toFixed(2)}</span>
         </div>
+
         <div className="flex justify-between">
           <span>GST (18%)</span>
           <span>₹{gstAmount.toFixed(2)}</span>
         </div>
+
         <div className="flex justify-between font-bold">
           <span>Grand Total</span>
           <span>₹{grandTotal.toFixed(2)}</span>
@@ -197,21 +219,17 @@ export default function InvoiceDetailsPage() {
           onClick={handleDownload}
           className="px-4 py-2 bg-gray-800 text-white rounded"
         >
-          {/* Download Invoice (PDF) */}
           Download Invoice (PDF)
         </button>
 
-          {invoice.status === "PENDING" && (
-            <PaymentMethod
-              total={grandTotal}
-              loading={paying}
-              onConfirm={handlePayment}
-              onDownload={() => {
-                // optional: you can implement later
-                console.log("Download clicked");
-              }}
-            />
-          )}
+        {invoice.status === "PENDING" && (
+          <PaymentMethod
+            total={grandTotal}
+            loading={paying}
+            onConfirm={handlePayment}
+            onDownload={() => {}}
+          />
+        )}
       </div>
     </div>
   );

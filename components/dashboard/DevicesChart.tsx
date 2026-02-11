@@ -10,12 +10,16 @@ import {
 } from "recharts";
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/server/api";
+import { useRouter } from "next/navigation";
 
 const COLORS = ["#6366f1", "#22c55e", "#f59e0b", "#ef4444", "#0ea5e9"];
 
 export default function DevicesChart() {
+  const router = useRouter();
+
   const [data, setData] = useState<{ name: string; value: number }[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     fetchDevices();
@@ -33,29 +37,55 @@ export default function DevicesChart() {
           value: r.count,
         }))
       );
-    } catch (err) {
-      console.error(err);
+
+    } catch (err: any) {
+      // Handle plan restriction properly
+      setError(err.message || "Failed to load analytics");
       setData([]);
     } finally {
       setLoading(false);
     }
   };
 
+  /* ================= LOADING ================= */
+
   if (loading) {
     return (
       <div className="h-full flex items-center justify-center text-gray-400 text-sm">
-        Loading sales data…
+        Loading analytics…
       </div>
     );
   }
 
-  if (!data.length) {
+  /* ================= PLAN RESTRICTION ================= */
+
+  if (error === "Upgrade to access analytics") {
     return (
-      <div className="h-full flex items-center justify-center text-gray-400 text-sm">
-        No sales data this month
+      <div className="h-full flex flex-col items-center justify-center text-center space-y-4">
+        <p className="text-gray-500 font-semibold">
+          Analytics available in Pro Plan
+        </p>
+        <button
+          onClick={() => router.push("/pricing")}
+          className="bg-indigo-600 text-white px-4 py-2 rounded-lg"
+        >
+          Upgrade Now
+        </button>
       </div>
     );
   }
+
+  /* ================= NO DATA ================= */
+
+  if (!data.length) {
+    return (
+      <div className="h-full flex items-center justify-center text-gray-400 text-sm">
+        No analytics data available
+      </div>
+    );
+  }
+
+  /* ================= CHART ================= */
 
   return (
     <ResponsiveContainer width="100%" height={280}>

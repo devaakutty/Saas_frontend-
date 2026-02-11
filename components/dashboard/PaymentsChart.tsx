@@ -8,6 +8,7 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  Legend,
 } from "recharts";
 import { useMemo } from "react";
 
@@ -17,23 +18,30 @@ type Invoice = {
   createdAt: string;
 };
 
+type ChartPoint = {
+  date: string;
+  timestamp: number;
+  received: number;
+  pending: number;
+};
+
 export default function PaymentsChart({
-  invoices = [], // ✅ DEFAULT VALUE (IMPORTANT)
+  invoices = [],
 }: {
   invoices?: Invoice[];
 }) {
-  const chartData = useMemo(() => {
-    if (!invoices || invoices.length === 0) return [];
+  const chartData = useMemo<ChartPoint[]>(() => {
+    if (!invoices.length) return [];
 
-    const map: any = {};
+    const map: Record<string, ChartPoint> = {};
 
     invoices.forEach((inv) => {
       if (!inv.createdAt) return;
 
-      const d = new Date(inv.createdAt);
-      if (isNaN(d.getTime())) return;
+      const dateObj = new Date(inv.createdAt);
+      if (isNaN(dateObj.getTime())) return;
 
-      const label = d.toLocaleDateString("en-IN", {
+      const label = dateObj.toLocaleDateString("en-IN", {
         day: "2-digit",
         month: "short",
       });
@@ -41,7 +49,7 @@ export default function PaymentsChart({
       if (!map[label]) {
         map[label] = {
           date: label,
-          dateObj: d,
+          timestamp: dateObj.getTime(),
           received: 0,
           pending: 0,
         };
@@ -55,10 +63,11 @@ export default function PaymentsChart({
     });
 
     return Object.values(map).sort(
-      (a: any, b: any) =>
-        a.dateObj.getTime() - b.dateObj.getTime()
+      (a, b) => a.timestamp - b.timestamp
     );
   }, [invoices]);
+
+  /* ================= EMPTY STATE ================= */
 
   if (!chartData.length) {
     return (
@@ -68,26 +77,40 @@ export default function PaymentsChart({
     );
   }
 
+  /* ================= CHART ================= */
+
   return (
     <ResponsiveContainer width="100%" height={260}>
       <LineChart data={chartData}>
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey="date" />
         <YAxis />
-        <Tooltip />
+          <Tooltip
+          formatter={(value: any) =>
+            typeof value === "number"
+              ? `₹${value.toLocaleString()}`
+              : value
+          }
+        />
+
+        <Legend />
 
         <Line
           type="monotone"
           dataKey="received"
+          name="Received"
           stroke="#22c55e"
           strokeWidth={3}
+          dot={false}
         />
 
         <Line
           type="monotone"
           dataKey="pending"
+          name="Pending"
           stroke="#ef4444"
           strokeWidth={3}
+          dot={false}
         />
       </LineChart>
     </ResponsiveContainer>

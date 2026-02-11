@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { apiFetch } from "@/server/api";
 
 interface StockItem {
-  id: string;
+  _id: string; // ✅ MongoDB safe
   name: string;
   quantity: number;
   unit?: string;
@@ -13,6 +13,7 @@ interface StockItem {
 export default function StockAlert() {
   const [items, setItems] = useState<StockItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     loadLowStock();
@@ -22,24 +23,51 @@ export default function StockAlert() {
     try {
       const res = await apiFetch<StockItem[]>("/dashboard/low-stock");
       setItems(res ?? []);
-    } catch {
+    } catch (err: any) {
+      setError(err.message || "Failed to load stock alerts");
       setItems([]);
     } finally {
       setLoading(false);
     }
   };
 
+  /* ===== GROUP BY UNIT (Memoized) ===== */
+  const unitCount = useMemo(() => {
+    const map: Record<string, number> = {};
+
+    items.forEach((item) => {
+      const unit = item.unit ?? "pcs";
+      map[unit] = (map[unit] || 0) + 1;
+    });
+
+    return map;
+  }, [items]);
+
+  /* ================= LOADING ================= */
+
   if (loading) {
     return (
-      <div className="card text-sm text-gray-400 text-center">
+      <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 text-sm text-gray-400 text-center">
         Loading stock alerts…
       </div>
     );
   }
 
+  /* ================= ERROR ================= */
+
+  if (error) {
+    return (
+      <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 text-sm text-red-500 text-center">
+        {error}
+      </div>
+    );
+  }
+
+  /* ================= NO LOW STOCK ================= */
+
   if (!items.length) {
     return (
-      <div className="card">
+      <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
         <h3 className="font-semibold mb-2">Stock Alert</h3>
         <p className="text-sm text-green-600">
           All items are sufficiently stocked
@@ -48,16 +76,10 @@ export default function StockAlert() {
     );
   }
 
-  /* ===== GROUP BY UNIT ===== */
-  const unitCount: Record<string, number> = {};
-
-  items.forEach((item) => {
-    const unit = item.unit ?? "pcs";
-    unitCount[unit] = (unitCount[unit] || 0) + 1;
-  });
+  /* ================= LOW STOCK UI ================= */
 
   return (
-    <div className="card space-y-4">
+    <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-4">
       <h3 className="font-semibold text-red-600">
         ⚠ Stock Alert (Below 5)
       </h3>
@@ -75,7 +97,7 @@ export default function StockAlert() {
       <ul className="space-y-3 pt-2 border-t">
         {items.map((item) => (
           <li
-            key={item.id}
+            key={item._id}
             className="flex items-center justify-between text-sm"
           >
             <span className="font-medium">{item.name}</span>

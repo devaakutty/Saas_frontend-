@@ -41,6 +41,7 @@ export default function SecuritySettingsPage() {
       });
 
       alert("Password updated successfully");
+
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
@@ -51,7 +52,7 @@ export default function SecuritySettingsPage() {
     }
   };
 
-  /* ================= OTP DELETE ================= */
+  /* ================= SEND OTP ================= */
 
   const sendOtp = async () => {
     if (!/^\d{10}$/.test(phone)) {
@@ -76,6 +77,8 @@ export default function SecuritySettingsPage() {
     }
   };
 
+  /* ================= VERIFY & DELETE ================= */
+
   const verifyAndDelete = async () => {
     if (!otp) {
       alert("Enter OTP");
@@ -95,7 +98,9 @@ export default function SecuritySettingsPage() {
       });
 
       localStorage.removeItem("token");
-      window.location.href = "/login";
+
+      // ✅ Proper Next.js redirect
+      router.replace("/login");
     } catch (err: any) {
       alert(err.message || "OTP verification failed");
     } finally {
@@ -116,9 +121,11 @@ export default function SecuritySettingsPage() {
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Security</h1>
 
-        {/* 🔥 CREATE USER BUTTON */}
+        {/* ✅ FIXED PATH */}
         <button
-          onClick={() => router.push("/settings/create-user")}
+          onClick={() =>
+            router.push("/dashboard/settings/create-user")
+          }
           className="bg-black text-white px-4 py-2 rounded"
         >
           + Create User
@@ -126,6 +133,7 @@ export default function SecuritySettingsPage() {
       </div>
 
       {/* ================= CHANGE PASSWORD ================= */}
+
       <div className="bg-white border rounded-xl p-6 space-y-4">
         <h2 className="font-semibold">Change Password</h2>
 
@@ -156,13 +164,14 @@ export default function SecuritySettingsPage() {
         <button
           onClick={handleChangePassword}
           disabled={loading}
-          className="bg-indigo-500 text-white px-4 py-2 rounded disabled:opacity-50"
+          className="bg-indigo-600 text-white px-4 py-2 rounded disabled:opacity-50"
         >
           {loading ? "Updating..." : "Update Password"}
         </button>
       </div>
 
       {/* ================= DELETE ACCOUNT ================= */}
+
       <div className="bg-red-50 border border-red-200 rounded-xl p-6 space-y-4">
         <h2 className="font-semibold text-red-600">
           Delete Account

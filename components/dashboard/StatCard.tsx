@@ -6,7 +6,6 @@ import {
   CreditCard,
   Clock,
 } from "lucide-react";
-import React from "react"; // ✅ REQUIRED
 
 type StatType =
   | "totalSales"
@@ -16,11 +15,11 @@ type StatType =
 
 export default function StatCard({
   title,
-  value,
+  value = 0,
   type,
 }: {
   title: string;
-  value: number;
+  value?: number;
   type: StatType;
 }) {
   const iconMap: Record<StatType, React.ReactNode> = {
@@ -38,17 +37,23 @@ export default function StatCard({
   };
 
   return (
-    <div className="card p-5">
+    <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300">
+      
+      {/* Icon */}
       <div
         className={`w-10 h-10 rounded-lg flex items-center justify-center ${colorMap[type]}`}
       >
         {iconMap[type]}
       </div>
 
-      <p className="text-sm text-gray-500 mt-3">{title}</p>
+      {/* Title */}
+      <p className="text-sm text-gray-500 mt-3">
+        {title}
+      </p>
 
-      <p className="text-2xl font-bold">
-        ₹{value.toLocaleString("en-IN")}
+      {/* Value */}
+      <p className="text-2xl font-bold mt-1">
+        ₹{Number(value).toLocaleString("en-IN")}
       </p>
     </div>
   );

@@ -4,6 +4,13 @@ import { useState } from "react";
 import { apiFetch } from "@/server/api";
 import { useRouter } from "next/navigation";
 
+interface BulkProduct {
+  name: string;
+  stock: number;
+  rate: number;
+  unit?: string;
+}
+
 export default function BulkAddProductsPage() {
   const router = useRouter();
 
@@ -13,6 +20,12 @@ export default function BulkAddProductsPage() {
 
   const handleSubmit = async () => {
     setError("");
+
+    if (!text.trim()) {
+      setError("Please enter product details");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -25,13 +38,7 @@ export default function BulkAddProductsPage() {
         throw new Error("Please enter at least one product");
       }
 
-      const products: {
-        name: string;
-        stock: number;
-        rate: number;
-        unit?: string;
-      }[] = [];
-
+      const products: BulkProduct[] = [];
       const invalidLines: number[] = [];
 
       lines.forEach((line, index) => {
@@ -40,7 +47,9 @@ export default function BulkAddProductsPage() {
 
           if (parts.length < 3) throw new Error();
 
-          const unit = parts.length >= 4 ? parts.pop() : undefined;
+          const unit =
+            parts.length >= 4 ? parts.pop() : undefined;
+
           const rate = Number(parts.pop());
           const stock = Number(parts.pop());
           const name = parts.join(",");
@@ -77,7 +86,9 @@ export default function BulkAddProductsPage() {
         );
       }
 
-      router.push("/products");
+      // ✅ FIXED ROUTE
+      router.push("/dashboard/products");
+
     } catch (err: any) {
       setError(err.message || "Bulk add failed");
     } finally {
@@ -87,15 +98,20 @@ export default function BulkAddProductsPage() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
+      {/* ================= HEADER ================= */}
       <div className="flex items-center gap-3">
         <button
-          onClick={() => router.push("/products")}
+          onClick={() =>
+            router.push("/dashboard/products")
+          }
           className="px-3 py-1 border rounded text-sm hover:bg-gray-50"
         >
           ← Back
         </button>
 
-        <h1 className="text-2xl font-bold">Bulk Add Products</h1>
+        <h1 className="text-2xl font-bold">
+          Bulk Add Products
+        </h1>
       </div>
 
       <p className="text-sm text-gray-500">

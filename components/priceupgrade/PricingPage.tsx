@@ -1,27 +1,21 @@
 "use client";
+
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { apiFetch } from "@/server/api";
-
+import { useAuth } from "@/hooks/useAuth";
 
 type BillingCycle = "monthly" | "yearly";
 type PlanId = "starter" | "pro" | "business";
 
 export default function PricingPage() {
   const router = useRouter();
+  const { isAuthenticated } = useAuth();
 
   const [billingCycle, setBillingCycle] =
     useState<BillingCycle>("monthly");
 
-  // 🔥 Payment modal state
-  const [showPayment, setShowPayment] = useState(false);
-  const [loading, setLoading] = useState(false);
-
-  const [selectedPlan, setSelectedPlan] = useState<{
-    plan: "pro" | "business" | null;
-    billing: BillingCycle | null;
-  }>({ plan: null, billing: null });
+  /* ================= PLANS ================= */
 
   const plans = [
     {
@@ -66,56 +60,38 @@ export default function PricingPage() {
   ];
 
   /* ================= PLAN CLICK ================= */
-  const handlePlanClick = (planId: PlanId) => {
-    if (planId === "starter") {
-      router.push("/register");
+
+  const handlePlanClick = (plan: typeof plans[number]) => {
+    // 🔹 STARTER PLAN
+    if (plan.id === "starter") {
+      if (isAuthenticated) {
+        router.push("/dashboard");
+      } else {
+        router.push("/register?plan=starter&billing=monthly");
+      }
       return;
     }
 
-    setSelectedPlan({
-      plan: planId,
-      billing: billingCycle,
-    });
-    setShowPayment(true);
-  };
-
-  /* ================= PRICE ================= */
-  const getPrice = () => {
-    if (!selectedPlan.plan || !selectedPlan.billing) return 0;
-
-    if (selectedPlan.plan === "pro") {
-      return selectedPlan.billing === "monthly" ? 499 : 4999;
+    // 🔹 PRO / BUSINESS
+    if (!isAuthenticated) {
+      // Go to register with plan info
+      router.push(
+        `/register?plan=${plan.id}&billing=${billingCycle}`
+      );
+    } else {
+      // Already logged in → go to payment
+      router.push(
+        `/payment?plan=${plan.id}&billing=${billingCycle}`
+      );
     }
-    return selectedPlan.billing === "monthly" ? 999 : 9999;
   };
 
-  /* ================= PAYMENT SUCCESS ================= */
-      const handlePaymentSuccess = async () => {
-        if (!selectedPlan.plan) return;
-
-        try {
-          setLoading(true);
-
-          await apiFetch("/payments/verify", {
-            method: "POST",
-            body: JSON.stringify({
-              plan: selectedPlan.plan,
-            }),
-          });
-
-          setShowPayment(false);
-          router.push("/dashboard");
-        } catch (error: any) {
-          console.error("Payment failed:", error.message);
-          alert(error.message || "Payment failed");
-        } finally {
-          setLoading(false);
-        }
-      };
+  /* ================= UI ================= */
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 overflow-hidden">
-      {/* Hero */}
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
+
+      {/* HERO */}
       <motion.div
         initial={{ opacity: 0, y: -40 }}
         animate={{ opacity: 1, y: 0 }}
@@ -130,30 +106,28 @@ export default function PricingPage() {
         </p>
       </motion.div>
 
-      {/* Billing Toggle */}
+      {/* BILLING TOGGLE */}
       <div className="flex justify-center mt-12">
         <div className="bg-white shadow-md rounded-full p-1">
-          {(["monthly", "yearly"] as BillingCycle[]).map(
-            (cycle) => (
-              <button
-                key={cycle}
-                onClick={() => setBillingCycle(cycle)}
-                className={`px-6 py-2 rounded-full font-medium ${
-                  billingCycle === cycle
-                    ? "bg-indigo-600 text-white"
-                    : "text-gray-600"
-                }`}
-              >
-                {cycle === "monthly"
-                  ? "Monthly"
-                  : "Yearly (2 months free)"}
-              </button>
-            )
-          )}
+          {(["monthly", "yearly"] as BillingCycle[]).map((cycle) => (
+            <button
+              key={cycle}
+              onClick={() => setBillingCycle(cycle)}
+              className={`px-6 py-2 rounded-full font-medium transition ${
+                billingCycle === cycle
+                  ? "bg-indigo-600 text-white"
+                  : "text-gray-600"
+              }`}
+            >
+              {cycle === "monthly"
+                ? "Monthly"
+                : "Yearly (2 months free)"}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* Pricing Cards */}
+      {/* PRICING CARDS */}
       <div className="flex flex-wrap justify-center gap-10 mt-20 pb-24">
         {plans.map((plan, index) => (
           <motion.div
@@ -162,7 +136,7 @@ export default function PricingPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.2 }}
             whileHover={{ scale: 1.05 }}
-            className={`bg-white rounded-3xl p-8 w-80 text-center shadow-xl ${
+            className={`bg-white rounded-3xl p-8 w-80 text-center shadow-xl transition ${
               plan.popular ? "border-4 border-indigo-600" : ""
             }`}
           >
@@ -184,69 +158,14 @@ export default function PricingPage() {
             </ul>
 
             <button
-              onClick={() => handlePlanClick(plan.id)}
-              className="mt-6 w-full py-2 rounded-xl font-semibold bg-indigo-600 text-white hover:bg-indigo-700"
+              onClick={() => handlePlanClick(plan)}
+              className="mt-6 w-full py-2 rounded-xl font-semibold bg-indigo-600 text-white hover:bg-indigo-700 transition"
             >
               {plan.buttonText}
             </button>
           </motion.div>
         ))}
       </div>
-
-      {/* 🔥 PAYMENT MODAL */}
-      {showPayment && selectedPlan.plan && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-md relative">
-            <button
-              onClick={() => setShowPayment(false)}
-              className="absolute top-3 right-3 text-gray-400"
-            >
-              ✕
-            </button>
-
-            <h2 className="text-2xl font-bold mb-4 text-center">
-              Complete Payment
-            </h2>
-
-            <div className="border rounded-lg p-4 mb-6">
-              <div className="flex justify-between">
-                <span>Plan</span>
-                <span className="font-semibold capitalize">
-                  {selectedPlan.plan}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span>Billing</span>
-                <span className="font-semibold capitalize">
-                  {selectedPlan.billing}
-                </span>
-              </div>
-              <div className="flex justify-between border-t pt-2 mt-2">
-                <span>Total</span>
-                <span className="font-bold text-indigo-600">
-                  ₹{getPrice()}
-                </span>
-              </div>
-            </div>
-
-            <button
-              disabled={loading}
-              onClick={handlePaymentSuccess}
-              className="w-full bg-indigo-600 text-white py-2 rounded-lg mb-3 disabled:opacity-60"
-            >
-              {loading ? "Processing..." : "Pay with Razorpay"}
-            </button>
-
-            <button
-              disabled={loading}
-              onClick={handlePaymentSuccess}
-              className="w-full border py-2 rounded-lg disabled:opacity-60"
-            >
-              {loading ? "Processing..." : "Pay with Stripe"}
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

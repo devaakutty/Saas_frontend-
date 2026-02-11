@@ -5,12 +5,12 @@ import { useEffect, useState } from "react";
 import { apiFetch } from "@/server/api";
 
 interface Invoice {
-  id: string;
+  _id: string; // ✅ MongoDB uses _id
   invoiceNo: string;
   total: number;
   status: "PAID" | "UNPAID";
   createdAt: string;
-  customer: {
+  customer?: {
     name: string;
   };
 }
@@ -18,6 +18,7 @@ interface Invoice {
 export default function RecentInvoices() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     loadInvoices();
@@ -26,8 +27,17 @@ export default function RecentInvoices() {
   const loadInvoices = async () => {
     try {
       const data = await apiFetch<Invoice[]>("/invoices");
-      setInvoices(data.slice(0, 5)); // ✅ latest 5
-    } catch {
+
+      // Sort latest first
+      const sorted = [...data].sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() -
+          new Date(a.createdAt).getTime()
+      );
+
+      setInvoices(sorted.slice(0, 5));
+    } catch (err: any) {
+      setError(err.message || "Failed to load invoices");
       setInvoices([]);
     } finally {
       setLoading(false);
@@ -42,13 +52,21 @@ export default function RecentInvoices() {
     );
   }
 
+  if (error) {
+    return (
+      <div className="text-red-400 text-sm">
+        {error}
+      </div>
+    );
+  }
+
   return (
     <div>
       {/* Header */}
       <div className="flex justify-between items-center mb-4">
         <h3 className="font-semibold">Recent Invoices</h3>
         <Link
-          href="/invoices"
+          href="/dashboard/invoices"   // ✅ FIXED
           className="text-sm text-indigo-600 hover:underline"
         >
           View all
@@ -69,10 +87,10 @@ export default function RecentInvoices() {
 
           <tbody>
             {invoices.map((inv) => (
-              <tr key={inv.id} className="border-b last:border-none">
+              <tr key={inv._id} className="border-b last:border-none">
                 <td className="py-3 font-medium">
                   <Link
-                    href={`/invoices/${inv.id}`}
+                    href={`/dashboard/invoices/${inv._id}`}   // ✅ FIXED
                     className="hover:underline"
                   >
                     {inv.invoiceNo}
@@ -80,7 +98,6 @@ export default function RecentInvoices() {
                 </td>
 
                 <td>{inv.customer?.name ?? "—"}</td>
-
 
                 <td>₹{inv.total.toLocaleString()}</td>
 
