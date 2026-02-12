@@ -11,6 +11,7 @@ import {
   Legend,
 } from "recharts";
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { apiFetch } from "@/server/api";
 
 type Invoice = {
@@ -27,23 +28,46 @@ type ChartPoint = {
 };
 
 export default function SalesChart() {
+  const router = useRouter();
+
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    loadInvoices();
-  }, []);
+    let isMounted = true;
 
-  const loadInvoices = async () => {
-    try {
-      const data = await apiFetch<Invoice[]>("/invoices");
-      setInvoices(data);
-    } catch {
-      setInvoices([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+    const loadInvoices = async () => {
+      try {
+        const data = await apiFetch<Invoice[]>("/invoices");
+
+        if (!isMounted) return;
+
+        setInvoices(data ?? []);
+      } catch (err: any) {
+        if (!isMounted) return;
+
+        // 🔐 Handle auth error
+        if (err.message === "Not authorized, please login") {
+          router.replace("/login");
+          return;
+        }
+
+        setError(err.message || "Failed to load sales data");
+        setInvoices([]);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+
+    loadInvoices();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [router]);
+
+  /* ================= PROCESS DATA ================= */
 
   const chartData = useMemo<ChartPoint[]>(() => {
     if (!invoices.length) return [];
@@ -91,6 +115,34 @@ export default function SalesChart() {
     return (
       <div className="h-full flex items-center justify-center text-gray-400 text-sm">
         Loading sales data…
+      </div>
+    );
+  }
+
+  /* ================= PLAN RESTRICTION ================= */
+
+  if (error === "Upgrade to access analytics") {
+    return (
+      <div className="h-full flex flex-col items-center justify-center text-center space-y-4">
+        <p className="text-gray-500 font-semibold">
+          Sales analytics available in Pro Plan
+        </p>
+        <button
+          onClick={() => router.push("/pricing")}
+          className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition"
+        >
+          Upgrade Now
+        </button>
+      </div>
+    );
+  }
+
+  /* ================= GENERIC ERROR ================= */
+
+  if (error) {
+    return (
+      <div className="h-full flex items-center justify-center text-red-500 text-sm">
+        {error}
       </div>
     );
   }

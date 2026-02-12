@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useAuth } from "@/hooks/useAuth";
+import { useRouter } from "next/navigation";
 import { apiFetch } from "@/server/api";
 
 export default function LoginPage() {
-  const { login } = useAuth();
+  const router = useRouter();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -19,15 +19,20 @@ export default function LoginPage() {
     setError("");
 
     try {
+      // 1️⃣ Login
       await apiFetch("/auth/login", {
         method: "POST",
         body: JSON.stringify({ email, password }),
       });
 
-      await login(); // refresh user state
+      // 2️⃣ Confirm session (correct endpoint)
+      await apiFetch("/users/me");
+
+      // 3️⃣ Redirect
+      router.replace("/dashboard");
 
     } catch (err: any) {
-      setError(err.message || "Login failed");
+      setError(err.message || "Invalid email or password");
     } finally {
       setLoading(false);
     }
@@ -35,10 +40,8 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
-
       <div className="w-full max-w-sm">
 
-        {/* 🔙 Back to Home */}
         <Link
           href="/"
           className="text-sm text-indigo-600 hover:underline mb-4 inline-block"
@@ -81,12 +84,11 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition"
+            className="w-full py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition disabled:opacity-60"
           >
             {loading ? "Verifying..." : "Sign In"}
           </button>
 
-          {/* 📝 Register Link */}
           <p className="text-sm text-center mt-4">
             Don’t have an account?{" "}
             <Link

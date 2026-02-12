@@ -17,35 +17,51 @@ const COLORS = ["#6366f1", "#22c55e", "#f59e0b", "#ef4444", "#0ea5e9"];
 export default function DevicesChart() {
   const router = useRouter();
 
-  const [data, setData] = useState<{ name: string; value: number }[]>([]);
+  const [data, setData] = useState<
+    { name: string; value: number }[]
+  >([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
+    let isMounted = true;
+
+    const fetchDevices = async () => {
+      try {
+        const res = await apiFetch<
+          { device: string; count: number }[]
+        >("/dashboard/devices");
+
+        if (!isMounted) return;
+
+        setData(
+          res.map((r) => ({
+            name: r.device,
+            value: r.count,
+          }))
+        );
+      } catch (err: any) {
+        if (!isMounted) return;
+
+        // Handle auth error
+        if (err.message === "Not authorized, please login") {
+          router.replace("/login");
+          return;
+        }
+
+        setError(err.message || "Failed to load analytics");
+        setData([]);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+
     fetchDevices();
-  }, []);
 
-  const fetchDevices = async () => {
-    try {
-      const res = await apiFetch<{ device: string; count: number }[]>(
-        "/dashboard/devices"
-      );
-
-      setData(
-        res.map((r) => ({
-          name: r.device,
-          value: r.count,
-        }))
-      );
-
-    } catch (err: any) {
-      // Handle plan restriction properly
-      setError(err.message || "Failed to load analytics");
-      setData([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+    return () => {
+      isMounted = false;
+    };
+  }, [router]);
 
   /* ================= LOADING ================= */
 
@@ -67,10 +83,20 @@ export default function DevicesChart() {
         </p>
         <button
           onClick={() => router.push("/pricing")}
-          className="bg-indigo-600 text-white px-4 py-2 rounded-lg"
+          className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition"
         >
           Upgrade Now
         </button>
+      </div>
+    );
+  }
+
+  /* ================= GENERIC ERROR ================= */
+
+  if (error) {
+    return (
+      <div className="h-full flex items-center justify-center text-red-500 text-sm">
+        {error}
       </div>
     );
   }
@@ -99,7 +125,10 @@ export default function DevicesChart() {
           paddingAngle={2}
         >
           {data.map((_, i) => (
-            <Cell key={i} fill={COLORS[i % COLORS.length]} />
+            <Cell
+              key={i}
+              fill={COLORS[i % COLORS.length]}
+            />
           ))}
         </Pie>
         <Tooltip />

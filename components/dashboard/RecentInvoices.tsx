@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { apiFetch } from "@/server/api";
 
 interface Invoice {
-  _id: string; // ✅ MongoDB uses _id
+  _id: string;
   invoiceNo: string;
   total: number;
   status: "PAID" | "UNPAID";
@@ -16,33 +17,52 @@ interface Invoice {
 }
 
 export default function RecentInvoices() {
+  const router = useRouter();
+
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
+    let isMounted = true;
+
+    const loadInvoices = async () => {
+      try {
+        const data = await apiFetch<Invoice[]>("/invoices");
+
+        if (!isMounted) return;
+
+        const sorted = [...data].sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() -
+            new Date(a.createdAt).getTime()
+        );
+
+        setInvoices(sorted.slice(0, 5));
+      } catch (err: any) {
+        if (!isMounted) return;
+
+        // 🔐 Auth error handling
+        if (err.message === "Not authorized, please login") {
+          router.replace("/login");
+          return;
+        }
+
+        setError(err.message || "Failed to load invoices");
+        setInvoices([]);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+
     loadInvoices();
-  }, []);
 
-  const loadInvoices = async () => {
-    try {
-      const data = await apiFetch<Invoice[]>("/invoices");
+    return () => {
+      isMounted = false;
+    };
+  }, [router]);
 
-      // Sort latest first
-      const sorted = [...data].sort(
-        (a, b) =>
-          new Date(b.createdAt).getTime() -
-          new Date(a.createdAt).getTime()
-      );
-
-      setInvoices(sorted.slice(0, 5));
-    } catch (err: any) {
-      setError(err.message || "Failed to load invoices");
-      setInvoices([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+  /* ================= LOADING ================= */
 
   if (loading) {
     return (
@@ -52,6 +72,26 @@ export default function RecentInvoices() {
     );
   }
 
+  /* ================= PLAN RESTRICTION ================= */
+
+  if (error === "Upgrade to access analytics") {
+    return (
+      <div className="text-center space-y-3">
+        <p className="text-gray-500 font-semibold">
+          Invoice analytics available in Pro Plan
+        </p>
+        <button
+          onClick={() => router.push("/pricing")}
+          className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition text-sm"
+        >
+          Upgrade Now
+        </button>
+      </div>
+    );
+  }
+
+  /* ================= GENERIC ERROR ================= */
+
   if (error) {
     return (
       <div className="text-red-400 text-sm">
@@ -60,13 +100,15 @@ export default function RecentInvoices() {
     );
   }
 
+  /* ================= UI ================= */
+
   return (
     <div>
       {/* Header */}
       <div className="flex justify-between items-center mb-4">
         <h3 className="font-semibold">Recent Invoices</h3>
         <Link
-          href="/dashboard/invoices"   // ✅ FIXED
+          href="/dashboard/invoices"
           className="text-sm text-indigo-600 hover:underline"
         >
           View all
@@ -87,10 +129,13 @@ export default function RecentInvoices() {
 
           <tbody>
             {invoices.map((inv) => (
-              <tr key={inv._id} className="border-b last:border-none">
+              <tr
+                key={inv._id}
+                className="border-b last:border-none"
+              >
                 <td className="py-3 font-medium">
                   <Link
-                    href={`/dashboard/invoices/${inv._id}`}   // ✅ FIXED
+                    href={`/dashboard/invoices/${inv._id}`}
                     className="hover:underline"
                   >
                     {inv.invoiceNo}
@@ -99,7 +144,9 @@ export default function RecentInvoices() {
 
                 <td>{inv.customer?.name ?? "—"}</td>
 
-                <td>₹{inv.total.toLocaleString()}</td>
+                <td>
+                  ₹{inv.total.toLocaleString()}
+                </td>
 
                 <td>
                   <span

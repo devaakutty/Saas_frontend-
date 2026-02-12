@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import StatCard from "@/components/dashboard/StatCard";
 import SalesChart from "@/components/dashboard/SalesChart";
 import DevicesChart from "@/components/dashboard/DevicesChart";
@@ -13,37 +14,62 @@ import { useAuth } from "@/hooks/useAuth";
 
 type Invoice = {
   _id: string;
-  status: "PAID" | "PENDING";
+  status: "PAID" | "UNPAID";
   total: number;
 };
 
 /* ================= COMPONENT ================= */
 
 export default function DashboardPage() {
+  const router = useRouter();
   const { user, loading: authLoading } = useAuth();
 
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
+
+  /* ================= AUTH GUARD ================= */
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.replace("/login");
+    }
+  }, [authLoading, user, router]);
 
   /* ================= LOAD INVOICES ================= */
 
   useEffect(() => {
     if (!user) return;
 
+    let isMounted = true;
+
     const loadInvoices = async () => {
       try {
         const data = await apiFetch<Invoice[]>("/invoices");
+
+        if (!isMounted) return;
+
         setInvoices(data || []);
-      } catch (error) {
+      } catch (error: any) {
+        if (!isMounted) return;
+
+        if (error.message === "Not authorized, please login") {
+          router.replace("/login");
+          return;
+        }
+
         console.error("Failed to load invoices", error);
         setInvoices([]);
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
 
     loadInvoices();
-  }, [user]);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [user, router]);
 
   /* ================= KPI CALCULATION ================= */
 
@@ -113,12 +139,16 @@ export default function DashboardPage() {
       {/* CHART SECTION */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 bg-white rounded-[32px] p-8 shadow-sm border border-gray-50 h-[400px]">
-          <h3 className="text-lg font-black mb-6">Sales Analytics</h3>
+          <h3 className="text-lg font-black mb-6">
+            Sales Analytics
+          </h3>
           <SalesChart />
         </div>
 
         <div className="bg-white rounded-[32px] p-8 shadow-sm border border-gray-50 h-[400px]">
-          <h3 className="text-lg font-black mb-6">Device Usage</h3>
+          <h3 className="text-lg font-black mb-6">
+            Device Usage
+          </h3>
           <DevicesChart />
         </div>
       </div>
@@ -126,12 +156,16 @@ export default function DashboardPage() {
       {/* RECENT + ALERTS */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 bg-white rounded-[32px] p-8 shadow-sm border border-gray-50">
-          <h3 className="text-lg font-black mb-6">Recent Invoices</h3>
+          <h3 className="text-lg font-black mb-6">
+            Recent Invoices
+          </h3>
           <RecentInvoices />
         </div>
 
         <div className="bg-white rounded-[32px] p-8 shadow-sm border border-gray-50">
-          <h3 className="text-lg font-black mb-6">Stock Alerts</h3>
+          <h3 className="text-lg font-black mb-6">
+            Stock Alerts
+          </h3>
           <StockAlert />
         </div>
       </div>

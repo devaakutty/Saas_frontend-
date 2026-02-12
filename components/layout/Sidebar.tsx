@@ -1,106 +1,106 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { sidebarLinks } from "./sidebarConfig";
-import { LogOut } from "lucide-react";
+import { LogOut, Menu, X } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { logout } = useAuth();
+  const [open, setOpen] = useState(false);
 
-  /* ================= LOGOUT ================= */
   const handleLogout = async () => {
     const ok = confirm("Are you sure you want to logout?");
     if (!ok) return;
 
-    try {
-      await logout();
-      router.push("/login");
-    } catch (err) {
-      console.error("Logout failed", err);
-    }
+    await logout();
+    router.push("/login");
   };
 
   return (
-    <div className="hidden md:flex h-screen p-6 bg-zinc-100 sticky top-0">
-      <aside className="w-20 lg:w-64 h-full bg-gradient-to-b from-zinc-900 to-black text-white rounded-[32px] flex flex-col py-8 shadow-2xl overflow-hidden">
-        
-        {/* ================= LOGO ================= */}
-        <div className="mb-10 flex flex-col items-center lg:items-start lg:px-8 w-full shrink-0">
-          <div className="bg-white text-black w-10 h-10 rounded-xl flex items-center justify-center font-black text-xl">
-            QB
+    <>
+      {/* ================= MOBILE HEADER ================= */}
+      <div className="md:hidden flex items-center justify-between p-4 bg-black text-white">
+        <div className="font-bold text-lg">QuickBillz</div>
+        <button onClick={() => setOpen(true)}>
+          <Menu size={26} />
+        </button>
+      </div>
+
+      {/* ================= MOBILE OVERLAY ================= */}
+      {open && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          onClick={() => setOpen(false)}
+        />
+      )}
+
+      {/* ================= SIDEBAR ================= */}
+      <div
+        className={`fixed md:static z-50 top-0 left-0 h-screen w-64 bg-gradient-to-b from-zinc-900 to-black text-white transform transition-transform duration-300
+        ${open ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}
+      >
+        <aside className="h-full flex flex-col py-8 px-4">
+
+          {/* CLOSE BUTTON (MOBILE) */}
+          <div className="md:hidden flex justify-end mb-6">
+            <button onClick={() => setOpen(false)}>
+              <X size={24} />
+            </button>
           </div>
 
-          <h1 className="hidden lg:block text-xl font-bold tracking-tight mt-3">
-            QuickBillz
-          </h1>
+          {/* LOGO */}
+          <div className="mb-10 px-4">
+            <div className="bg-white text-black w-10 h-10 rounded-xl flex items-center justify-center font-black text-xl">
+              QB
+            </div>
+            <h1 className="text-xl font-bold mt-3">QuickBillz</h1>
+          </div>
 
-          <p className="hidden lg:block text-[10px] text-zinc-400 uppercase tracking-widest mt-1 font-semibold">
-            Premium POS
-          </p>
-        </div>
+          {/* NAVIGATION */}
+          <nav className="flex-1 space-y-2">
+            {sidebarLinks.map((link) => {
+              const active =
+                link.href === "/dashboard"
+                  ? pathname === "/dashboard"
+                  : pathname.startsWith(link.href);
 
-        {/* ================= NAVIGATION ================= */}
-        <nav className="flex-1 w-full px-4 space-y-2 overflow-y-auto no-scrollbar">
-          {sidebarLinks.map((link) => {
+              const Icon = link.icon;
 
-            // ✅ FIXED ACTIVE LOGIC
-            const active =
-              link.href === "/dashboard"
-                ? pathname === "/dashboard"
-                : pathname.startsWith(link.href);
-
-            const Icon = link.icon;
-
-            return (
-              <Link
-                key={link.id}
-                href={link.href}
-                className={`group relative flex items-center justify-center lg:justify-start gap-4 px-4 py-4 rounded-2xl transition-all duration-300 ${
-                  active
-                    ? "bg-white text-black shadow-lg"
-                    : "text-zinc-400 hover:text-white hover:bg-white/10"
-                }`}
-              >
-                <div
-                  className={`transition-colors duration-300 ${
+              return (
+                <Link
+                  key={link.id}
+                  href={link.href}
+                  onClick={() => setOpen(false)}
+                  className={`flex items-center gap-4 px-4 py-3 rounded-xl transition ${
                     active
-                      ? "text-black"
-                      : "text-zinc-400 group-hover:text-white"
+                      ? "bg-white text-black"
+                      : "text-zinc-400 hover:text-white hover:bg-white/10"
                   }`}
                 >
-                  {Icon && <Icon size={22} strokeWidth={2.5} />}
-                </div>
+                  {Icon && <Icon size={20} />}
+                  <span className="font-semibold">{link.label}</span>
+                </Link>
+              );
+            })}
+          </nav>
 
-                <span className="hidden lg:block text-sm font-bold tracking-wide">
-                  {link.label}
-                </span>
-
-                {active && (
-                  <div className="absolute right-3 hidden lg:block w-1.5 h-1.5 bg-black rounded-full" />
-                )}
-              </Link>
-            );
-          })}
-        </nav>
-
-        {/* ================= LOGOUT ================= */}
-        <div className="w-full px-4 mt-auto pt-3 shrink-0 border-t border-white/10">
-          <button
-            onClick={handleLogout}
-            className="flex items-center justify-center lg:justify-start gap-4 w-full px-4 py-4 bg-white/5 rounded-2xl text-zinc-400 hover:bg-red-500 hover:text-white transition-all duration-300 mt-2"
-          >
-            <LogOut size={22} />
-            <span className="hidden lg:block text-sm font-bold">
-              Logout
-            </span>
-          </button>
-        </div>
-
-      </aside>
-    </div>
+          {/* LOGOUT */}
+          <div className="mt-auto pt-4 border-t border-white/10">
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-4 w-full px-4 py-3 rounded-xl text-zinc-400 hover:bg-red-500 hover:text-white transition"
+            >
+              <LogOut size={20} />
+              <span className="font-semibold">Logout</span>
+            </button>
+          </div>
+        </aside>
+      </div>
+    </>
   );
 }

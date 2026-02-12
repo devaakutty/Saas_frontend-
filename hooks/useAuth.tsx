@@ -5,11 +5,10 @@ import {
   useContext,
   useEffect,
   useState,
+  useCallback,
 } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { apiFetch } from "@/server/api";
-
-/* ================= TYPES ================= */
 
 type User = {
   id: string;
@@ -24,14 +23,11 @@ type AuthContextType = {
   isAuthenticated: boolean;
   login: () => Promise<void>;
   logout: () => Promise<void>;
+  refreshUser: () => Promise<void>;
   loading: boolean;
 };
 
-/* ================= CONTEXT ================= */
-
 const AuthContext = createContext<AuthContextType | null>(null);
-
-/* ================= PROVIDER ================= */
 
 export function AuthProvider({
   children,
@@ -39,48 +35,45 @@ export function AuthProvider({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const pathname = usePathname();
 
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  /* 🔄 RESTORE SESSION SAFELY */
-  useEffect(() => {
-    const publicRoutes = ["/login", "/register"];
+  /* ================= REFRESH USER ================= */
 
-    // Skip auth check on public pages
-    if (publicRoutes.includes(pathname)) {
-      setLoading(false);
-      return;
-    }
-
-    const checkAuth = async () => {
-      try {
-        const me = await apiFetch<User>("/users/me");
-        setUser(me);
-      } catch (err) {
-        console.log("Auth restore failed");
-        setUser(null);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    checkAuth();
-  }, [pathname]);
-
-  /* ✅ LOGIN */
-  const login = async () => {
+  const refreshUser = useCallback(async () => {
     try {
       const me = await apiFetch<User>("/users/me");
       setUser(me);
-      router.replace("/dashboard");
-    } catch (err) {
-      console.error("Login restore failed");
+    } catch (err: any) {
+      // If unauthorized, clear user
+      setUser(null);
     }
+  }, []);
+
+  /* ================= RESTORE SESSION ================= */
+
+  useEffect(() => {
+    const init = async () => {
+      try {
+        await refreshUser();
+      } finally {
+        setLoading(false); // 🔥 always stop loading
+      }
+    };
+
+    init();
+  }, [refreshUser]);
+
+  /* ================= LOGIN ================= */
+
+  const login = async () => {
+    await refreshUser();
+    router.replace("/dashboard");
   };
 
-  /* 🚪 LOGOUT */
+  /* ================= LOGOUT ================= */
+
   const logout = async () => {
     try {
       await apiFetch("/auth/logout", {
@@ -101,6 +94,7 @@ export function AuthProvider({
         isAuthenticated: !!user,
         login,
         logout,
+        refreshUser,
         loading,
       }}
     >
@@ -109,13 +103,10 @@ export function AuthProvider({
   );
 }
 
-/* ================= HOOK ================= */
-
 export function useAuth() {
   const ctx = useContext(AuthContext);
   if (!ctx) {
     throw new Error("useAuth must be used inside AuthProvider");
-    // throw new Error("useAuth must be used inside AuthProvider");
   }
   return ctx;
 }

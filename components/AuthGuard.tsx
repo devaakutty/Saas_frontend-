@@ -13,31 +13,33 @@ export default function AuthGuard({
   const router = useRouter();
   const pathname = usePathname();
 
-  const isDashboardRoute = pathname.startsWith("/dashboard");
+  // 🔐 Protected routes
+  const isProtectedRoute =
+    pathname.startsWith("/dashboard") ||
+    pathname.startsWith("/payment");
 
   useEffect(() => {
-    if (loading) return; // ⛔ wait until auth check finishes
+    if (loading) return;
 
-    // 🔐 Protect dashboard routes
-    if (!isAuthenticated && isDashboardRoute) {
+    // If NOT logged in → block protected routes
+    if (!isAuthenticated && isProtectedRoute) {
       router.replace("/login");
+      return;
     }
 
-    // 🚫 Prevent logged-in users from visiting login/register
+    // If logged in → block auth pages
     if (
       isAuthenticated &&
       (pathname === "/login" || pathname === "/register")
     ) {
       router.replace("/dashboard");
     }
-  }, [isAuthenticated, pathname, router, isDashboardRoute, loading]);
+  }, [isAuthenticated, loading, pathname, router, isProtectedRoute]);
 
-  // ⛔ Prevent dashboard from rendering until auth resolved
-  if (loading) {
-    return null; // or loading spinner
-  }
+  // 🛑 Prevent rendering protected pages until auth resolved
+  if (loading) return null;
 
-  if (!isAuthenticated && isDashboardRoute) {
+  if (!isAuthenticated && isProtectedRoute) {
     return null;
   }
 

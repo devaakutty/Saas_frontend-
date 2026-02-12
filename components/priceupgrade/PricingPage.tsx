@@ -1,25 +1,29 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/hooks/useAuth";
 
 type BillingCycle = "monthly" | "yearly";
 type PlanId = "starter" | "pro" | "business";
 
+type Plan = {
+  id: PlanId;
+  name: string;
+  popular: boolean;
+  price: { monthly: number; yearly: number };
+  features: string[];
+  buttonText: string;
+};
+
 export default function PricingPage() {
   const router = useRouter();
-  const { isAuthenticated } = useAuth();
-
   const [billingCycle, setBillingCycle] =
     useState<BillingCycle>("monthly");
 
-  /* ================= PLANS ================= */
-
-  const plans = [
+  const plans: Plan[] = [
     {
-      id: "starter" as PlanId,
+      id: "starter",
       name: "Starter",
       popular: false,
       price: { monthly: 0, yearly: 0 },
@@ -32,7 +36,7 @@ export default function PricingPage() {
       buttonText: "Start Free",
     },
     {
-      id: "pro" as PlanId,
+      id: "pro",
       name: "Pro",
       popular: true,
       price: { monthly: 499, yearly: 4999 },
@@ -45,7 +49,7 @@ export default function PricingPage() {
       buttonText: "Upgrade to Pro",
     },
     {
-      id: "business" as PlanId,
+      id: "business",
       name: "Business",
       popular: false,
       price: { monthly: 999, yearly: 9999 },
@@ -59,46 +63,26 @@ export default function PricingPage() {
     },
   ];
 
-  /* ================= PLAN CLICK ================= */
-
-  const handlePlanClick = (plan: typeof plans[number]) => {
-    // 🔹 STARTER PLAN
-    if (plan.id === "starter") {
-      if (isAuthenticated) {
-        router.push("/dashboard");
-      } else {
-        router.push("/register?plan=starter&billing=monthly");
-      }
-      return;
-    }
-
-    // 🔹 PRO / BUSINESS
-    if (!isAuthenticated) {
-      // Go to register with plan info
+  const handlePlanClick = useCallback(
+    (planId: PlanId) => {
       router.push(
-        `/register?plan=${plan.id}&billing=${billingCycle}`
+        `/register?plan=${planId}&billing=${billingCycle}`
       );
-    } else {
-      // Already logged in → go to payment
-      router.push(
-        `/payment?plan=${plan.id}&billing=${billingCycle}`
-      );
-    }
-  };
-
-  /* ================= UI ================= */
+    },
+    [billingCycle, router]
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
 
-      {/* HERO */}
+      {/* ================= HERO ================= */}
       <motion.div
         initial={{ opacity: 0, y: -40 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8 }}
-        className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-center py-24"
+        transition={{ duration: 0.7 }}
+        className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-center py-20 px-4"
       >
-        <h1 className="text-5xl font-extrabold mb-4">
+        <h1 className="text-4xl md:text-5xl font-extrabold mb-4">
           QuickBillz Pricing
         </h1>
         <p className="opacity-90 text-lg">
@@ -106,17 +90,17 @@ export default function PricingPage() {
         </p>
       </motion.div>
 
-      {/* BILLING TOGGLE */}
-      <div className="flex justify-center mt-12">
-        <div className="bg-white shadow-md rounded-full p-1">
+      {/* ================= BILLING TOGGLE ================= */}
+      <div className="flex justify-center mt-10 px-4">
+        <div className="bg-white shadow-md rounded-full p-1 flex">
           {(["monthly", "yearly"] as BillingCycle[]).map((cycle) => (
             <button
               key={cycle}
               onClick={() => setBillingCycle(cycle)}
-              className={`px-6 py-2 rounded-full font-medium transition ${
+              className={`px-6 py-2 rounded-full font-medium transition-all duration-300 ${
                 billingCycle === cycle
-                  ? "bg-indigo-600 text-white"
-                  : "text-gray-600"
+                  ? "bg-indigo-600 text-white shadow-md"
+                  : "text-gray-600 hover:text-indigo-600"
               }`}
             >
               {cycle === "monthly"
@@ -127,39 +111,45 @@ export default function PricingPage() {
         </div>
       </div>
 
-      {/* PRICING CARDS */}
-      <div className="flex flex-wrap justify-center gap-10 mt-20 pb-24">
+      {/* ================= PLANS ================= */}
+      <div className="flex flex-wrap justify-center gap-8 mt-16 pb-24 px-4">
+
         {plans.map((plan, index) => (
           <motion.div
             key={plan.id}
-            initial={{ opacity: 0, y: 60 }}
+            initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.2 }}
+            transition={{ delay: index * 0.15 }}
             whileHover={{ scale: 1.05 }}
-            className={`bg-white rounded-3xl p-8 w-80 text-center shadow-xl transition ${
-              plan.popular ? "border-4 border-indigo-600" : ""
+            className={`bg-white rounded-3xl p-8 w-full sm:w-80 text-center shadow-xl transition-all duration-300 ${
+              plan.popular
+                ? "border-4 border-indigo-600"
+                : "border border-gray-100"
             }`}
           >
+            {/* PLAN TITLE */}
             <h2 className="text-2xl font-bold mb-2">
               {plan.name} {plan.popular && "🌟"}
             </h2>
 
+            {/* PRICE */}
             <p className="text-indigo-600 text-3xl mb-4 font-bold">
               ₹{plan.price[billingCycle]}
-              <span className="text-base text-gray-500">
+              <span className="text-base text-gray-500 ml-1">
                 /{billingCycle === "monthly" ? "mo" : "yr"}
               </span>
             </p>
 
-            {/* <ul className="text-left space-y-2 border-t pt-4 text-gray-700"> */}
+            {/* FEATURES */}
             <ul className="text-left space-y-2 border-t pt-4 text-gray-700">
-              {plan.features.map((f, i) => (
-                <li key={i}>• {f}</li>
+              {plan.features.map((feature, i) => (
+                <li key={i}>• {feature}</li>
               ))}
             </ul>
 
+            {/* BUTTON */}
             <button
-              onClick={() => handlePlanClick(plan)}
+              onClick={() => handlePlanClick(plan.id)}
               className="mt-6 w-full py-2 rounded-xl font-semibold bg-indigo-600 text-white hover:bg-indigo-700 transition"
             >
               {plan.buttonText}
