@@ -5,8 +5,7 @@ import { useInvoicesStore } from "@/hooks/useInvoicesStore";
 import { calculateInvoiceTotals } from "@/utils/gstCalculator";
 import { useRouter } from "next/navigation";
 
-// full client logic here
-
+/* ================= INVOICE NUMBER ================= */
 
 function generateInvoiceNo() {
   const prefix = "MAI";
@@ -24,14 +23,17 @@ function generateInvoiceNo() {
   return `${base}-${String(count).padStart(3, "0")}`;
 }
 
+/* ================= COMPONENT ================= */
+
 export default function InvoicePreviewClient() {
   const router = useRouter();
   const { draft, setDraft } = useInvoiceDraft();
   const { addInvoice } = useInvoicesStore();
 
+  /* 🔥 NO DATA STATE */
   if (!draft || draft.items.length === 0) {
     return (
-      <div className="p-6 text-gray-500">
+      <div className="flex items-center justify-center py-32 text-white/60">
         No invoice data found.
       </div>
     );
@@ -40,76 +42,128 @@ export default function InvoicePreviewClient() {
   const { subtotal, gstAmount, total } =
     calculateInvoiceTotals(draft.items);
 
-  const saveInvoice = () => {
-    const invoiceNo = generateInvoiceNo();
+  /* ================= SAVE ================= */
 
-    addInvoice({
-      id: crypto.randomUUID(),
-      invoiceNo,
-      customer: {
-        name: draft.customerName,
-        phone: "",
-      },
-      products: draft.items.map((i) => ({
-        name: i.name,
-        qty: i.quantity,
-        rate: i.price,
-      })),
-      billing: {
-        subTotal: subtotal,
-        gst: gstAmount,
-        tax: 0,
-        total,
-      },
-      payment: {
-        method: "PENDING",
-      },
-      status: "UNPAID",
-      createdAt: new Date().toISOString(),
-    });
+ const saveInvoice = () => {
+  if (!draft) return; // 🔥 important
 
-    setDraft(null);
-    router.push("/invoices");
-  };
+  const invoiceNo = generateInvoiceNo();
 
-  return (
-    <div className="max-w-3xl space-y-6 p-6">
-      <h1 className="text-2xl font-bold">Invoice Preview</h1>
+  addInvoice({
+    id: crypto.randomUUID(),
+    invoiceNo,
+    customer: {
+      name: draft.customerName,
+      phone: "",
+    },
+    products: draft.items.map((i) => ({
+      name: i.name,
+      qty: i.quantity,
+      rate: i.price,
+    })),
+    billing: {
+      subTotal: subtotal,
+      gst: gstAmount,
+      tax: 0,
+      total,
+    },
+    payment: {
+      method: "PENDING",
+    },
+    status: "PENDING",
+    createdAt: new Date().toISOString(),
+  });
 
-      <p>
-        <b>Customer:</b> {draft.customerName}
-      </p>
+  setDraft(null);
+  router.push("/dashboard/invoices");
+};
 
-      <div className="border rounded p-4 space-y-2">
-        {draft.items.map((item) => (
-          <div
-            key={item.id}
-            className="flex justify-between text-sm"
-          >
-            <span>
-              {item.name} × {item.quantity}
+
+  /* ================= UI ================= */
+
+return (
+  <div className="px-10 py-12">
+
+    <div className="relative rounded-[28px] overflow-hidden bg-[linear-gradient(135deg,#1b1f3a,#2b2e63)] p-16">
+
+      {/* Glow Effects */}
+      <div className="absolute -top-32 -right-32 w-[420px] h-[420px] bg-purple-500/30 blur-[150px] rounded-full" />
+      <div className="absolute -bottom-32 -left-32 w-[380px] h-[380px] bg-pink-500/20 blur-[140px] rounded-full" />
+
+      <div className="relative z-10 max-w-3xl space-y-12">
+
+        {/* HERO */}
+        <div>
+          <h1 className="font-[var(--font-playfair)] text-[64px] leading-[0.95] tracking-tight text-white">
+            Invoice{" "}
+            <span className="font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+              Preview
             </span>
-            <span>
-              ₹{(item.price * item.quantity).toLocaleString("en-IN")}
+          </h1>
+
+          <p className="font-[var(--font-inter)] mt-6 text-white/70 text-lg">
+            Review invoice details before confirming.
+          </p>
+        </div>
+
+        {/* INVOICE CARD */}
+        <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-[24px] p-8 space-y-6 text-white">
+
+          <p className="font-[var(--font-inter)]">
+            <span className="text-white/60">Customer:</span>{" "}
+            <span className="font-medium">
+              {draft.customerName}
             </span>
+          </p>
+
+          {/* ITEMS */}
+          <div className="border border-white/10 rounded-[20px] p-6 space-y-3 text-sm">
+            {draft.items.map((item) => (
+              <div
+                key={item.id}
+                className="flex justify-between"
+              >
+                <span>
+                  {item.name} × {item.quantity}
+                </span>
+                <span>
+                  ₹{(item.price * item.quantity).toLocaleString("en-IN")}
+                </span>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
 
-      <div className="border rounded p-4 space-y-1 text-sm">
-        <p>Subtotal: ₹{subtotal.toFixed(2)}</p>
-        <p>GST: ₹{gstAmount.toFixed(2)}</p>
-        <p className="font-bold text-lg">
-          Total: ₹{total.toFixed(2)}
-        </p>
-      </div>
+          {/* TOTALS */}
+          <div className="border border-white/10 rounded-[20px] p-6 space-y-2 text-sm">
+            <p className="flex justify-between">
+              <span className="text-white/60">Subtotal</span>
+              <span>₹{subtotal.toFixed(2)}</span>
+            </p>
 
-      <button
-        onClick={saveInvoice}
-        className="px-5 py-2 bg-black text-white rounded"
-      >
-        Confirm & Save Invoice
-      </button>
+            <p className="flex justify-between">
+              <span className="text-white/60">GST</span>
+              <span>₹{gstAmount.toFixed(2)}</span>
+            </p>
+
+            <p className="flex justify-between text-lg font-semibold mt-3">
+              <span>Total</span>
+              <span>₹{total.toFixed(2)}</span>
+            </p>
+          </div>
+
+          {/* ACTION BUTTON */}
+          <button
+            onClick={saveInvoice}
+            className="w-full py-4 rounded-[20px] bg-gradient-to-r from-purple-500 to-pink-500 text-white text-lg hover:opacity-90 transition"
+          >
+            Confirm & Save Invoice
+          </button>
+
+        </div>
+
+      </div>
     </div>
-  );
+  </div>
+);
+
 }

@@ -44,100 +44,131 @@ export default function InvoicesPage() {
     };
 
   return (
-    <div className="space-y-6">
-      {/* HEADER */}
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Invoices</h1>
+    <div className="relative px-6 pt-6 pb-12 text-white">
 
-        <button
-          onClick={() => router.push("/billing")}
-          className="px-4 py-2 bg-indigo-600 text-white rounded-lg"
-        >
-          + New Invoice
-        </button>
-      </div>
+      {/* Main Rounded Container */}
+      <div className="backdrop-blur-2xl 
+        bg-gradient-to-br from-white/10 to-white/5
+        border border-white/20
+        rounded-[32px]
+        shadow-[0_0_60px_rgba(0,0,0,0.4)]
+        p-8 space-y-8"
+      >
 
-      {/* STATES */}
-      {loading && <p className="text-gray-500">Loading invoices...</p>}
-      {error && <p className="text-red-600">{error}</p>}
+        {/* HEADER */}
+        <div className="flex justify-between items-center">
+          <h1 className="font-[var(--font-playfair)] text-3xl font-light tracking-tight">
+            Manage
+            <span className="block font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+              Invoices
+            </span>
+          </h1>
 
-      {/* TABLE */}
-      {!loading && invoices.length > 0 && (
-        <div className="bg-white border rounded-xl overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-gray-600">
-              <tr>
-                <th className="text-left p-3">Invoice</th>
-                <th className="text-left p-3">Customer</th>
-                <th className="text-left p-3">Date</th>
-                <th className="text-right p-3">Total</th>
-                <th className="text-center p-3">Status</th>
-                <th className="text-right p-3">Action</th>
-              </tr>
-            </thead>
+          <button
+            onClick={() => router.push("/billing")}
+            className="px-5 py-2.5 rounded-xl font-semibold 
+              bg-gradient-to-r from-purple-500 to-pink-500
+              hover:scale-[1.03] transition-all duration-300 shadow-lg"
+          >
+            + New Invoice
+          </button>
+        </div>
 
-            <tbody>
-              {invoices.map((inv) => (
-                <tr
-                  key={inv.id}
-                  className="border-t hover:bg-gray-50"
-                >
-                  <td className="p-3 font-medium">
-                    {inv.invoiceNo}
-                  </td>
+        {/* LOADING */}
+        {loading && (
+          <div className="text-center py-20 opacity-70">
+            Loading invoices...
+          </div>
+        )}
 
-                  <td className="p-3">
-                    {inv.customer?.name}
-                  </td>
+        {/* ERROR */}
+        {error && (
+          <div className="bg-red-500/20 text-red-300 p-4 rounded-xl">
+            {error}
+          </div>
+        )}
 
-                  <td className="p-3 text-gray-500">
-                    {new Date(inv.createdAt).toLocaleDateString()}
-                  </td>
+        {/* TABLE */}
+        {!loading && invoices.length > 0 && (
+          <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
 
-                  <td className="p-3 text-right font-semibold">
-                    ₹{inv.total.toFixed(2)}
-                  </td>
-
-                  <td className="p-3 text-center">
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        inv.status === "PAID"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-yellow-100 text-yellow-700"
-                      }`}
-                    >
-                      {inv.status}
-                    </span>
-                  </td>
-
-                  <td className="p-3 text-right">
-                    <button
-                      onClick={() =>
-                        router.push(`/invoices/${inv.id}`)
-                      }
-                      className="text-indigo-600 hover:underline"
-                    >
-                      View
-                    </button>
-                  </td>
+            <table className="w-full text-sm">
+              <thead className="bg-white/5 text-gray-300 uppercase tracking-widest text-xs">
+                <tr>
+                  <th className="text-left p-4">Invoice</th>
+                  <th className="text-left p-4">Customer</th>
+                  <th className="text-left p-4">Date</th>
+                  <th className="text-right p-4">Total</th>
+                  <th className="text-center p-4">Status</th>
+                  <th className="text-right p-4">Action</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+              </thead>
 
-      {/* EMPTY */}
-      {!loading && invoices.length === 0 && (
-        <div className="text-center py-20 text-gray-500">
-          <p className="text-lg font-medium">
-            No invoices found
-          </p>
-          <p className="text-sm mt-1">
-            Create your first invoice to get started
-          </p>
-        </div>
-      )}
+              <tbody>
+                {invoices.map((inv) => (
+                  <tr
+                    key={inv.id}
+                    className="border-t border-white/10 hover:bg-white/5 transition-all"
+                  >
+                    <td className="p-4 font-semibold">
+                      {inv.invoiceNo}
+                    </td>
+
+                    <td className="p-4">
+                      {inv.customer?.name}
+                    </td>
+
+                    <td className="p-4 text-gray-400">
+                      {new Date(inv.createdAt).toLocaleDateString()}
+                    </td>
+
+                    <td className="p-4 text-right font-semibold">
+                      ₹{inv.total.toFixed(2)}
+                    </td>
+
+                    <td className="p-4 text-center">
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                          inv.status === "PAID"
+                            ? "bg-green-500/20 text-green-400"
+                            : "bg-yellow-500/20 text-yellow-400"
+                        }`}
+                      >
+                        {inv.status}
+                      </span>
+                    </td>
+
+                    <td className="p-4 text-right">
+                      <button
+                        onClick={() =>
+                          router.push(`/invoices/${inv.id}`)
+                        }
+                        className="text-purple-300 hover:text-white transition-all"
+                      >
+                        View
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+          </div>
+        )}
+
+        {/* EMPTY STATE */}
+        {!loading && invoices.length === 0 && (
+          <div className="text-center py-24 opacity-60">
+            <p className="text-xl font-semibold">
+              No invoices found
+            </p>
+            <p className="text-sm mt-2">
+              Create your first invoice to get started
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   );
+
 }

@@ -5,7 +5,9 @@ import { useState } from "react";
 type IntegrationKey = "razorpay" | "email" | "gst" | "webhook";
 
 export default function IntegrationsSettingsPage() {
-  const [integrations, setIntegrations] = useState<Record<IntegrationKey, boolean>>({
+  const [integrations, setIntegrations] = useState<
+    Record<IntegrationKey, boolean>
+  >({
     razorpay: false,
     email: true,
     gst: false,
@@ -28,10 +30,25 @@ export default function IntegrationsSettingsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0b0e14] text-white p-8 rounded-xl">
-      <h1 className="text-2xl font-semibold mb-6">Integrations</h1>
+    <div className="space-y-14 text-white max-w-5xl">
 
-      <div className="bg-[#11141c] border border-white/10 rounded-xl p-6 max-w-4xl space-y-6">
+      {/* HEADER */}
+      <div>
+        <h1 className="font-[var(--font-playfair)] text-[56px] leading-[0.95] tracking-tight">
+          Platform{" "}
+          <span className="font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+            Integrations
+          </span>
+        </h1>
+
+        <p className="font-[var(--font-inter)] mt-4 text-white/70 text-lg">
+          Connect external services to extend your dashboard capabilities.
+        </p>
+      </div>
+
+      {/* CARD */}
+      <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-[28px] p-10 space-y-6">
+
         <IntegrationItem
           name="Razorpay"
           description="Accept payments via cards, UPI, wallets"
@@ -61,12 +78,13 @@ export default function IntegrationsSettingsPage() {
 
         <IntegrationItem
           name="Webhooks"
-          description="Receive real-time events from QuickBillz"
+          description="Receive real-time events"
           enabled={integrations.webhook}
           onToggle={() => toggle("webhook")}
           onConnect={() => connect("Webhooks")}
           onManage={() => manage("Webhooks")}
         />
+
       </div>
     </div>
   );
@@ -90,22 +108,24 @@ function IntegrationItem({
   onManage: () => void;
 }) {
   return (
-    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border border-white/10 rounded-lg p-4">
+    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border border-white/10 rounded-[20px] p-6 bg-white/5 hover:bg-white/10 transition-all duration-300">
+
       <div>
-        <p className="font-semibold text-white">{name}</p>
-        <p className="text-sm text-gray-400">{description}</p>
+        <p className="font-semibold text-white text-lg">{name}</p>
+        <p className="text-sm text-white/60">{description}</p>
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-6">
+
         {/* Toggle */}
         <button
           onClick={onToggle}
-          className={`w-11 h-6 rounded-full relative transition ${
-            enabled ? "bg-indigo-500" : "bg-white/20"
+          className={`w-12 h-6 rounded-full relative transition ${
+            enabled ? "bg-primary" : "bg-white/20"
           }`}
         >
           <span
-            className={`absolute top-0.5 h-5 w-5 bg-white rounded-full transition ${
+            className={`absolute top-0.5 h-5 w-5 bg-white rounded-full transition-all duration-300 ${
               enabled ? "right-0.5" : "left-0.5"
             }`}
           />
@@ -115,18 +135,19 @@ function IntegrationItem({
         {enabled ? (
           <button
             onClick={onManage}
-            className="px-4 py-2 text-sm bg-indigo-500 hover:bg-indigo-600 rounded"
+            className="px-5 py-2 text-sm bg-gradient-to-r from-primary to-secondary text-white rounded-xl hover:opacity-90 transition"
           >
             Manage
           </button>
         ) : (
           <button
             onClick={onConnect}
-            className="px-4 py-2 text-sm bg-white/10 hover:bg-white/20 rounded"
+            className="px-5 py-2 text-sm bg-white/10 hover:bg-white/20 rounded-xl transition"
           >
             Connect
           </button>
         )}
+
       </div>
     </div>
   );

@@ -33,65 +33,62 @@ export default function ReportsPage() {
   }
 
   return (
-    <div className="p-6 bg-[#F4F4F4] min-h-screen space-y-8">
-      {/* ================= HEADER ================= */}
-      <div className="flex items-center justify-between">
-        <div>
-          <span className="bg-black text-white text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest">
-            Analytics
-          </span>
+    <div className="px-8 py-10">
 
-          <h1 className="text-3xl font-black text-black tracking-tighter mt-1">
-            Reports<span className="text-gray-400">.</span>
-          </h1>
-        </div>
+      <div className="relative rounded-[32px] overflow-hidden bg-gradient-to-br from-[#1b1f3a] via-[#24285f] to-[#2b2e63] p-16">
 
-        <div className="text-right hidden sm:block">
-          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-            Business Insights
-          </p>
-          <p className="text-sm font-black text-black">
-            Management Hub
-          </p>
+        {/* Glow Effects */}
+        <div className="absolute -top-32 -right-32 w-[400px] h-[400px] bg-purple-600/30 blur-[140px] rounded-full" />
+        <div className="absolute -bottom-32 -left-32 w-[350px] h-[350px] bg-pink-500/20 blur-[120px] rounded-full" />
+
+        <div className="relative z-10">
+
+          {/* HERO */}
+          <div className="max-w-4xl">
+            <h1 className="font-[var(--font-playfair)] text-[64px] md:text-[80px] leading-[0.95] tracking-tight text-white">
+              Improve your{" "}
+              <span className="font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                Reports
+              </span>
+            </h1>
+          </div>
+
+          {/* CARDS */}
+          <div className="mt-20 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
+            <ReportCard
+              title="Sales Report"
+              desc="Track revenue & volume"
+              href="/dashboard/reports/sales"
+              icon={<TrendingUp size={20} />}
+            />
+            <ReportCard
+              title="Profit & Loss"
+              desc="Income vs Expenses"
+              href="/dashboard/reports/profit-loss"
+              icon={<BarChart3 size={20} />}
+            />
+            <ReportCard
+              title="GST Report"
+              desc="Tax & summary details"
+              href="/dashboard/reports/gst"
+              icon={<Receipt size={20} />}
+            />
+            <ReportCard
+              title="Products"
+              desc="Inventory management"
+              href="/dashboard/products"
+              icon={<Package size={20} />}
+            />
+          </div>
+
         </div>
       </div>
 
-      {/* ================= REPORT CARDS ================= */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-
-        <ReportCard
-          title="Sales Report"
-          desc="Track revenue & volume"
-          href="/dashboard/reports/sales"
-          icon={<TrendingUp size={20} />}
-        />
-
-        <ReportCard
-          title="Profit & Loss"
-          desc="Income vs Expenses"
-          href="/dashboard/reports/profit-loss"
-          icon={<BarChart3 size={20} />}
-        />
-
-        <ReportCard
-          title="GST Report"
-          desc="Tax & summary details"
-          href="/dashboard/reports/gst"
-          icon={<Receipt size={20} />}
-        />
-
-        <ReportCard
-          title="Products"
-          desc="Inventory management"
-          href="/dashboard/products"
-          icon={<Package size={20} />}
-        />
-      </div>
     </div>
   );
 }
 
-/* ================= REPORT CARD ================= */
+/* ================= REPORT CARD COMPONENT ================= */
 
 function ReportCard({
   title,
@@ -106,34 +103,34 @@ function ReportCard({
 }) {
   return (
     <motion.div
-      whileHover={{ y: -4, x: -4 }}
-      transition={{ duration: 0.2 }}
+      whileHover={{ y: -8 }}
+      transition={{ duration: 0.3 }}
     >
       <Link
         href={href}
-        className="group block bg-white border-2 border-black rounded-[24px] p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all flex flex-col h-full hover:shadow-[10px_10px_0px_0px_rgba(0,0,0,1)]"
+        className="group block p-6 rounded-[24px] bg-white/10 backdrop-blur-xl border border-white/20 transition-all duration-300 hover:bg-white/20 flex flex-col h-full"
       >
-        <div className="h-10 w-10 bg-black text-white rounded-xl flex items-center justify-center mb-6 transition-transform group-hover:scale-110">
+        {/* Icon */}
+        <div className="w-12 h-12 flex items-center justify-center rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 mb-6">
           {icon}
         </div>
 
-        <div className="space-y-1">
-          <h3 className="font-black text-lg tracking-tight text-black">
-            {title}
-          </h3>
-          <p className="text-xs font-bold text-gray-400 leading-relaxed uppercase tracking-tight">
-            {desc}
-          </p>
-        </div>
+        {/* Title */}
+        <h3 className="font-[var(--font-playfair)] text-xl font-semibold tracking-tight text-white">
+          {title}
+        </h3>
 
-        <div className="mt-8 pt-4 border-t border-gray-50 flex items-center justify-between">
-          <span className="text-[10px] font-black text-black uppercase tracking-widest group-hover:underline">
-            View Report
-          </span>
+        {/* Description */}
+        <p className="font-[var(--font-inter)] text-sm text-white/60 mt-2">
+          {desc}
+        </p>
 
+        {/* Footer */}
+        <div className="mt-8 flex items-center justify-between text-sm text-white/70 group-hover:text-white transition">
+          <span>View Report</span>
           <ArrowRight
-            size={14}
-            className="text-black transition-transform group-hover:translate-x-1"
+            size={16}
+            className="transition-transform group-hover:translate-x-1"
           />
         </div>
       </Link>

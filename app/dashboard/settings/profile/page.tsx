@@ -166,161 +166,166 @@ export default function ProfileSettingsPage() {
 
   /* ================= UI ================= */
 
-  return (
-    <div className="max-w-5xl space-y-6">
-      <h1 className="text-2xl font-bold">Profile Settings</h1>
+return (
+  <div className="space-y-10 text-white">
 
-      <div className="bg-white border rounded-xl p-6 space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        <Input
-          label="First Name"
-          value={form.firstName}
-          onChange={(v) => handleChange("firstName", v)}
+    {/* HEADER */}
+    <div>
+      <h1 className="font-[var(--font-playfair)] text-[56px] leading-[0.95] tracking-tight">
+        Profile{" "}
+        <span className="font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+          Settings
+        </span>
+      </h1>
+
+      <p className="font-[var(--font-inter)] mt-4 text-white/70 text-lg">
+        Update your personal and company information.
+      </p>
+    </div>
+
+    {/* FORM CARD */}
+    <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-[24px] p-10 space-y-8">
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        <GlassInput label="First Name" value={form.firstName} onChange={(v) => handleChange("firstName", v)} />
+        <GlassInput label="Last Name" value={form.lastName} onChange={(v) => handleChange("lastName", v)} />
+        <GlassInput label="Email" value={form.email} disabled />
+        <GlassInput label="Phone" value={form.phone} maxLength={10} onChange={(v) => handleChange("phone", v.replace(/\D/g, ""))} />
+        <GlassInput label="Company" value={form.company} onChange={(v) => handleChange("company", v)} />
+        <GlassInput label="Website" value={form.website} onChange={(v) => handleChange("website", v)} />
+        <GlassInput label="GST Number" value={form.gstNumber} onChange={(v) => handleChange("gstNumber", v)} />
+        <GlassInput label="Country" value="India" disabled />
+
+        <GlassSelect
+          label="State"
+          value={form.state}
+          options={Object.keys(STATES)}
+          onChange={(v) => handleChange("state", v)}
         />
 
-        <Input
-          label="Last Name"
-          value={form.lastName}
-          onChange={(v) => handleChange("lastName", v)}
-        />
-       <Input label="Email" value={form.email} disabled />
-
-          <Input
-            label="Phone"
-            value={form.phone}
-            maxLength={10}
-            onChange={(v) =>
-              handleChange("phone", v.replace(/\D/g, ""))
-            }
-          />
-
-          <Input label="Company" value={form.company} onChange={(v) => handleChange("company", v)} />
-          <Input label="Website" value={form.website} onChange={(v) => handleChange("website", v)} />
-          <Input label="GST Number" value={form.gstNumber} onChange={(v) => handleChange("gstNumber", v)} />
-
-          <Input label="Country" value="India" disabled />
-
-          <Select
-            label="State"
-            value={form.state}
-            options={Object.keys(STATES)}
-            onChange={(v) => handleChange("state", v)}
-          />
-
-          <Select
-            label="City"
-            value={form.city}
-            options={cities}
-            disabled={!form.state}
-            onChange={(v) => handleChange("city", v)}
-          />
-
-          <Input label="Zip Code" value={form.zip} onChange={(v) => handleChange("zip", v)} />
-        </div>
-
-        <Textarea
-          label="Address"
-          value={form.address}
-          onChange={(v) => handleChange("address", v)}
+        <GlassSelect
+          label="City"
+          value={form.city}
+          options={cities}
+          disabled={!form.state}
+          onChange={(v) => handleChange("city", v)}
         />
 
-        <div className="flex justify-end pt-4 border-t">
-          <button
-            disabled={saving}
-            onClick={handleSave}
-            className="px-6 py-2 bg-orange-500 text-white rounded disabled:opacity-50"
-          >
-            {saving ? "Saving..." : "Save Changes"}
-          </button>
-        </div>
+        <GlassInput label="Zip Code" value={form.zip} onChange={(v) => handleChange("zip", v)} />
       </div>
+
+      <GlassTextarea
+        label="Address"
+        value={form.address}
+        onChange={(v) => handleChange("address", v)}
+      />
+
+      <div className="flex justify-end pt-6 border-t border-white/10">
+        <button
+          disabled={saving}
+          onClick={handleSave}
+          className="px-8 py-3 rounded-[18px] bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:opacity-90 transition disabled:opacity-50"
+        >
+          {saving ? "Saving..." : "Save Changes"}
+        </button>
+      </div>
+
+    </div>
+  </div>
+);
+
+}
+
+/* ================= COMPONENTS ================= */
+function GlassInput({
+  label,
+  value,
+  onChange,
+  disabled = false,
+  maxLength,
+}: {
+  label: string;
+  value: string;
+  onChange?: (value: string) => void;
+  disabled?: boolean;
+  maxLength?: number;
+}) {
+  return (
+    <div>
+      <label className="block text-sm mb-2 text-white/60 font-[var(--font-inter)]">
+        {label}
+      </label>
+      <input
+        value={value}
+        maxLength={maxLength}
+        disabled={disabled}
+        onChange={(e) => onChange?.(e.target.value)}
+        className="w-full bg-white/5 backdrop-blur-md border border-white/10 rounded-[16px] px-4 py-3 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/40 transition disabled:opacity-60"
+      />
     </div>
   );
 }
 
-/* ================= COMPONENTS ================= */
-
-    function Input({
-      label,
-      value,
-      onChange,
-      disabled = false,
-      maxLength,
-    }: {
-      label: string;
-      value: string;
-      onChange?: (value: string) => void;
-      disabled?: boolean;
-      maxLength?: number;
-    }) {
-      return (
-        <div>
-          <label className="block text-sm mb-1 text-gray-600">{label}</label>
-          <input
-            value={value}
-            maxLength={maxLength}
-            disabled={disabled}
-            onChange={(e) => onChange?.(e.target.value)}
-            className={`w-full border rounded-md px-3 py-2 text-sm ${
-              disabled ? "bg-gray-100" : "focus:ring-2 focus:ring-orange-400"
-            }`}
-          />
-        </div>
-      );
-    }
 ///* ================= SELECT ================= */
-    function Select({
-      label,
-      value,
-      options = [],
-      onChange,
-      disabled = false,
-    }: {
-      label: string;
-      value: string;
-      options?: string[];
-      disabled?: boolean;
-      onChange: (v: string) => void;
-    }) {
-      return (
-        <div>
-          <label className="block text-sm mb-1 text-gray-600">{label}</label>
-          <select
-            value={value}
-            disabled={disabled}
-            onChange={(e) => onChange(e.target.value)}
-            className="w-full border rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-orange-400"
-          >
-            <option value="">Select {label}</option>
-            {options.map((o) => (
-              <option key={o} value={o}>
-                {o}
-              </option>
-            ))}
-          </select>
-        </div>
-      );
-    }
+function GlassSelect({
+  label,
+  value,
+  options = [],
+  onChange,
+  disabled = false,
+}: {
+  label: string;
+  value: string;
+  options?: string[];
+  disabled?: boolean;
+  onChange: (v: string) => void;
+}) {
+  return (
+    <div>
+      <label className="block text-sm mb-2 text-white/60 font-[var(--font-inter)]">
+        {label}
+      </label>
+      <select
+        value={value}
+        disabled={disabled}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full bg-white/5 backdrop-blur-md border border-white/10 rounded-[16px] px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500/40 transition disabled:opacity-60"
+      >
+        <option value="">Select {label}</option>
+        {options.map((o) => (
+          <option key={o} value={o}>
+            {o}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
 //* ================= TEXTAREA ================= */
-    function Textarea({
-      label,
-      value,
-      onChange,
-    }: {
-      label: string;
-      value: string;
-      onChange?: (value: string) => void;
-    }) {
-      return (
-        <div>
-          <label className="block text-sm mb-1 text-gray-600">{label}</label>
-          <textarea
-            rows={3}
-            value={value}
-            onChange={(e) => onChange?.(e.target.value)}
-            className="w-full border rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-orange-400"
-          />
-        </div>
-      );
-    }
+function GlassTextarea({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange?: (value: string) => void;
+}) {
+  return (
+    <div>
+      <label className="block text-sm mb-2 text-white/60 font-[var(--font-inter)]">
+        {label}
+      </label>
+      <textarea
+        rows={3}
+        value={value}
+        onChange={(e) => onChange?.(e.target.value)}
+        className="w-full bg-white/5 backdrop-blur-md border border-white/10 rounded-[16px] px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500/40 transition"
+      />
+    </div>
+  );
+}
+
 

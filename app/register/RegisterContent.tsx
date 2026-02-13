@@ -4,14 +4,6 @@ import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { apiFetch } from "@/server/api";
-import { Playfair_Display, Inter } from "next/font/google";
-
-const playfair = Playfair_Display({
-  subsets: ["latin"],
-  weight: ["400", "700"],
-});
-
-const inter = Inter({ subsets: ["latin"] });
 
 type PlanId = "starter" | "pro" | "business";
 type BillingCycle = "monthly" | "yearly";
@@ -84,7 +76,12 @@ export default function RegisterContent() {
     e.preventDefault();
     setError("");
 
-    if (!formData.name || !formData.mobile || !formData.email || !formData.password) {
+    if (
+      !formData.name ||
+      !formData.mobile ||
+      !formData.email ||
+      !formData.password
+    ) {
       setError("All fields are required");
       return;
     }
@@ -99,12 +96,7 @@ export default function RegisterContent() {
 
       await apiFetch("/auth/register", {
         method: "POST",
-        body: JSON.stringify({
-          name: formData.name,
-          mobile: formData.mobile,
-          email: formData.email,
-          password: formData.password,
-        }),
+        body: JSON.stringify(formData),
       });
 
       if (plan === "starter") {
@@ -119,100 +111,108 @@ export default function RegisterContent() {
     }
   };
 
-return (
-  <div
-    className={`${inter.className} min-h-screen flex items-center justify-center bg-gradient-to-br from-[#1b1f3a] via-[#23265a] to-[#2b2e63] relative overflow-hidden px-4`}
-  >
-    {/* Softer Glow */}
-    <div className="absolute top-[-150px] left-[-120px] w-[350px] h-[350px] bg-purple-600 opacity-20 blur-[120px] rounded-full" />
-    <div className="absolute bottom-[-150px] right-[-120px] w-[350px] h-[350px] bg-pink-600 opacity-20 blur-[120px] rounded-full" />
+  return (
+    <div className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden bg-gradient-to-br from-[#1b1f3a] to-[#2b2e63]">
 
-    <div className="relative z-10 w-full max-w-sm backdrop-blur-xl bg-white/10 border border-white/20 rounded-[20px] shadow-2xl p-8 text-white">
+      {/* Glow Background */}
+      <div className="absolute top-[-200px] left-[-150px] w-[450px] h-[450px] bg-purple-600 opacity-20 blur-[150px] rounded-full" />
+      <div className="absolute bottom-[-200px] right-[-150px] w-[450px] h-[450px] bg-pink-600 opacity-20 blur-[150px] rounded-full" />
 
-      {/* Smaller Heading */}
-      <h1
-        className={`${playfair.className} text-3xl md:text-4xl font-light text-center mb-6`}
+      {/* Premium Home Button */}
+      <Link
+        href="/"
+        className="absolute top-6 left-6 z-20 px-5 py-2 rounded-full backdrop-blur-md bg-white/10 border border-white/20 text-sm text-white hover:bg-white/20 hover:scale-105 transition-all duration-300 shadow-md"
       >
-        Create your
-        <span className="block font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-          Account
-        </span>
-      </h1>
+        ← Home
+      </Link>
 
-      {/* Plan Summary */}
-      <div className="border border-white/20 rounded-xl p-3 mb-5 text-xs bg-white/5">
-        <div className="flex justify-between">
-          <span>Plan</span>
-          <span className="capitalize">{plan}</span>
-        </div>
-        <div className="flex justify-between">
-          <span>Billing</span>
-          <span className="capitalize">{billing}</span>
-        </div>
-        <div className="flex justify-between border-t border-white/20 pt-2 mt-2 font-semibold text-purple-300">
-          <span>Total</span>
-          <span>₹{price}</span>
-        </div>
-      </div>
+      <div className="relative z-10 w-full max-w-md backdrop-blur-xl bg-white/10 border border-white/20 rounded-[24px] shadow-2xl p-10 text-white">
 
-      {error && (
-        <p className="bg-red-500/20 text-red-300 text-xs p-2 rounded-lg mb-3 text-center">
-          {error}
+        {/* Hero Heading */}
+        <h1 className="hero-heading text-5xl md:text-6xl font-light text-center leading-tight mb-8">
+          Create your
+          <span className="block hero-heading-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+            Account
+          </span>
+        </h1>
+
+        {/* Plan Summary */}
+        <div className="border border-white/20 rounded-xl p-4 mb-6 text-sm bg-white/5">
+          <div className="flex justify-between">
+            <span>Plan</span>
+            <span className="capitalize">{plan}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Billing</span>
+            <span className="capitalize">{billing}</span>
+          </div>
+          <div className="flex justify-between border-t border-white/20 pt-3 mt-3 font-semibold text-purple-300">
+            <span>Total</span>
+            <span>₹{price}</span>
+          </div>
+        </div>
+
+        {error && (
+          <div className="bg-red-500/20 text-red-300 text-sm p-3 rounded-lg mb-4 text-center">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+
+          <input
+            name="name"
+            placeholder="Full Name"
+            value={formData.name}
+            onChange={handleChange}
+            className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-400 transition"
+          />
+
+          <input
+            name="mobile"
+            placeholder="Mobile Number"
+            value={formData.mobile}
+            onChange={handleChange}
+            maxLength={10}
+            className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-400 transition"
+          />
+
+          <input
+            name="email"
+            placeholder="Email Address"
+            value={formData.email}
+            onChange={handleChange}
+            className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-400 transition"
+          />
+
+          <input
+            type="password"
+            name="password"
+            placeholder="Password"
+            value={formData.password}
+            onChange={handleChange}
+            className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-400 transition"
+          />
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full py-3 rounded-xl font-semibold bg-gradient-to-r from-purple-500 to-pink-500 hover:scale-[1.02] hover:opacity-90 transition-all duration-300 shadow-lg"
+          >
+            {loading ? "Creating..." : "Create Account"}
+          </button>
+        </form>
+
+        <p className="text-sm text-center mt-6 text-gray-300">
+          Already have account?{" "}
+          <Link
+            href="/login"
+            className="text-purple-300 hover:underline"
+          >
+            Login
+          </Link>
         </p>
-      )}
-
-      <form onSubmit={handleSubmit} className="space-y-3">
-
-        <input
-          name="name"
-          placeholder="Full Name"
-          value={formData.name}
-          onChange={handleChange}
-          className="w-full px-4 py-2.5 text-sm rounded-xl bg-white/10 border border-white/20 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-400"
-        />
-
-        <input
-          name="mobile"
-          placeholder="Mobile Number"
-          value={formData.mobile}
-          onChange={handleChange}
-          maxLength={10}
-          className="w-full px-4 py-2.5 text-sm rounded-xl bg-white/10 border border-white/20 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-400"
-        />
-
-        <input
-          name="email"
-          placeholder="Email Address"
-          value={formData.email}
-          onChange={handleChange}
-          className="w-full px-4 py-2.5 text-sm rounded-xl bg-white/10 border border-white/20 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-400"
-        />
-
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          value={formData.password}
-          onChange={handleChange}
-          className="w-full px-4 py-2.5 text-sm rounded-xl bg-white/10 border border-white/20 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-400"
-        />
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full py-2.5 text-sm rounded-xl font-semibold bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 transition-all duration-300 shadow-lg"
-        >
-          {loading ? "Creating..." : "Create Account"}
-        </button>
-      </form>
-
-      <p className="text-center text-xs mt-5 text-gray-300">
-        Already have account?{" "}
-        <Link href="/login" className="text-purple-300 hover:underline">
-          Login
-        </Link>
-      </p>
+      </div>
     </div>
-  </div>
-);
+  );
 }

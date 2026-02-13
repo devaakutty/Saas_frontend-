@@ -74,114 +74,121 @@ export default function CompanySettingsPage() {
   if (loading) {
     return <div className="p-6 text-gray-400">Loading…</div>;
   }
+return (
+  <div className="space-y-16 text-white max-w-6xl">
 
-  return (
-    <div className="space-y-12 max-w-6xl">
-      {/* ================= COMPANY ================= */}
-      <section>
-        <h1 className="text-2xl font-bold mb-6">
-          Company Overview
-        </h1>
+    {/* ================= COMPANY OVERVIEW ================= */}
+    <section className="space-y-6">
+      <h1 className="font-[var(--font-playfair)] text-[28px] leading-tight">
+        Company{" "}
+        <span className="font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+          Overview
+        </span>
+      </h1>
 
-        {company && (
-          <div className="bg-white border rounded-2xl p-6 grid grid-cols-1 md:grid-cols-2 gap-6 shadow-sm">
-            <Info label="Company Name" value={company.company} />
-            <Info label="Email" value={company.email} />
-            <Info label="GST Number" value={company.gstNumber} />
-            <Info label="Address" value={company.address} />
-          </div>
-        )}
-      </section>
+      {company && (
+        <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-[24px] p-10 grid grid-cols-1 md:grid-cols-2 gap-8">
+          <GlassInfo label="Company Name" value={company.company} />
+          <GlassInfo label="Email" value={company.email} />
+          <GlassInfo label="GST Number" value={company.gstNumber} />
+          <GlassInfo label="Address" value={company.address} />
+        </div>
+      )}
+    </section>
 
-      {/* ================= PLAN SECTION ================= */}
-      <section>
-        <h2 className="text-2xl font-bold mb-6">
-          Plan & Subscription
-        </h2>
+    {/* ================= PLAN SECTION ================= */}
+    <section className="space-y-8">
+      <h2 className="font-[var(--font-playfair)] text-[28px] leading-tight">
+        Plan &{" "}
+        <span className="font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+          Subscription
+        </span>
+      </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {plans.map((plan) => {
-            const active = plan.id === currentPlan;
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        {plans.map((plan) => {
+          const active = plan.id === currentPlan;
 
-            return (
-              <div
-                key={plan.id}
-                className={`rounded-2xl p-6 border-2 transition-all ${
-                  active
-                    ? "border-indigo-600 bg-indigo-50 shadow-lg"
-                    : "border-gray-200 bg-white hover:shadow-md"
-                }`}
-              >
-                {/* PLAN NAME */}
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-lg font-bold">
-                    {plan.name}
-                  </h3>
+          return (
+            <div
+              key={plan.id}
+              className={`rounded-[28px] p-10 border backdrop-blur-md transition-all duration-300 ${
+                active
+                  ? "bg-gradient-to-br from-purple-500/20 to-pink-500/20 border-purple-400/30 shadow-xl shadow-purple-500/10"
+                  : "bg-white/5 border-white/10 hover:bg-white/10"
+              }`}
+            >
+              {/* PLAN NAME */}
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="font-[var(--font-playfair)] text-2xl">
+                  {plan.name}
+                </h3>
 
-                  {active && (
-                    <span className="text-xs bg-indigo-600 text-white px-2 py-1 rounded-full">
-                      Current Plan
-                    </span>
-                  )}
-                </div>
-
-                {/* PRICE */}
-                <p className="text-3xl font-bold mb-5">
-                  ₹{plan.price}
-                  <span className="text-sm text-gray-500">
-                    /month
+                {active && (
+                  <span className="text-xs bg-gradient-to-r from-purple-500 to-pink-500 px-3 py-1 rounded-full">
+                    Current Plan
                   </span>
-                </p>
-
-                {/* LIMIT DETAILS */}
-                <div className="space-y-2 text-sm mb-5">
-                  <Feature text={`${plan.users} User(s)`} />
-
-                  <Feature
-                    text={
-                      typeof plan.invoices === "number"
-                        ? `${plan.invoices} Invoices / Month`
-                        : "Unlimited Invoices"
-                    }
-                  />
-
-                  {plan.features.map((feature) => (
-                    <Feature key={feature} text={feature} />
-                  ))}
-                </div>
-
-                {/* BUTTON */}
-                {active ? (
-                  <button
-                    disabled
-                    className="w-full py-2 rounded bg-gray-200 text-gray-500"
-                  >
-                    Active Plan
-                  </button>
-                ) : (
-                  <button
-                    onClick={() =>
-                      router.push(
-                        `/dashboard/upgrade?plan=${plan.id}`
-                      )
-                    }
-                    className="w-full py-2 rounded bg-indigo-600 hover:bg-indigo-700 text-white"
-                  >
-                    Upgrade
-                  </button>
                 )}
               </div>
-            );
-          })}
-        </div>
-      </section>
-    </div>
-  );
+
+              {/* PRICE */}
+              <p className="text-4xl font-semibold mb-6">
+                ₹{plan.price}
+                <span className="text-sm text-white/60 ml-1">
+                  /month
+                </span>
+              </p>
+
+              {/* FEATURES */}
+              <div className="space-y-3 text-sm mb-8">
+                <GlassFeature text={`${plan.users} User(s)`} />
+
+                <GlassFeature
+                  text={
+                    typeof plan.invoices === "number"
+                      ? `${plan.invoices} Invoices / Month`
+                      : "Unlimited Invoices"
+                  }
+                />
+
+                {plan.features.map((feature) => (
+                  <GlassFeature key={feature} text={feature} />
+                ))}
+              </div>
+
+              {/* BUTTON */}
+              {active ? (
+                <button
+                  disabled
+                  className="w-full py-3 rounded-[18px] bg-white/10 text-white/50"
+                >
+                  Active Plan
+                </button>
+              ) : (
+                <button
+                  onClick={() =>
+                    router.push(
+                      `/dashboard/upgrade?plan=${plan.id}`
+                    )
+                  }
+                  className="w-full py-3 rounded-[18px] bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 transition"
+                >
+                  Upgrade Plan
+                </button>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  </div>
+);
+
 }
 
 /* ================= INFO COMPONENT ================= */
 
-function Info({
+function GlassInfo({
   label,
   value,
 }: {
@@ -190,19 +197,26 @@ function Info({
 }) {
   return (
     <div>
-      <p className="text-gray-500 text-sm">{label}</p>
-      <p className="font-semibold">{value}</p>
+      <p className="text-white/60 text-sm font-[var(--font-inter)]">
+        {label}
+      </p>
+      <p className="font-semibold text-white mt-1">
+        {value}
+      </p>
     </div>
   );
 }
 
+
 /* ================= FEATURE COMPONENT ================= */
 
-function Feature({ text }: { text: string }) {
+function GlassFeature({ text }: { text: string }) {
   return (
-    <div className="flex items-center gap-2 text-gray-700">
-      <CheckCircle size={16} className="text-green-500" />
-      <span>{text}</span>
+    <div className="flex items-center gap-3 text-white/80">
+      <CheckCircle size={16} className="text-purple-400" />
+      <span className="font-[var(--font-inter)]">
+        {text}
+      </span>
     </div>
   );
 }

@@ -26,7 +26,7 @@ export default function AuditLogsPage() {
 
   useEffect(() => {
     if (!isAuthenticated) {
-      setLoading(false); // ✅ FIX
+      setLoading(false);
       return;
     }
 
@@ -38,7 +38,7 @@ export default function AuditLogsPage() {
       setLoading(true);
       setError("");
 
-      // ✅ TEMP DEMO DATA
+      // Demo Data
       setLogs([
         {
           id: "1",
@@ -73,7 +73,7 @@ export default function AuditLogsPage() {
 
   if (loading) {
     return (
-      <div className="p-6 text-gray-400">
+      <div className="p-8 text-white/60">
         Loading audit logs…
       </div>
     );
@@ -81,7 +81,7 @@ export default function AuditLogsPage() {
 
   if (!isAuthenticated) {
     return (
-      <div className="p-6 text-gray-400">
+      <div className="p-8 text-white/60">
         Please log in to view audit logs.
       </div>
     );
@@ -89,7 +89,7 @@ export default function AuditLogsPage() {
 
   if (error) {
     return (
-      <div className="p-6 text-red-500">
+      <div className="p-8 text-red-400">
         {error}
       </div>
     );
@@ -98,20 +98,33 @@ export default function AuditLogsPage() {
   /* ================= UI ================= */
 
   return (
-    <div className="space-y-6 max-w-6xl">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-semibold">Audit Logs</h1>
-        <span className="text-sm text-gray-400">Last 30 days</span>
+    <div className="space-y-14 text-white max-w-6xl">
+
+      {/* HEADER */}
+      <div>
+        <h1 className="font-[var(--font-playfair)] text-[56px] leading-[0.95] tracking-tight">
+          Activity{" "}
+          <span className="font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+            Audit Logs
+          </span>
+        </h1>
+
+        <p className="font-[var(--font-inter)] mt-4 text-white/70 text-lg">
+          Track important system and user activity across your platform.
+        </p>
       </div>
 
-      <div className="bg-white border rounded-xl overflow-hidden">
+      {/* TABLE CARD */}
+      <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-[28px] overflow-hidden">
+
         <table className="w-full text-sm">
-          <thead className="bg-gray-100 text-gray-600">
+
+          <thead className="bg-white/5 text-white/60">
             <tr>
-              <th className="p-4 text-left">Action</th>
-              <th className="p-4 text-left">Resource</th>
-              <th className="p-4 text-center">IP Address</th>
-              <th className="p-4 text-center">Date</th>
+              <th className="p-6 text-left font-medium">Action</th>
+              <th className="p-6 text-left font-medium">Resource</th>
+              <th className="p-6 text-center font-medium">IP Address</th>
+              <th className="p-6 text-center font-medium">Date</th>
             </tr>
           </thead>
 
@@ -119,12 +132,21 @@ export default function AuditLogsPage() {
             {logs.map((log) => (
               <tr
                 key={log.id}
-                className="border-t hover:bg-gray-50"
+                className="border-t border-white/10 hover:bg-white/10 transition-all duration-300"
               >
-                <td className="p-4 font-medium">{log.action}</td>
-                <td className="p-4 text-gray-700">{log.resource}</td>
-                <td className="p-4 text-center text-gray-500">{log.ip}</td>
-                <td className="p-4 text-center text-gray-500">
+                <td className="p-6 font-medium text-white">
+                  {log.action}
+                </td>
+
+                <td className="p-6 text-white/70">
+                  {log.resource}
+                </td>
+
+                <td className="p-6 text-center text-white/60">
+                  {log.ip}
+                </td>
+
+                <td className="p-6 text-center text-white/60">
                   {log.createdAt}
                 </td>
               </tr>
@@ -134,20 +156,23 @@ export default function AuditLogsPage() {
               <tr>
                 <td
                   colSpan={4}
-                  className="p-8 text-center text-gray-400"
+                  className="p-10 text-center text-white/50"
                 >
                   No audit logs available
                 </td>
               </tr>
             )}
           </tbody>
+
         </table>
+
       </div>
 
-      <p className="text-xs text-gray-400">
-        Audit logs track important actions like login, profile updates,
-        invoices, and security changes.
+      <p className="text-sm text-white/50">
+        Audit logs track login activity, profile updates,
+        invoice creation, and security changes.
       </p>
+
     </div>
   );
 }

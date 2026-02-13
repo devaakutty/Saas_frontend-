@@ -6,7 +6,18 @@ module.exports = {
     "./components/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    extend: {},
+  extend: {
+    colors: {
+      // primary: "rgb(var(--primary) / <alpha-value>)",
+       primary: "rgb(var(--primary) / <alpha-value>)",
+      secondary: "rgb(var(--secondary) / <alpha-value>)",
+      accent: "rgb(var(--accent) / <alpha-value>)",
+    },
+    fontFamily: {
+      playfair: ["var(--font-playfair)"],
+      inter: ["var(--font-inter)"],
+    },
   },
+},
   plugins: [],
 };

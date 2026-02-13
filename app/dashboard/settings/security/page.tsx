@@ -115,114 +115,155 @@ export default function SecuritySettingsPage() {
   };
 
   /* ================= UI ================= */
+return (
+  <div className="space-y-16 text-white max-w-4xl">
 
-  return (
-    <div className="max-w-3xl space-y-8">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Security</h1>
+    {/* HEADER */}
+    <div className="flex justify-between items-start">
+      <div>
+        <h1 className="font-[var(--font-playfair)] text-[56px] leading-[0.95] tracking-tight">
+          Account{" "}
+          <span className="font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+            Security
+          </span>
+        </h1>
 
-        {/* ✅ FIXED PATH */}
-        <button
-          onClick={() =>
-            router.push("/dashboard/settings/create-user")
-          }
-          className="bg-black text-white px-4 py-2 rounded"
-        >
-          + Create User
-        </button>
+        <p className="font-[var(--font-inter)] mt-4 text-white/70 text-lg">
+          Manage your password and account protection settings.
+        </p>
       </div>
 
-      {/* ================= CHANGE PASSWORD ================= */}
-
-      <div className="bg-white border rounded-xl p-6 space-y-4">
-        <h2 className="font-semibold">Change Password</h2>
-
-        <input
-          placeholder="Current password"
-          type="password"
-          value={currentPassword}
-          onChange={(e) => setCurrentPassword(e.target.value)}
-          className="w-full border p-2 rounded"
-        />
-
-        <input
-          placeholder="New password"
-          type="password"
-          value={newPassword}
-          onChange={(e) => setNewPassword(e.target.value)}
-          className="w-full border p-2 rounded"
-        />
-
-        <input
-          placeholder="Confirm password"
-          type="password"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          className="w-full border p-2 rounded"
-        />
-
-        <button
-          onClick={handleChangePassword}
-          disabled={loading}
-          className="bg-indigo-600 text-white px-4 py-2 rounded disabled:opacity-50"
-        >
-          {loading ? "Updating..." : "Update Password"}
-        </button>
-      </div>
-
-      {/* ================= DELETE ACCOUNT ================= */}
-
-      <div className="bg-red-50 border border-red-200 rounded-xl p-6 space-y-4">
-        <h2 className="font-semibold text-red-600">
-          Delete Account
-        </h2>
-
-        <input
-          placeholder="Mobile number"
-          value={phone}
-          onChange={(e) =>
-            setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))
-          }
-          maxLength={10}
-          className="w-full border p-2 rounded"
-        />
-
-        {!otpSent ? (
-          <button
-            onClick={sendOtp}
-            disabled={loading}
-            className="bg-red-500 text-white px-4 py-2 rounded disabled:opacity-50"
-          >
-            {loading ? "Sending..." : "Send OTP"}
-          </button>
-        ) : (
-          <>
-            <input
-              placeholder="Enter OTP"
-              value={otp}
-              onChange={(e) => setOtp(e.target.value)}
-              className="w-full border p-2 rounded"
-            />
-
-            <div className="flex gap-3">
-              <button
-                onClick={verifyAndDelete}
-                disabled={loading}
-                className="bg-red-600 text-white px-4 py-2 rounded disabled:opacity-50"
-              >
-                {loading ? "Deleting..." : "Verify & Delete"}
-              </button>
-
-              <button
-                onClick={cancelDelete}
-                className="bg-gray-200 text-gray-700 px-4 py-2 rounded"
-              >
-                Cancel
-              </button>
-            </div>
-          </>
-        )}
-      </div>
+      <button
+        onClick={() =>
+          router.push("/dashboard/settings/create-user")
+        }
+        className="px-6 py-3 rounded-[18px] bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 transition"
+      >
+        + Create User
+      </button>
     </div>
+
+    {/* ================= CHANGE PASSWORD ================= */}
+
+    <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-[28px] p-10 space-y-6">
+
+      <h2 className="font-[var(--font-playfair)] text-2xl">
+        Change Password
+      </h2>
+
+      <GlassInput
+        placeholder="Current password"
+        value={currentPassword}
+        onChange={setCurrentPassword}
+        type="password"
+      />
+
+      <GlassInput
+        placeholder="New password"
+        value={newPassword}
+        onChange={setNewPassword}
+        type="password"
+      />
+
+      <GlassInput
+        placeholder="Confirm password"
+        value={confirmPassword}
+        onChange={setConfirmPassword}
+        type="password"
+      />
+
+      <button
+        onClick={handleChangePassword}
+        disabled={loading}
+        className="px-8 py-3 rounded-[18px] bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 transition disabled:opacity-50"
+      >
+        {loading ? "Updating..." : "Update Password"}
+      </button>
+    </div>
+
+    {/* ================= DELETE ACCOUNT ================= */}
+
+    <div className="bg-gradient-to-br from-red-500/10 to-pink-500/10 backdrop-blur-md border border-red-400/20 rounded-[28px] p-10 space-y-6">
+
+      <h2 className="font-[var(--font-playfair)] text-2xl text-red-400">
+        Delete Account
+      </h2>
+
+      <p className="text-white/60 text-sm">
+        This action is permanent and cannot be undone.
+      </p>
+
+      <GlassInput
+        placeholder="Mobile number"
+        value={phone}
+        onChange={(v) =>
+          setPhone(v.replace(/\D/g, "").slice(0, 10))
+        }
+        maxLength={10}
+      />
+
+      {!otpSent ? (
+        <button
+          onClick={sendOtp}
+          disabled={loading}
+          className="px-8 py-3 rounded-[18px] bg-red-500 hover:bg-red-600 transition disabled:opacity-50"
+        >
+          {loading ? "Sending..." : "Send OTP"}
+        </button>
+      ) : (
+        <>
+          <GlassInput
+            placeholder="Enter OTP"
+            value={otp}
+            onChange={setOtp}
+          />
+
+          <div className="flex gap-4">
+            <button
+              onClick={verifyAndDelete}
+              disabled={loading}
+              className="px-8 py-3 rounded-[18px] bg-red-600 hover:bg-red-700 transition disabled:opacity-50"
+            >
+              {loading ? "Deleting..." : "Verify & Delete"}
+            </button>
+
+            <button
+              onClick={cancelDelete}
+              className="px-8 py-3 rounded-[18px] bg-white/10 hover:bg-white/20 transition"
+            >
+              Cancel
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+  </div>
+);
+
+}
+
+
+function GlassInput({
+  value,
+  onChange,
+  placeholder,
+  type = "text",
+  maxLength,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  placeholder: string;
+  type?: string;
+  maxLength?: number;
+}) {
+  return (
+    <input
+      type={type}
+      value={value}
+      maxLength={maxLength}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder={placeholder}
+      className="w-full bg-white/5 border border-white/10 rounded-[18px] px-5 py-3 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/40 transition"
+    />
   );
 }

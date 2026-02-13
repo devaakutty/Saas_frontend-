@@ -11,8 +11,6 @@ export default function AddCustomerPage() {
     name: "",
     email: "",
     phone: "",
-    country: "India", // ✅ default India
-    company: "",
     status: "Active",
   });
 
@@ -22,20 +20,16 @@ export default function AddCustomerPage() {
   const handleSave = async () => {
     setError("");
 
-    /* ================= VALIDATIONS ================= */
-
     if (!form.name || !form.email) {
       setError("Name and Email are required");
       return;
     }
 
-    // Gmail only
     if (!/^[^\s@]+@gmail\.com$/.test(form.email)) {
       setError("Email must be a valid @gmail.com address");
       return;
     }
 
-    // Exactly 10 digits
     if (form.phone && !/^\d{10}$/.test(form.phone)) {
       setError("Mobile number must be exactly 10 digits");
       return;
@@ -50,122 +44,109 @@ export default function AddCustomerPage() {
           name: form.name,
           email: form.email,
           phone: form.phone,
-          country: form.country,
-          company: form.company,
           isActive: form.status === "Active",
         }),
       });
 
-      router.push("/customers");
+      router.push("/dashboard/customers");
     } catch (err: any) {
       setError(err.message || "Failed to save customer");
     } finally {
       setLoading(false);
     }
   };
+return (
+  <div className="h-[calc(90vh-100px)] flex items-center justify-center overflow-hidden">
 
-  return (
-    <div className="max-w-4xl space-y-8">
-      {/* ================= HEADER ================= */}
-      <div className="flex justify-between items-center">
+    <div className="w-full max-w-3xl backdrop-blur-xl bg-white/10 border border-white/20 rounded-3xl p-8 shadow-xl space-y-8">
+
+      <h1 className="text-2xl font-semibold text-center text-white">
+        Add Customer
+      </h1>
+
+      {/* ===== FORM GRID ===== */}
+      <div className="grid grid-cols-2 gap-6">
+
+        <Input
+          label="Full Name"
+          value={form.name}
+          onChange={(v) => setForm({ ...form, name: v })}
+          placeholder="Elon Musk"
+        />
+
+        <Input
+          label="Email (@gmail.com only)"
+          type="email"
+          value={form.email}
+          onChange={(v) => setForm({ ...form, email: v })}
+          placeholder="elon@gmail.com"
+        />
+
+        <Input
+          label="Mobile Number"
+          type="tel"
+          value={form.phone}
+          onChange={(v) =>
+            setForm({
+              ...form,
+              phone: v.replace(/\D/g, "").slice(0, 10),
+            })
+          }
+          placeholder="9876543210"
+          maxLength={10}
+        />
+
+        <div>
+          <label className="block text-sm text-gray-300 mb-2">
+            Status
+          </label>
+          <select
+            value={form.status}
+            onChange={(e) =>
+              setForm({ ...form, status: e.target.value })
+            }
+            className="w-full rounded-xl bg-white/10 border border-white/20 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+          >
+            <option>Active</option>
+            <option>Inactive</option>
+          </select>
+        </div>
+
+      </div>
+
+      {error && (
+        <p className="text-sm text-red-400 text-center">
+          {error}
+        </p>
+      )}
+
+      {/* ===== BUTTON ROW ===== */}
+      <div className="flex justify-between pt-4 border-t border-white/20">
+
         <button
           onClick={() => router.back()}
-          className="text-sm text-blue-600 hover:underline"
+          className="px-6 py-2 rounded-xl border border-white/30 text-white hover:bg-white/10 transition"
         >
-          ← Back
+          Back
         </button>
 
-        <h1 className="text-2xl font-bold">New Customer</h1>
+        <button
+          onClick={handleSave}
+          disabled={loading}
+          className="px-8 py-2.5 rounded-xl font-semibold bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 transition disabled:opacity-50"
+        >
+          {loading ? "Saving..." : "Save Customer"}
+        </button>
+
       </div>
 
-      {/* ================= FORM ================= */}
-      <div className="bg-white border rounded-xl p-6 space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Input
-            label="Full Name"
-            value={form.name}
-            onChange={(v) => setForm({ ...form, name: v })}
-            placeholder="Elon Musk"
-          />
-
-          <Input
-            label="Email (@gmail.com only)"
-            type="email"
-            value={form.email}
-            onChange={(v) => setForm({ ...form, email: v })}
-            placeholder="elon@gmail.com"
-          />
-
-          <Input
-            label="Mobile Number"
-            type="tel"
-            value={form.phone}
-            onChange={(v) => {
-              const digitsOnly = v.replace(/\D/g, "").slice(0, 10);
-              setForm({ ...form, phone: digitsOnly });
-            }}
-            placeholder="9876543210"
-            maxLength={10}
-          />
-
-          <Input
-            label="Country"
-            value={form.country}
-            onChange={(v) => setForm({ ...form, country: v })}
-            placeholder="India"
-          />
-
-          <Input
-            label="Company"
-            value={form.company}
-            onChange={(v) => setForm({ ...form, company: v })}
-            placeholder="Starlink"
-          />
-
-          <div>
-            <label className="block text-sm text-gray-600 mb-1">
-              Status
-            </label>
-            <select
-              value={form.status}
-              onChange={(e) =>
-                setForm({ ...form, status: e.target.value })
-              }
-              className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500"
-            >
-              <option>Active</option>
-              <option>Inactive</option>
-            </select>
-          </div>
-        </div>
-
-        {error && (
-          <p className="text-sm text-red-600">{error}</p>
-        )}
-
-        {/* ================= ACTIONS ================= */}
-        <div className="flex justify-end gap-3 pt-4 border-t">
-          <button
-            onClick={() => router.back()}
-            className="px-5 py-2 border rounded-lg text-gray-600 hover:bg-gray-50"
-          >
-            Cancel
-          </button>
-
-          <button
-            onClick={handleSave}
-            disabled={loading}
-            className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg disabled:opacity-50"
-          >
-            {loading ? "Saving..." : "Save Customer"}
-          </button>
-        </div>
-      </div>
     </div>
-  );
+  </div>
+);
+
 }
 
-/* ================= INPUT COMPONENT ================= */
+/* ================= INPUT ================= */
 
 function Input({
   label,
@@ -184,16 +165,17 @@ function Input({
 }) {
   return (
     <div>
-      <label className="block text-sm text-gray-600 mb-1">
+      <label className="block text-sm text-gray-300 mb-2">
         {label}
       </label>
+
       <input
         type={type}
         value={value}
         placeholder={placeholder}
         maxLength={maxLength}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500"
+        className="w-full rounded-xl bg-white/10 border border-white/20 px-4 py-3 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-400 transition"
       />
     </div>
   );

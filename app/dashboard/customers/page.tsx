@@ -12,28 +12,10 @@ interface Customer {
   name: string;
   email?: string;
   phone?: string;
-  address?: string;
   isActive: boolean;
-  userId: string;
 }
 
 type StatusFilter = "All" | "Active" | "Inactive";
-
-/* ================= STATUS BADGE ================= */
-
-function StatusBadge({ isActive }: { isActive?: boolean }) {
-  return (
-    <span
-      className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-        isActive
-          ? "bg-green-100 text-green-700"
-          : "bg-gray-200 text-gray-600"
-      }`}
-    >
-      {isActive ? "Active" : "Inactive"}
-    </span>
-  );
-}
 
 /* ================= PAGE ================= */
 
@@ -49,43 +31,40 @@ export default function CustomersPage() {
 
   /* ================= FETCH ================= */
 
-  const loadCustomers = async () => {
-    try {
-      setLoading(true);
-      const data = await apiFetch<Customer[]>("/customers");
-      setCustomers(data);
-    } catch (err) {
-      if (err instanceof Error) setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    const loadCustomers = async () => {
+      try {
+        setLoading(true);
+        const data = await apiFetch<Customer[]>("/customers");
+        setCustomers(data || []);
+      } catch (err: any) {
+        setError(err.message || "Failed to load customers");
+      } finally {
+        setLoading(false);
+      }
+    };
+
     loadCustomers();
   }, []);
 
   /* ================= DELETE ================= */
 
-    const handleDelete = async (id?: string) => {
-      if (!id) {
-        console.error("Delete failed: customer id is undefined");
-        return;
-      }
+  const handleDelete = async (id?: string) => {
+    if (!id) return;
 
-      if (!confirm("Are you sure you want to delete this customer?")) return;
+    const ok = confirm("Are you sure you want to delete this customer?");
+    if (!ok) return;
 
-      try {
-        await apiFetch(`/customers/${id}`, { method: "DELETE" });
+    try {
+      await apiFetch(`/customers/${id}`, { method: "DELETE" });
 
-        setCustomers((prev) =>
-          prev.filter((c) => (c.id || c._id) !== id)
-        );
-      } catch (err: any) {
-        alert(err.message || "Delete failed");
-      }
-    };
-
+      setCustomers((prev) =>
+        prev.filter((c) => (c.id || c._id) !== id)
+      );
+    } catch (err: any) {
+      alert(err.message || "Delete failed");
+    }
+  };
 
   /* ================= FILTER ================= */
 
@@ -105,44 +84,48 @@ export default function CustomersPage() {
     );
   });
 
-  /* ================= UI STATES ================= */
+  /* ================= LOADING ================= */
 
   if (loading) {
     return (
-      <div className="text-center py-24 text-gray-500">
-        Loading customers…
+      <div className="text-center py-24 text-gray-400">
+        Loading customers...
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="text-center py-24 text-red-600">
+      <div className="text-center py-24 text-red-400">
         {error}
       </div>
     );
   }
 
+  /* ================= UI ================= */
+
   return (
-    <div className="space-y-8">
+    <div className="relative px-8 pt-6 pb-12 text-white overflow-hidden">
+
       {/* ================= HEADER ================= */}
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-black">
-          Customers
-          <span className="ml-2 text-sm font-medium text-gray-500">
-            ({customers.length})
+      <div className="flex justify-between items-center mb-10">
+        <h1 className="font-[var(--font-playfair)] text-4xl font-light tracking-tight">
+          Manage
+          <span className="block font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+            Customers
           </span>
         </h1>
 
         <button
-          onClick={() => router.push("/customers/add")}
+          onClick={() => router.push("/dashboard/customers/add")}
           className="
-            px-6 py-2.5
-            bg-black text-white
-            rounded-full
-            text-sm font-medium
-            hover:opacity-90
-            transition
+            px-6 py-3
+            rounded-xl
+            font-semibold
+            bg-gradient-to-r from-purple-500 to-pink-500
+            hover:scale-[1.03]
+            transition-all duration-300
+            shadow-lg
           "
         >
           + New Customer
@@ -150,20 +133,22 @@ export default function CustomersPage() {
       </div>
 
       {/* ================= FILTERS ================= */}
-      <div className="flex flex-wrap gap-4">
+      <div className="flex flex-wrap gap-4 backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl p-5 mb-10">
+
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search name, email, phone…"
+          placeholder="Search name, email, phone..."
           className="
             w-72
-            px-4 py-2.5
-            rounded-full
-            border border-gray-300
-            bg-white
-            text-sm
+            px-4 py-3
+            rounded-xl
+            bg-white/10
+            border border-white/20
+            placeholder-gray-400
             focus:outline-none
-            focus:ring-2 focus:ring-black
+            focus:ring-2 focus:ring-purple-400
+            text-sm
           "
         />
 
@@ -173,13 +158,13 @@ export default function CustomersPage() {
             setStatusFilter(e.target.value as StatusFilter)
           }
           className="
-            px-4 py-2.5
-            rounded-full
-            border border-gray-300
-            bg-white
+            px-4 py-3
+            rounded-xl
+            bg-white/10
+            border border-white/20
             text-sm
             focus:outline-none
-            focus:ring-2 focus:ring-black
+            focus:ring-2 focus:ring-purple-400
           "
         >
           <option value="All">All</option>
@@ -189,67 +174,87 @@ export default function CustomersPage() {
       </div>
 
       {/* ================= CUSTOMER CARDS ================= */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {filteredCustomers.map((c) => (
-          <div
-            key={c.id || c._id}
-            className="
-              bg-white
-              rounded-[18px]
-              p-5
-              shadow-[0_10px_30px_rgba(0,0,0,0.05)]
-              space-y-3
-            "
-          >
-            <div className="flex justify-between items-start">
-              <h3 className="font-semibold text-black">
-                {c.name}
-              </h3>
-              <StatusBadge isActive={c.isActive} />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+
+        {filteredCustomers.map((c) => {
+          const id = c.id || c._id;
+
+          return (
+            <div
+              key={id}
+              onClick={() =>
+                router.push(`/dashboard/customers/${id}`)
+              }
+              className="
+                cursor-pointer
+                backdrop-blur-2xl
+                bg-gradient-to-br from-white/10 to-white/5
+                border border-white/20
+                rounded-[28px]
+                p-6
+                shadow-xl
+                hover:scale-[1.03]
+                hover:border-purple-400/40
+                transition-all duration-300
+                space-y-4
+              "
+            >
+              <div className="flex justify-between items-start">
+                <h3 className="text-lg font-semibold">
+                  {c.name}
+                </h3>
+
+                <span
+                  className={`px-3 py-1 rounded-full text-xs font-medium ${
+                    c.isActive
+                      ? "bg-green-500/20 text-green-300"
+                      : "bg-gray-500/20 text-gray-300"
+                  }`}
+                >
+                  {c.isActive ? "Active" : "Inactive"}
+                </span>
+              </div>
+
+              <p className="text-sm text-gray-300">
+                {c.email || "—"}
+              </p>
+
+              <p className="text-sm text-gray-300">
+                {c.phone || "—"}
+              </p>
+
+              {/* ACTIONS */}
+              <div
+                className="flex gap-5 pt-3 text-sm font-medium"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <button
+                  onClick={() =>
+                    router.push(`/dashboard/customers/${id}/edit`)
+                  }
+                  className="text-gray-400 hover:text-white transition"
+                >
+                  Edit
+                </button>
+
+                <button
+                  onClick={() => handleDelete(id)}
+                  className="text-red-400 hover:text-red-300 transition"
+                >
+                  Delete
+                </button>
+              </div>
+
             </div>
-
-            <p className="text-sm text-gray-600">
-              {c.email || "—"}
-            </p>
-
-            <p className="text-sm text-gray-600">
-              {c.phone || "—"}
-            </p>
-
-            <div className="flex gap-5 pt-4 text-sm">
-              <button
-                onClick={() =>
-                  router.push(`/customers/${c.id}`)
-                }
-                className="text-black hover:underline"
-              >
-                View
-              </button>
-
-              <button
-                onClick={() =>
-                 router.push(`/customers/${c.id || c._id}`)
-                }
-                className="text-gray-500 hover:underline"
-              >
-                Edit
-              </button>
-
-              <button
-                onClick={() => handleDelete(c.id || c._id)}
-                className="text-red-600 hover:underline"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        ))}
+          );
+        })}
 
         {filteredCustomers.length === 0 && (
-          <div className="col-span-full text-center py-24 text-gray-500">
+          <div className="col-span-full text-center py-24 text-gray-400">
             No customers found
           </div>
         )}
+
       </div>
     </div>
   );

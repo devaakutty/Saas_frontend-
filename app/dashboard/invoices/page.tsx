@@ -32,6 +32,10 @@ export default function InvoicesPage() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // 🔥 Editing state
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editedInvoiceNo, setEditedInvoiceNo] = useState("");
+
   /* 🔐 AUTH GUARD */
   useEffect(() => {
     if (!isAuthenticated) {
@@ -52,14 +56,12 @@ export default function InvoicesPage() {
 
       const data = await apiFetch<any[]>("/invoices");
 
-      // Normalize _id → id
       const normalized = (data || []).map((inv) => ({
         ...inv,
         id: inv.id || inv._id,
       }));
 
       setInvoices(normalized);
-
     } catch (err) {
       console.error(err);
       alert("Failed to load invoices");
@@ -68,58 +70,85 @@ export default function InvoicesPage() {
     }
   };
 
-  /* 🗑️ DELETE INVOICE */
+  /* 🗑️ DELETE */
   const handleDelete = async (
     e: React.MouseEvent,
     id: string
   ) => {
     e.stopPropagation();
 
-    if (!confirm("Are you sure you want to delete this invoice?")) return;
+    if (!confirm("Delete this invoice?")) return;
 
     try {
       await apiFetch(`/invoices/${id}`, {
         method: "DELETE",
       });
 
-      setInvoices((prev) => prev.filter((i) => i.id !== id));
-
-    } catch (err) {
-      console.error(err);
+      setInvoices((prev) =>
+        prev.filter((i) => i.id !== id)
+      );
+    } catch {
       alert("Failed to delete invoice");
+    }
+  };
+
+  /* ✏️ UPDATE INVOICE NUMBER */
+  const handleInvoiceNoUpdate = async (id: string) => {
+    try {
+      await apiFetch(`/invoices/${id}`, {
+        method: "PUT",
+        body: JSON.stringify({
+          invoiceNo: editedInvoiceNo,
+        }),
+      });
+
+      setInvoices((prev) =>
+        prev.map((inv) =>
+          inv.id === id
+            ? { ...inv, invoiceNo: editedInvoiceNo }
+            : inv
+        )
+      );
+
+      setEditingId(null);
+    } catch {
+      alert("Failed to update invoice number");
     }
   };
 
   if (loading) {
     return (
-      <div className="p-6 text-gray-500">
-        Loading invoices…
+      <div className="h-[calc(100vh-120px)] flex items-center justify-center text-white/60">
+        Loading invoices...
       </div>
     );
   }
 
-  /* ================= UI ================= */
-
   return (
-    <div className="max-w-6xl mx-auto p-6 space-y-6">
+    <div className="px-8 py-10 text-white">
+
       {/* HEADER */}
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Invoices</h1>
+      <div className="flex justify-between items-center mb-10">
+        <h1 className="text-3xl font-semibold">
+          Invoices
+        </h1>
 
         <button
-          onClick={() => router.push("/dashboard/billing")}
-          className="px-4 py-2 bg-black text-white rounded"
+          onClick={() => router.push("/dashboard/invoices/create")}
+          className="px-6 py-2 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 transition"
         >
           + New Invoice
         </button>
       </div>
 
-      {/* TABLE */}
-      <div className="bg-white border rounded-xl overflow-hidden">
+      {/* GLASS TABLE */}
+      <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-3xl shadow-xl overflow-hidden">
+
         <table className="w-full text-sm">
-          <thead className="bg-gray-50 border-b">
+
+          <thead className="bg-white/10 border-b border-white/20 text-white/70">
             <tr>
-              <th className="p-4 text-left">Invoice No</th>
+              <th className="p-4 text-left">Invoice</th>
               <th className="p-4 text-left">Customer</th>
               <th className="p-4 text-left">Amount</th>
               <th className="p-4 text-left">Status</th>
@@ -133,14 +162,43 @@ export default function InvoicesPage() {
               <tr
                 key={inv.id}
                 onClick={() =>
-                  router.push(
-                    `/dashboard/invoices/${inv.id}`
-                  )
+                  router.push(`/dashboard/invoices/${inv.id}`)
                 }
-                className="border-t hover:bg-gray-50 cursor-pointer"
+                className="border-t border-white/10 hover:bg-white/5 transition cursor-pointer"
               >
-                <td className="p-4 font-mono">
-                  {inv.invoiceNo}
+                {/* ✏️ EDITABLE INVOICE NUMBER */}
+                <td
+                  className="p-4 font-mono"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {editingId === inv.id ? (
+                    <input
+                      value={editedInvoiceNo}
+                      autoFocus
+                      onChange={(e) =>
+                        setEditedInvoiceNo(e.target.value.toUpperCase())
+                      }
+                      onBlur={() =>
+                        handleInvoiceNoUpdate(inv.id!)
+                      }
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          handleInvoiceNoUpdate(inv.id!);
+                        }
+                      }}
+                      className="bg-white/10 border border-white/20 rounded px-2 py-1 text-white w-40 focus:outline-none"
+                    />
+                  ) : (
+                    <span
+                      onClick={() => {
+                        setEditingId(inv.id!);
+                        setEditedInvoiceNo(inv.invoiceNo);
+                      }}
+                      className="cursor-pointer hover:text-purple-300 transition"
+                    >
+                      {inv.invoiceNo}
+                    </span>
+                  )}
                 </td>
 
                 <td className="p-4">
@@ -153,10 +211,10 @@ export default function InvoicesPage() {
 
                 <td className="p-4">
                   <span
-                    className={`px-2 py-1 rounded text-xs font-bold ${
+                    className={`px-3 py-1 rounded-full text-xs font-semibold ${
                       inv.status === "PAID"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-amber-100 text-amber-700"
+                        ? "bg-green-500/20 text-green-300"
+                        : "bg-yellow-500/20 text-yellow-300"
                     }`}
                   >
                     {inv.status}
@@ -171,38 +229,20 @@ export default function InvoicesPage() {
                   className="p-4 text-right space-x-4"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  {/* VIEW */}
                   <button
                     onClick={() =>
-                      router.push(
-                        `/dashboard/invoices/${inv.id}`
-                      )
+                      router.push(`/dashboard/invoices/${inv.id}`)
                     }
-                    className="text-blue-600 hover:underline"
+                    className="text-purple-300 hover:text-white transition"
                   >
                     View
                   </button>
 
-                  {/* PAY NOW */}
-                  {inv.status === "PENDING" && (
-                    <button
-                      onClick={() =>
-                        router.push(
-                          `/dashboard/invoices/${inv.id}`
-                        )
-                      }
-                      className="text-green-600 font-semibold hover:underline"
-                    >
-                      Pay Now
-                    </button>
-                  )}
-
-                  {/* DELETE */}
                   <button
                     onClick={(e) =>
                       handleDelete(e, inv.id!)
                     }
-                    className="text-red-600 hover:underline"
+                    className="text-red-400 hover:text-red-300 transition"
                   >
                     Delete
                   </button>
@@ -214,13 +254,14 @@ export default function InvoicesPage() {
               <tr>
                 <td
                   colSpan={6}
-                  className="p-12 text-center text-gray-400"
+                  className="p-12 text-center text-white/40"
                 >
                   No invoices found
                 </td>
               </tr>
             )}
           </tbody>
+
         </table>
       </div>
     </div>

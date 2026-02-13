@@ -13,9 +13,10 @@ import PaymentMethod, {
 
 interface InvoiceItem {
   productName: string;
-  quantity: number;
+  qty?: number;
+  quantity?: number;
   rate: number;
-  amount: number;
+  amount?: number;
 }
 
 interface Invoice {
@@ -73,14 +74,22 @@ export default function InvoiceDetailsPage() {
     return <div className="p-6">Invoice not found</div>;
   }
 
-  /* ================= CALCULATIONS ================= */
+  /* ================= SAFE CALCULATIONS ================= */
+
+  const items = invoice.items || [];
+
+  const subTotal = items.reduce((sum, item) => {
+    const qty = item.qty ?? item.quantity ?? 0;
+    const amount =
+      item.amount ?? qty * item.rate;
+    return sum + amount;
+  }, 0);
 
   const GST_RATE = 0.18;
-  const subTotal = invoice.total;
   const gstAmount = subTotal * GST_RATE;
   const grandTotal = subTotal + gstAmount;
 
-  /* ================= PAYMENT HANDLER ================= */
+  /* ================= PAYMENT ================= */
 
   const handlePayment = async (
     method: PaymentMethodType,
@@ -102,12 +111,10 @@ export default function InvoiceDetailsPage() {
 
       alert("Payment successful ✅");
 
-      // Update UI immediately
       setInvoice((prev) =>
         prev ? { ...prev, status: "PAID" } : prev
       );
 
-      // Redirect to invoice list
       router.push("/dashboard/invoices");
 
     } catch (err: any) {
@@ -143,94 +150,121 @@ export default function InvoiceDetailsPage() {
 
   /* ================= UI ================= */
 
-  return (
-    <div className="space-y-6 max-w-5xl mx-auto p-6 bg-gray-50">
-      <button
-        onClick={() => router.push("/dashboard/invoices")}
-        className="text-sm text-gray-600 hover:text-black"
-      >
-        ← Back to Invoices
-      </button>
+return (
+  <div className="px-10 py-12">
 
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">
-          Invoice {invoice.invoiceNo}
-        </h1>
+    <div className="relative rounded-[28px] overflow-hidden bg-[linear-gradient(135deg,#1b1f3a,#2b2e63)] p-16">
 
-        <span
-          className={`px-3 py-1 rounded text-sm font-medium ${
-            invoice.status === "PAID"
-              ? "bg-green-100 text-green-700"
-              : "bg-yellow-100 text-yellow-700"
-          }`}
-        >
-          {invoice.status}
-        </span>
-      </div>
+      {/* Glow Effects */}
+      <div className="absolute -top-32 -right-32 w-[420px] h-[420px] bg-purple-500/30 blur-[150px] rounded-full" />
+      <div className="absolute -bottom-32 -left-32 w-[380px] h-[380px] bg-pink-500/20 blur-[140px] rounded-full" />
 
-      {/* CUSTOMER */}
-      <div className="bg-white border rounded p-4 space-y-1">
-        <p>
-          <b>Customer:</b>{" "}
-          {invoice.customer?.name || "—"}
-        </p>
-        <p>
-          <b>Date:</b>{" "}
-          {new Date(invoice.createdAt).toDateString()}
-        </p>
-      </div>
+      <div className="relative z-10 max-w-4xl space-y-12 text-white">
 
-      {/* ITEMS */}
-      <div className="bg-white border rounded p-4 space-y-2">
-        {invoice.items.map((item, i) => (
-          <div
-            key={`${item.productName}-${i}`}
-            className="flex justify-between"
-          >
-            <span>
-              {item.productName} × {item.quantity}
-            </span>
-            <span>₹{item.amount.toFixed(2)}</span>
-          </div>
-        ))}
-      </div>
-
-      {/* TOTAL */}
-      <div className="bg-white border rounded p-4 space-y-2">
-        <div className="flex justify-between">
-          <span>Sub Total</span>
-          <span>₹{subTotal.toFixed(2)}</span>
-        </div>
-
-        <div className="flex justify-between">
-          <span>GST (18%)</span>
-          <span>₹{gstAmount.toFixed(2)}</span>
-        </div>
-
-        <div className="flex justify-between font-bold">
-          <span>Grand Total</span>
-          <span>₹{grandTotal.toFixed(2)}</span>
-        </div>
-      </div>
-
-      {/* ACTIONS */}
-      <div className="bg-white border rounded p-4 space-y-4">
+        {/* Back */}
         <button
-          onClick={handleDownload}
-          className="px-4 py-2 bg-gray-800 text-white rounded"
+          onClick={() => router.push("/dashboard/invoices")}
+          className="inline-flex items-center gap-2 px-5 py-2 rounded-[20px] bg-white/5 backdrop-blur-md border border-white/10 text-white/70 hover:text-white hover:bg-white/10 transition"
         >
-          Download Invoice (PDF)
+          ← Back to Invoices
         </button>
 
-        {invoice.status === "PENDING" && (
-          <PaymentMethod
-            total={grandTotal}
-            loading={paying}
-            onConfirm={handlePayment}
-            onDownload={() => {}}
-          />
-        )}
+        {/* Header */}
+        <div className="flex justify-between items-center">
+          <h1 className="font-[var(--font-playfair)] text-[34px] leading-[0.95] tracking-tight">
+            Invoice{" "}
+            <span className="font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+              {invoice.invoiceNo}
+            </span>
+          </h1>
+
+          <span
+            className={`px-4 py-2 rounded-full text-sm font-medium ${
+              invoice.status === "PAID"
+                ? "bg-green-500/20 text-green-400"
+                : "bg-yellow-500/20 text-yellow-400"
+            }`}
+          >
+            {invoice.status}
+          </span>
+        </div>
+
+        {/* Customer Card */}
+        <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-[24px] p-6 space-y-2">
+          <p>
+            <span className="text-white/60">Customer:</span>{" "}
+            {invoice.customer?.name || "—"}
+          </p>
+          <p>
+            <span className="text-white/60">Date:</span>{" "}
+            {new Date(invoice.createdAt).toDateString()}
+          </p>
+        </div>
+
+        {/* Items */}
+        <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-[24px] p-6 space-y-3">
+          {items.map((item, i) => {
+            const qty = item.qty ?? item.quantity ?? 0;
+            const amount = item.amount ?? qty * item.rate;
+
+            return (
+              <div
+                key={`${item.productName}-${i}`}
+                className="flex justify-between"
+              >
+                <span>
+                  {item.productName} × {qty}
+                </span>
+                <span>
+                  ₹{amount.toFixed(2)}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Totals */}
+        <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-[24px] p-6 space-y-2">
+          <div className="flex justify-between">
+            <span className="text-white/60">Sub Total</span>
+            <span>₹{subTotal.toFixed(2)}</span>
+          </div>
+
+          <div className="flex justify-between">
+            <span className="text-white/60">GST (18%)</span>
+            <span>₹{gstAmount.toFixed(2)}</span>
+          </div>
+
+          <div className="flex justify-between text-lg font-semibold mt-3">
+            <span>Grand Total</span>
+            <span>₹{grandTotal.toFixed(2)}</span>
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-[24px] p-6 space-y-4">
+
+          <button
+            onClick={handleDownload}
+            className="px-6 py-3 rounded-[20px] bg-white/10 hover:bg-white/20 transition"
+          >
+            Download Invoice (PDF)
+          </button>
+
+          {invoice.status === "PENDING" && (
+            <PaymentMethod
+              total={grandTotal}
+              loading={paying}
+              onConfirm={handlePayment}
+              onDownload={() => {}}
+            />
+          )}
+
+        </div>
+
       </div>
     </div>
-  );
+  </div>
+);
+
 }

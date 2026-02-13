@@ -48,68 +48,82 @@ export default function NotificationSettingsPage() {
       setSaving(false);
     }
   };
+return (
+  <div className="space-y-12 text-white max-w-4xl">
 
-  return (
-    <div className="max-w-4xl space-y-6">
-      <h1 className="text-2xl font-bold text-white">
-        Notification Settings
+    {/* HEADER */}
+    <div>
+      <h1 className="font-[var(--font-playfair)] text-[36px] leading-[0.95] tracking-tight">
+        Notification{" "}
+        <span className="font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+          Settings
+        </span>
       </h1>
 
-      <div className="bg-[#11141c] border border-white/10 rounded-xl p-6 space-y-5">
-        <NotificationItem
-          title="Invoice created"
-          description="Notify me when a new invoice is created"
-          checked={settings.invoiceCreated}
-          onChange={() => toggle("invoiceCreated")}
-        />
-
-        <NotificationItem
-          title="Payment received"
-          description="Get alerts when a payment is successful"
-          checked={settings.paymentReceived}
-          onChange={() => toggle("paymentReceived")}
-        />
-
-        <NotificationItem
-          title="Payment failed"
-          description="Notify me when a payment fails"
-          checked={settings.paymentFailed}
-          onChange={() => toggle("paymentFailed")}
-        />
-
-        <NotificationItem
-          title="Monthly report"
-          description="Receive monthly sales and GST summary"
-          checked={settings.monthlyReport}
-          onChange={() => toggle("monthlyReport")}
-        />
-
-        <NotificationItem
-          title="Security alerts"
-          description="Suspicious login or password changes"
-          checked={settings.securityAlerts}
-          onChange={() => toggle("securityAlerts")}
-        />
-
-        <NotificationItem
-          title="Product updates"
-          description="New features and product announcements"
-          checked={settings.productUpdates}
-          onChange={() => toggle("productUpdates")}
-        />
-
-        <div className="flex justify-end pt-4 border-t border-white/10">
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="px-6 py-2 bg-indigo-500 hover:bg-indigo-600 rounded text-white disabled:opacity-50"
-          >
-            {saving ? "Saving..." : "Save preferences"}
-          </button>
-        </div>
-      </div>
+      <p className="font-[var(--font-inter)] mt-4 text-white/70 text-lg">
+        Control how and when you receive alerts from the system.
+      </p>
     </div>
-  );
+
+    {/* CARD */}
+    <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-[28px] p-10 space-y-6">
+
+      <NotificationItem
+        title="Invoice created"
+        description="Notify me when a new invoice is created"
+        checked={settings.invoiceCreated}
+        onChange={() => toggle("invoiceCreated")}
+      />
+
+      <NotificationItem
+        title="Payment received"
+        description="Get alerts when a payment is successful"
+        checked={settings.paymentReceived}
+        onChange={() => toggle("paymentReceived")}
+      />
+
+      <NotificationItem
+        title="Payment failed"
+        description="Notify me when a payment fails"
+        checked={settings.paymentFailed}
+        onChange={() => toggle("paymentFailed")}
+      />
+
+      <NotificationItem
+        title="Monthly report"
+        description="Receive monthly sales and GST summary"
+        checked={settings.monthlyReport}
+        onChange={() => toggle("monthlyReport")}
+      />
+
+      <NotificationItem
+        title="Security alerts"
+        description="Suspicious login or password changes"
+        checked={settings.securityAlerts}
+        onChange={() => toggle("securityAlerts")}
+      />
+
+      <NotificationItem
+        title="Product updates"
+        description="New features and announcements"
+        checked={settings.productUpdates}
+        onChange={() => toggle("productUpdates")}
+      />
+
+      <div className="flex justify-end pt-6 border-t border-white/10">
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className="px-8 py-3 rounded-[18px] bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 transition disabled:opacity-50"
+        >
+          {saving ? "Saving..." : "Save Preferences"}
+        </button>
+      </div>
+
+    </div>
+  </div>
+);
+
 }
 
 /* ================= TOGGLE ITEM ================= */
@@ -126,31 +140,35 @@ function NotificationItem({
   onChange: () => void;
 }) {
   return (
-    <div className="flex items-center justify-between border border-white/10 rounded-lg p-4">
+    <div className="flex items-center justify-between p-6 rounded-[20px] bg-white/5 border border-white/10 hover:bg-white/10 transition">
+
       <div>
-        <p className="text-white font-medium">
+        <p className="font-semibold text-white">
           {title}
         </p>
-        <p className="text-sm text-gray-400">
+        <p className="text-sm text-white/60 mt-1">
           {description}
         </p>
       </div>
 
-      {/* Accessible toggle */}
       <button
         role="switch"
         aria-checked={checked}
         onClick={onChange}
-        className={`relative w-11 h-6 rounded-full transition ${
-          checked ? "bg-indigo-500" : "bg-white/20"
+        className={`relative w-14 h-7 rounded-full transition-all duration-300 ${
+          checked
+            ? "bg-gradient-to-r from-purple-500 to-pink-500"
+            : "bg-white/20"
         }`}
       >
         <span
-          className={`absolute top-0.5 h-5 w-5 bg-white rounded-full transition-transform ${
-            checked ? "translate-x-5" : "translate-x-1"
+          className={`absolute top-1 h-5 w-5 bg-white rounded-full transition-transform duration-300 ${
+            checked ? "translate-x-7" : "translate-x-1"
           }`}
         />
       </button>
+
     </div>
   );
 }
+

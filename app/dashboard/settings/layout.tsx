@@ -11,7 +11,6 @@ const tabs = [
   { label: "Security", href: "/dashboard/settings/security" },
   { label: "Appearance", href: "/dashboard/settings/appearance" },
   { label: "Integrations", href: "/dashboard/settings/integrations" },
-  { label: "API", href: "/dashboard/settings/api" },
   { label: "Audit", href: "/dashboard/settings/audit" },
 ];
 
@@ -26,52 +25,57 @@ export default function SettingsLayout({
     pathname === href || pathname.startsWith(`${href}/`);
 
   return (
-    <div className="p-6 bg-[#F4F4F4] min-h-screen space-y-6">
-      
-      {/* ================= HEADER ================= */}
-      <header className="bg-black rounded-[24px] p-8 text-white shadow-xl relative overflow-hidden">
-        <div className="relative z-10">
-          <span className="bg-white/20 text-white text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest">
-            Configuration
-          </span>
+    <div className="px-10 py-12 relative z-0">
 
-          <h1 className="text-3xl font-black tracking-tighter mt-1">
-            Settings<span className="text-gray-500">.</span>
-          </h1>
+      {/* 🔥 IMPORTANT: Removed overflow-hidden */}
+      <div className="relative rounded-[28px] bg-[linear-gradient(135deg,#1b1f3a,#2b2e63)] p-16">
 
-          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tight mt-1">
-            Manage your account and platform preferences
-          </p>
+        {/* Accent Glow */}
+        <div className="absolute -top-32 -right-32 w-[420px] h-[420px] bg-primary/30 blur-[150px] rounded-full pointer-events-none" />
+        <div className="absolute -bottom-32 -left-32 w-[380px] h-[380px] bg-primary/20 blur-[140px] rounded-full pointer-events-none" />
+
+        <div className="relative z-10 space-y-12 text-white">
+
+          {/* HERO */}
+          <div className="max-w-3xl">
+            <h1 className="font-playfair text-[34px] leading-[0.95] tracking-tight">
+              Account{" "}
+              <span className="font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                Settings
+              </span>
+            </h1>
+          </div>
+
+          {/* NAVIGATION */}
+          <div className="overflow-x-auto">
+            <nav className="flex gap-3 p-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-[20px] min-w-max">
+              {tabs.map((tab) => {
+                const active = isActive(tab.href);
+
+                return (
+                  <Link
+                    key={tab.href}
+                    href={tab.href}
+                    className={`px-6 py-3 rounded-[18px] text-sm font-inter whitespace-nowrap transition-all duration-300 ${
+                      active
+                        ? "bg-primary text-white shadow-lg shadow-primary/20"
+                        : "text-white/60 hover:text-white hover:bg-white/10"
+                    }`}
+                  >
+                    {tab.label}
+                  </Link>
+                );
+              })}
+            </nav>
+          </div>
+
+          {/* CONTENT */}
+          <main className="bg-white/5 backdrop-blur-md border border-white/10 rounded-[24px] p-10 min-h-[400px]">
+            {children}
+          </main>
+
         </div>
-
-        <div className="absolute right-[-20px] top-[-20px] w-32 h-32 bg-white/5 rounded-full blur-3xl" />
-      </header>
-
-      {/* ================= TAB NAVIGATION ================= */}
-      <nav className="flex flex-wrap gap-2 p-2 bg-white border-2 border-black rounded-[20px] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-        {tabs.map((tab) => {
-          const active = isActive(tab.href);
-
-          return (
-            <Link
-              key={tab.href}
-              href={tab.href}
-              className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-tight transition-all duration-200 ${
-                active
-                  ? "bg-black text-white"
-                  : "text-gray-400 hover:text-black hover:bg-gray-50"
-              }`}
-            >
-              {tab.label}
-            </Link>
-          );
-        })}
-      </nav>
-
-      {/* ================= CONTENT AREA ================= */}
-      <main className="bg-white border-2 border-black rounded-[32px] p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] min-h-[400px]">
-        {children}
-      </main>
+      </div>
     </div>
   );
 }

@@ -48,156 +48,229 @@ export default function PaymentMethod({
     setUpiApp("GPay");
   }, [method]);
 
-  return (
-    <div className="bg-white rounded-xl p-4 space-y-4 shadow">
-      <h3 className="font-semibold text-lg">
-        Payment Method
-      </h3>
+return (
+  <div
+    className="
+      backdrop-blur-2xl
+      bg-gradient-to-br from-white/10 to-white/5
+      border border-white/20
+      rounded-[28px]
+      p-6
+      space-y-6
+      shadow-xl
+      text-white
+    "
+  >
+    <h3 className="text-lg font-semibold tracking-tight">
+      Payment Method
+    </h3>
 
-      {/* ================= METHOD SELECT ================= */}
-      <div className="flex gap-2">
-        {(["CASH", "UPI", "CARD"] as PaymentMethodType[]).map(
-          (m) => (
-            <button
-              key={m}
-              disabled={loading}
-              onClick={() => setMethod(m)}
-              className={`px-4 py-2 rounded border text-sm font-medium ${
+    {/* ================= METHOD SELECT ================= */}
+    <div className="flex gap-3">
+      {(["CASH", "UPI", "CARD"] as PaymentMethodType[]).map(
+        (m) => (
+          <button
+            key={m}
+            disabled={loading}
+            onClick={() => setMethod(m)}
+            className={`
+              px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300
+              ${
                 method === m
-                  ? "bg-black text-white"
-                  : "bg-white hover:bg-gray-100"
-              }`}
-            >
-              {m}
-            </button>
-          )
-        )}
-      </div>
+                  ? "bg-gradient-to-r from-purple-500 to-pink-500 shadow-lg"
+                  : "bg-white/10 hover:bg-white/20 border border-white/20"
+              }
+            `}
+          >
+            {m}
+          </button>
+        )
+      )}
+    </div>
 
-      {/* ================= CASH ================= */}
-      {method === "CASH" && (
+    {/* ================= CASH ================= */}
+    {method === "CASH" && (
+      <button
+        disabled={loading}
+        onClick={() =>
+          onConfirm("CASH", { amount: total })
+        }
+        className="
+          w-full py-3 rounded-xl font-semibold
+          bg-gradient-to-r from-purple-500 to-pink-500
+          hover:scale-[1.02]
+          transition-all duration-300 shadow-lg
+        "
+      >
+        Confirm Cash Payment ₹{total}
+      </button>
+    )}
+
+    {/* ================= UPI ================= */}
+    {method === "UPI" && (
+      <div className="space-y-5">
+
+        {/* UPI App Selector */}
+        <div className="flex gap-3">
+          {(["GPay", "PhonePe", "Paytm"] as const).map(
+            (app) => (
+              <button
+                key={app}
+                disabled={loading}
+                onClick={() => setUpiApp(app)}
+                className={`
+                  px-4 py-2 rounded-xl text-sm font-medium transition
+                  ${
+                    upiApp === app
+                      ? "bg-gradient-to-r from-purple-500 to-pink-500"
+                      : "bg-white/10 border border-white/20 hover:bg-white/20"
+                  }
+                `}
+              >
+                {app}
+              </button>
+            )
+          )}
+        </div>
+
+        {/* QR Card */}
+        <div
+          className="
+            flex flex-col items-center
+            rounded-2xl
+            border border-white/20
+            bg-white/5
+            p-6
+          "
+        >
+          <img
+            src="/qr.png"
+            alt="UPI QR"
+            className="w-40 h-40 object-contain rounded-xl"
+          />
+
+          <p className="text-sm text-gray-300 mt-3">
+            Scan with <b>{upiApp}</b> or any UPI app
+          </p>
+
+          <p className="text-2xl font-semibold mt-2 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+            ₹{upiAmount}
+          </p>
+        </div>
+
+        <input
+          type="number"
+          min={0}
+          max={total}
+          placeholder="Cash part (optional)"
+          value={cashPart}
+          onChange={(e) =>
+            setCashPart(
+              Math.min(Number(e.target.value) || 0, total)
+            )
+          }
+          className="
+            w-full px-4 py-2.5 rounded-xl
+            bg-white/10 border border-white/20
+            placeholder-gray-400
+            focus:outline-none focus:ring-2 focus:ring-purple-400
+          "
+        />
+
         <button
           disabled={loading}
           onClick={() =>
-            onConfirm("CASH", { amount: total })
+            onConfirm("UPI", {
+              provider: upiApp,
+              cashAmount: cashPart,
+              upiAmount,
+              amount: total,
+            })
           }
-          className="w-full bg-black text-white py-2 rounded"
+          className="
+            w-full py-3 rounded-xl font-semibold
+            bg-gradient-to-r from-purple-500 to-pink-500
+            hover:scale-[1.02]
+            transition-all duration-300 shadow-lg
+          "
         >
-          Confirm Cash Payment ₹{total}
+          Confirm UPI Payment ₹{total}
         </button>
-      )}
+      </div>
+    )}
 
-      {/* ================= UPI ================= */}
-      {method === "UPI" && (
-        <div className="space-y-4">
-          <div className="flex gap-2">
-            {(["GPay", "PhonePe", "Paytm"] as const).map(
-              (app) => (
-                <button
-                  key={app}
-                  disabled={loading}
-                  onClick={() => setUpiApp(app)}
-                  className={`px-3 py-1 rounded border text-sm ${
-                    upiApp === app
-                      ? "bg-black text-white"
-                      : "hover:bg-gray-100"
-                  }`}
-                >
-                  {app}
-                </button>
-              )
-            )}
-          </div>
+    {/* ================= CARD ================= */}
+    {method === "CARD" && (
+      <div className="space-y-4">
 
-          <div className="flex flex-col items-center border rounded-lg p-4">
-            <img
-              src="/qr.png"
-              alt="UPI QR"
-              className="w-40 h-40 object-contain"
-            />
+        <input
+          placeholder="Card Number"
+          className="
+            w-full px-4 py-2.5 rounded-xl
+            bg-white/10 border border-white/20
+            placeholder-gray-400
+            focus:outline-none focus:ring-2 focus:ring-purple-400
+          "
+        />
 
-            <p className="text-sm text-gray-600 mt-2">
-              Scan with <b>{upiApp}</b> or any UPI app
-            </p>
+        <input
+          placeholder="Expiry (MM/YY)"
+          className="
+            w-full px-4 py-2.5 rounded-xl
+            bg-white/10 border border-white/20
+            placeholder-gray-400
+            focus:outline-none focus:ring-2 focus:ring-purple-400
+          "
+        />
 
-            <p className="text-lg font-semibold mt-1">
-              ₹{upiAmount}
-            </p>
-          </div>
+        <input
+          placeholder="CVV"
+          type="password"
+          className="
+            w-full px-4 py-2.5 rounded-xl
+            bg-white/10 border border-white/20
+            placeholder-gray-400
+            focus:outline-none focus:ring-2 focus:ring-purple-400
+          "
+        />
 
-          <input
-            type="number"
-            min={0}
-            max={total}
-            placeholder="Cash part (optional)"
-            value={cashPart}
-            onChange={(e) =>
-              setCashPart(
-                Math.min(Number(e.target.value) || 0, total)
-              )
-            }
-            className="w-full border px-3 py-2 rounded"
-          />
-
-          <button
-            disabled={loading}
-            onClick={() =>
-              onConfirm("UPI", {
-                provider: upiApp,
-                cashAmount: cashPart,
-                upiAmount,
-                amount: total,
-              })
-            }
-            className="w-full bg-black text-white py-2 rounded"
-          >
-            Confirm UPI Payment ₹{total}
-          </button>
-        </div>
-      )}
-
-      {/* ================= CARD ================= */}
-      {method === "CARD" && (
-        <div className="space-y-3">
-          <input
-            placeholder="Card Number"
-            className="w-full border px-3 py-2 rounded"
-          />
-          <input
-            placeholder="Expiry (MM/YY)"
-            className="w-full border px-3 py-2 rounded"
-          />
-          <input
-            placeholder="CVV"
-            type="password"
-            className="w-full border px-3 py-2 rounded"
-          />
-
-          <button
-            disabled={loading}
-            onClick={() =>
-              onConfirm("CARD", {
-                provider: "CARD",
-                amount: total,
-              })
-            }
-            className="w-full bg-black text-white py-2 rounded"
-          >
-            Pay ₹{total} by Card
-          </button>
-        </div>
-      )}
-
-      {/* ================= DOWNLOAD (OPTIONAL) ================= */}
-      {onDownload && (
         <button
           disabled={loading}
-          onClick={onDownload}
-          className="w-full border border-black py-2 rounded text-sm font-medium"
+          onClick={() =>
+            onConfirm("CARD", {
+              provider: "CARD",
+              amount: total,
+            })
+          }
+          className="
+            w-full py-3 rounded-xl font-semibold
+            bg-gradient-to-r from-purple-500 to-pink-500
+            hover:scale-[1.02]
+            transition-all duration-300 shadow-lg
+          "
         >
-          Download Invoice (No Payment)
+          Pay ₹{total} by Card
         </button>
-      )}
-    </div>
-  );
+      </div>
+    )}
+
+    {/* ================= DOWNLOAD ================= */}
+    {onDownload && (
+      <button
+        disabled={loading}
+        onClick={onDownload}
+        className="
+          w-full py-3 rounded-xl text-sm font-semibold
+          border border-white/30
+          bg-white/5
+          hover:bg-white/10
+          transition-all
+        "
+      >
+        Download Invoice (No Payment)
+      </button>
+    )}
+  </div>
+);
+
 }

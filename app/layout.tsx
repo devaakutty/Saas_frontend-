@@ -1,6 +1,19 @@
 import "./globals.css";
 import { AuthProvider } from "@/hooks/useAuth";
 import AuthGuard from "@/components/AuthGuard";
+import { Playfair_Display, Inter } from "next/font/google";
+import ThemeLoader from "@/components/ThemeLoader";
+
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  variable: "--font-playfair",
+});
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+});
 
 export default function RootLayout({
   children,
@@ -8,8 +21,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="h-full">
-      <body className="h-full m-0 p-0 overflow-x-hidden">
+    <html
+      lang="en"
+      className={`${playfair.variable} ${inter.variable}`}
+      suppressHydrationWarning
+    >
+      <body className="font-[var(--font-inter)] bg-white text-black dark:bg-[#0b0e14] dark:text-white">
+        <ThemeLoader />
+
         <AuthProvider>
           <AuthGuard>{children}</AuthGuard>
         </AuthProvider>

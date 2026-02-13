@@ -50,54 +50,98 @@ export default function UserReferencePage() {
     return <div className="p-6 text-gray-400">Loading…</div>;
   }
 
-  return (
-    <div className="max-w-5xl space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-white">
-          User Reference
+return (
+  <div className="space-y-14 text-white max-w-5xl">
+
+    {/* HEADER */}
+    <div className="flex justify-between items-start">
+      <div>
+        <h1 className="font-[var(--font-playfair)] text-[56px] leading-[0.95] tracking-tight">
+          User{" "}
+          <span className="font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+            Management
+          </span>
         </h1>
 
-        <button
-          onClick={() => router.push("/settings/create-user")}
-          className="px-4 py-2 bg-indigo-600 text-white rounded"
-        >
-          + Create User
-        </button>
+        <p className="font-[var(--font-inter)] mt-4 text-white/70 text-lg">
+          Manage system users and access roles.
+        </p>
       </div>
 
-      <div className="bg-[#0e1117] border border-white/20 rounded-xl overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-white/5 text-gray-400">
-            <tr>
-              <th className="p-4 text-left">Email</th>
-              <th className="p-4 text-center">Role</th>
-              <th className="p-4 text-center">Created</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {users.map((u) => (
-              <tr key={u._id} className="border-t border-white/10">
-                <td className="p-4 text-white">{u.email}</td>
-                <td className="p-4 text-center">{u.role}</td>
-                <td className="p-4 text-center text-gray-500">
-                  {u.createdAt
-                    ? new Date(u.createdAt).toDateString()
-                    : "-"}
-                </td>
-              </tr>
-            ))}
-
-            {users.length === 0 && (
-              <tr>
-                <td colSpan={3} className="p-6 text-center text-gray-500">
-                  No users found
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+      <button
+        onClick={() =>
+          router.push("/dashboard/settings/create-user")
+        }
+        className="px-6 py-3 rounded-[18px] bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 transition"
+      >
+        + Create User
+      </button>
     </div>
-  );
+
+    {/* TABLE */}
+    <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-[28px] overflow-hidden">
+
+      <table className="w-full text-sm">
+
+        <thead className="bg-white/5 text-white/60">
+          <tr>
+            <th className="p-6 text-left font-[var(--font-inter)]">
+              Email
+            </th>
+            <th className="p-6 text-center font-[var(--font-inter)]">
+              Role
+            </th>
+            <th className="p-6 text-center font-[var(--font-inter)]">
+              Created
+            </th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {users.map((u) => (
+            <tr
+              key={u._id}
+              className="border-t border-white/10 hover:bg-white/5 transition"
+            >
+              <td className="p-6 text-white">
+                {u.email}
+              </td>
+
+              <td className="p-6 text-center">
+                <span
+                  className={`px-3 py-1 rounded-full text-xs ${
+                    u.role === "ADMIN"
+                      ? "bg-purple-500/20 text-purple-300"
+                      : "bg-white/10 text-white/70"
+                  }`}
+                >
+                  {u.role}
+                </span>
+              </td>
+
+              <td className="p-6 text-center text-white/50">
+                {u.createdAt
+                  ? new Date(u.createdAt).toDateString()
+                  : "-"}
+              </td>
+            </tr>
+          ))}
+
+          {users.length === 0 && (
+            <tr>
+              <td
+                colSpan={3}
+                className="p-10 text-center text-white/50"
+              >
+                No users found
+              </td>
+            </tr>
+          )}
+        </tbody>
+
+      </table>
+    </div>
+  </div>
+);
+
 }

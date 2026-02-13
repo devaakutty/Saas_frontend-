@@ -7,7 +7,8 @@ import { apiFetch } from "@/server/api";
 /* ================= TYPES ================= */
 
 interface Customer {
-  id: string;
+  id?: string;
+  _id?: string;
   name: string;
   email?: string;
   phone?: string;
@@ -19,9 +20,7 @@ interface Customer {
 /* ================= PAGE ================= */
 
 export default function CustomerEditPage() {
-  const params = useParams();
-  const id = params.id as string;
-
+  const { id } = useParams();
   const router = useRouter();
 
   const [form, setForm] = useState({
@@ -40,8 +39,10 @@ export default function CustomerEditPage() {
   /* ================= LOAD CUSTOMER ================= */
 
   useEffect(() => {
-    apiFetch<Customer>(`/customers/${id}`)
-      .then((data) => {
+    const loadCustomer = async () => {
+      try {
+        const data = await apiFetch<Customer>(`/customers/${id}`);
+
         setForm({
           name: data.name || "",
           email: data.email || "",
@@ -50,15 +51,14 @@ export default function CustomerEditPage() {
           company: data.company || "",
           status: data.isActive === false ? "Inactive" : "Active",
         });
-      })
-      .catch((err) => {
-        if (err instanceof Error) {
-          setError(err.message);
-        } else {
-          setError("Customer not found");
-        }
-      })
-      .finally(() => setLoading(false));
+      } catch (err: any) {
+        setError(err.message || "Customer not found");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) loadCustomer();
   }, [id]);
 
   /* ================= SAVE ================= */
@@ -86,108 +86,90 @@ export default function CustomerEditPage() {
         }),
       });
 
-      router.push(`/customers/${id}`);
-    } catch (err) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError("Failed to save changes");
-      }
+      // ✅ CORRECT ROUTE
+      router.push(`/dashboard/customers`);
+
+    } catch (err: any) {
+      setError(err.message || "Failed to save changes");
     } finally {
       setSaving(false);
     }
   };
 
-  /* ================= UI ================= */
+  /* ================= LOADING ================= */
 
   if (loading) {
     return (
-      <p className="text-center py-24">
+      <div className="flex items-center justify-center py-32 text-white">
         Loading customer...
-      </p>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="text-center py-24 space-y-4">
-        <p className="text-red-600 font-medium">
-          {error}
-        </p>
-
-        <button
-          onClick={() => router.push("/customers")}
-          className="px-4 py-2 bg-indigo-600 text-white rounded"
-        >
-          Back to Customers
-        </button>
       </div>
     );
   }
+
+  /* ================= UI ================= */
 
   return (
-    <div className="max-w-4xl space-y-8">
-      {/* ================= HEADER ================= */}
-      <div className="flex justify-between items-center">
-        <button
-          onClick={() => router.back()}
-          className="text-sm text-blue-600 hover:underline"
-        >
-          ← Back
-        </button>
+    <div className="px-8 py-12">
 
-        <h1 className="text-2xl font-bold">
-          Edit Customer
-        </h1>
-      </div>
+      <div className="max-w-3xl mx-auto backdrop-blur-xl bg-white/10 border border-white/20 rounded-3xl p-10 shadow-xl space-y-8">
 
-      {/* ================= FORM ================= */}
-      <div className="bg-white border rounded-xl p-6 space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* HEADER */}
+        <div className="flex justify-between items-center">
+          <button
+            onClick={() => router.push(`/dashboard/customers/${id}`)}
+            className="text-sm text-purple-300 hover:underline"
+          >
+            ← Back
+          </button>
+
+          <h1 className="text-3xl font-bold text-white">
+            Edit Customer
+          </h1>
+        </div>
+
+        {/* FORM */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+
           <Input
             label="Full Name"
             value={form.name}
-            onChange={(v) =>
-              setForm({ ...form, name: v })
-            }
+            onChange={(v) => setForm({ ...form, name: v })}
           />
 
           <Input
             label="Email"
             value={form.email}
-            onChange={(v) =>
-              setForm({ ...form, email: v })
-            }
+            onChange={(v) => setForm({ ...form, email: v })}
           />
 
           <Input
             label="Phone"
             value={form.phone}
             onChange={(v) =>
-              setForm({ ...form, phone: v })
+              setForm({
+                ...form,
+                phone: v.replace(/\D/g, "").slice(0, 10),
+              })
             }
           />
 
           <Input
             label="Country"
             value={form.country}
-            onChange={(v) =>
-              setForm({ ...form, country: v })
-            }
+            onChange={(v) => setForm({ ...form, country: v })}
           />
 
           <Input
             label="Company"
             value={form.company}
-            onChange={(v) =>
-              setForm({ ...form, company: v })
-            }
+            onChange={(v) => setForm({ ...form, company: v })}
           />
 
           <div>
-            <label className="block text-sm text-gray-600 mb-1">
+            <label className="block text-sm text-gray-300 mb-2">
               Status
             </label>
+
             <select
               value={form.status}
               onChange={(e) =>
@@ -196,7 +178,7 @@ export default function CustomerEditPage() {
                   status: e.target.value,
                 })
               }
-              className="w-full border rounded-lg px-3 py-2 text-sm"
+              className="w-full rounded-xl bg-white/10 border border-white/20 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
             >
               <option>Active</option>
               <option>Inactive</option>
@@ -204,11 +186,18 @@ export default function CustomerEditPage() {
           </div>
         </div>
 
-        {/* ================= ACTIONS ================= */}
-        <div className="flex justify-end gap-3 pt-4 border-t">
+        {error && (
+          <p className="text-sm text-red-400">
+            {error}
+          </p>
+        )}
+
+        {/* ACTIONS */}
+        <div className="flex justify-end gap-4 pt-6 border-t border-white/10">
+
           <button
-            onClick={() => router.back()}
-            className="px-5 py-2 border rounded-lg text-gray-600"
+            onClick={() => router.push(`/dashboard/customers/${id}`)}
+            className="px-6 py-3 rounded-xl border border-white/20 hover:bg-white/10 transition"
           >
             Cancel
           </button>
@@ -216,10 +205,11 @@ export default function CustomerEditPage() {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="px-5 py-2 bg-indigo-600 text-white rounded-lg disabled:opacity-50"
+            className="px-6 py-3 rounded-xl font-semibold bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 transition-all duration-300 shadow-lg disabled:opacity-50"
           >
             {saving ? "Saving..." : "Save Changes"}
           </button>
+
         </div>
       </div>
     </div>
@@ -239,13 +229,14 @@ function Input({
 }) {
   return (
     <div>
-      <label className="block text-sm text-gray-600 mb-1">
+      <label className="block text-sm text-gray-300 mb-2">
         {label}
       </label>
+
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full border rounded-lg px-3 py-2 text-sm"
+        className="w-full rounded-xl bg-white/10 border border-white/20 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 transition"
       />
     </div>
   );

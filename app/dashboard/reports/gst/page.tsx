@@ -118,114 +118,116 @@ export default function GSTReportPage() {
     return <div className="p-6 text-red-600">{error}</div>;
   }
 
-  return (
-    <div className="space-y-6 max-w-6xl mx-auto">
-      <button
-        onClick={() => router.push("/reports")}
-        className="px-3 py-1.5 rounded-md border text-sm hover:bg-gray-100"
-      >
-        ← Back
-      </button>
+return (
+  <div className="px-10 py-12">
 
-      <h1 className="text-2xl font-bold">GST Report</h1>
+    {/* Rounded Main Container */}
+    <div className="relative rounded-[28px] overflow-hidden bg-[linear-gradient(135deg,#1b1f3a,#2b2e63)] p-16">
 
-      {/* SUMMARY */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
-        <SummaryCard title="Taxable Sales" value={data.taxableSales} />
-        <SummaryCard title="Output GST" value={data.outputGST} />
-        <SummaryCard title="Input GST" value={data.inputGST} />
-        <SummaryCard title="Net GST Payable" value={data.netGST} highlight />
-      </div>
+      {/* Glow Effects */}
+      <div className="absolute -top-32 -right-32 w-[420px] h-[420px] bg-purple-500/30 blur-[150px] rounded-full" />
+      <div className="absolute -bottom-32 -left-32 w-[380px] h-[380px] bg-pink-500/20 blur-[140px] rounded-full" />
 
-      {/* CHART */}
-      <div className="bg-white border rounded-xl p-6 h-[340px]">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="font-semibold">GST Comparison (Monthly)</h3>
-          <span className="text-sm text-gray-500">
-            Last {data.monthly.length} months
-          </span>
+      <div className="relative z-10 space-y-20">
+        <button
+  onClick={() => router.push("/dashboard/reports")}
+  className="group inline-flex items-center gap-2 px-6 py-3 rounded-[20px] bg-white/5 backdrop-blur-md border border-white/10 text-white/70 hover:text-white hover:bg-white/10 transition-all duration-300"
+>
+  <span className="transition-transform duration-300 group-hover:-translate-x-1">
+    ←
+  </span>
+  <span className="font-[var(--font-inter)] text-sm tracking-wide">
+    Back to Reports
+  </span>
+</button>
+
+
+        {/* HERO */}
+        <div className="max-w-4xl">
+          <h1 className="font-[var(--font-playfair)] text-[64px] md:text-[80px] lg:text-[96px] leading-[0.95] tracking-tight text-white">
+            GST{" "}
+            <span className="font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+              Report
+            </span>
+          </h1>
         </div>
 
-        {data.monthly.length === 0 ? (
-          <div className="h-full flex items-center justify-center text-gray-400">
-            No GST data available
-          </div>
-        ) : (
+        {/* SUMMARY CARDS */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <CleanCard title="Taxable Sales" value={data.taxableSales} />
+          <CleanCard title="Output GST" value={data.outputGST} />
+          <CleanCard title="Input GST" value={data.inputGST} />
+          <CleanCard title="Net GST" value={data.netGST} highlight />
+        </div>
+
+        {/* CHART */}
+        <div className="bg-white/5 backdrop-blur-md rounded-[20px] p-8 border border-white/10 h-[380px]">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data.monthly}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis />
+              <CartesianGrid stroke="#ffffff15" />
+              <XAxis dataKey="month" stroke="#ffffff60" />
+              <YAxis stroke="#ffffff60" />
               <Tooltip />
               <Legend />
-              <Bar
-                dataKey="input"
-                name="Input GST"
-                fill="#6366f1"
-                radius={[4, 4, 0, 0]}
-              />
-              <Bar
-                dataKey="output"
-                name="Output GST"
-                fill="#22c55e"
-                radius={[4, 4, 0, 0]}
-              />
+
+              <Bar dataKey="input" fill="#6366f1" radius={[6,6,0,0]} />
+              <Bar dataKey="output" fill="#22c55e" radius={[6,6,0,0]} />
             </BarChart>
           </ResponsiveContainer>
-        )}
-      </div>
+        </div>
 
-      {/* TABLE */}
-      <div className="bg-white border rounded-xl overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-100">
-            <tr>
-              <th className="p-3 text-left">Month</th>
-              <th className="p-3 text-center">Taxable</th>
-              <th className="p-3 text-center">Output GST</th>
-              <th className="p-3 text-center">Input GST</th>
-              <th className="p-3 text-center">Net GST</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.monthly.length === 0 ? (
+        {/* TABLE */}
+        <div className="bg-white/5 backdrop-blur-md rounded-[20px] border border-white/10 overflow-hidden">
+          <table className="w-full text-sm text-white">
+            <thead className="bg-white/5 text-white/60">
               <tr>
-                <td colSpan={5} className="p-6 text-center text-gray-500">
-                  No GST data available
-                </td>
+                <th className="p-4 text-left">Month</th>
+                <th className="p-4 text-center">Taxable</th>
+                <th className="p-4 text-center">Output</th>
+                <th className="p-4 text-center">Input</th>
+                <th className="p-4 text-center">Net</th>
               </tr>
-            ) : (
-              data.monthly.map((row) => {
+            </thead>
+
+            <tbody>
+              {data.monthly.map((row) => {
                 const net = row.output - row.input;
+
                 return (
-                  <tr key={row.month} className="border-t">
-                    <td className="p-3 font-medium">{row.month}</td>
-                    <td className="p-3 text-center">
+                  <tr
+                    key={row.month}
+                    className="border-t border-white/10 hover:bg-white/5 transition"
+                  >
+                    <td className="p-4">{row.month}</td>
+                    <td className="p-4 text-center">
                       ₹{row.taxable.toLocaleString("en-IN")}
                     </td>
-                    <td className="p-3 text-center text-green-600">
+                    <td className="p-4 text-center text-green-400">
                       ₹{row.output.toLocaleString("en-IN")}
                     </td>
-                    <td className="p-3 text-center text-indigo-600">
+                    <td className="p-4 text-center text-indigo-400">
                       ₹{row.input.toLocaleString("en-IN")}
                     </td>
-                    <td className="p-3 text-center font-semibold text-red-600">
+                    <td className="p-4 text-center font-semibold text-red-400">
                       ₹{net.toLocaleString("en-IN")}
                     </td>
                   </tr>
                 );
-              })
-            )}
-          </tbody>
-        </table>
+              })}
+            </tbody>
+          </table>
+        </div>
+
       </div>
     </div>
-  );
+  </div>
+);
+
+
 }
 
 /* ================= SUMMARY CARD ================= */
-
-function SummaryCard({
+function CleanCard({
   title,
   value,
   highlight,
@@ -235,15 +237,13 @@ function SummaryCard({
   highlight?: boolean;
 }) {
   return (
-    <div
-      className={`bg-white border rounded-xl p-5 ${
-        highlight ? "border-red-500" : ""
-      }`}
-    >
-      <p className="text-sm text-gray-500">{title}</p>
+    <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-[20px] p-8 transition hover:bg-white/10">
+      <p className="font-[var(--font-inter)] text-white/60 text-sm">
+        {title}
+      </p>
       <p
-        className={`text-2xl font-bold mt-1 ${
-          highlight ? "text-red-600" : ""
+        className={`font-[var(--font-playfair)] text-3xl mt-2 ${
+          highlight ? "text-red-400" : "text-white"
         }`}
       >
         ₹{value.toLocaleString("en-IN")}
@@ -251,3 +251,4 @@ function SummaryCard({
     </div>
   );
 }
+

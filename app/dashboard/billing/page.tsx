@@ -198,10 +198,24 @@ export default function BillingPage() {
 
   /* ================= UI ================= */
 
-  return (
-    <div className="p-6 bg-[#F4F4F4] min-h-screen">
-      <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
+return (
+  <div className="relative px-6 pt-6 pb-12">
+
+    {/* Main Rounded Glass Container */}
+    <div className="relative backdrop-blur-2xl 
+      bg-gradient-to-br from-white/10 to-white/5 
+      border border-white/20 
+      rounded-[32px] 
+      shadow-[0_0_60px_rgba(0,0,0,0.4)] 
+      p-8 
+      text-white"
+    >
+
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
+
+        {/* LEFT SIDE */}
         <div className="xl:col-span-8 space-y-6">
+
           <CustomerSelector
             customers={customers}
             onSelect={setCustomer}
@@ -209,39 +223,56 @@ export default function BillingPage() {
           />
 
           {customer && (
-            <div className="bg-gray-50 border border-dashed rounded-xl p-3 flex justify-between">
+            <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl p-4 flex justify-between items-center">
               <div>
-                <p className="text-xs text-gray-500 uppercase">
+                <p className="text-xs uppercase tracking-widest text-gray-400">
                   Selected Customer
                 </p>
-                <p className="font-semibold">{customer.name}</p>
-                <p className="text-xs">{customer.phone}</p>
+                <p className="font-semibold text-lg">
+                  {customer.name}
+                </p>
+                <p className="text-sm text-gray-300">
+                  {customer.phone}
+                </p>
               </div>
-              <div className="bg-black text-white h-8 w-8 rounded-full flex items-center justify-center">
+
+              <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white h-10 w-10 rounded-full flex items-center justify-center shadow-lg">
                 ✓
               </div>
             </div>
           )}
 
-          <ProductTable
-            onProductsChange={setProducts}
-            onBillingChange={setBilling}
-          />
+          <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl p-6">
+            <ProductTable
+              onProductsChange={setProducts}
+              onBillingChange={setBilling}
+            />
+          </div>
+
         </div>
 
-        <div className="xl:col-span-4">
-          <BillingSummary billing={billing} />
+        {/* RIGHT SIDE */}
+        <div className="xl:col-span-4 space-y-6">
+
+          <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl p-6">
+            <BillingSummary billing={billing} />
+          </div>
 
           {billing.total > 0 && (
-            <PaymentMethod
-              total={billing.total}
-              loading={loading}
-              onConfirm={handlePayment}
-              onDownload={handleDownload}
-            />
+            <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl p-6">
+              <PaymentMethod
+                total={billing.total}
+                loading={loading}
+                onConfirm={handlePayment}
+                onDownload={handleDownload}
+              />
+            </div>
           )}
+
         </div>
       </div>
     </div>
-  );
+  </div>
+);
+
 }

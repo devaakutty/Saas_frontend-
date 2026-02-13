@@ -93,88 +93,167 @@ export default function CustomerSelector({
 
   /* ================= UI ================= */
 
-  return (
-    <div className="bg-white border rounded-xl p-4 space-y-4">
-      <h3 className="font-semibold text-lg">Customer</h3>
+ return (
+  <div
+    className="
+      backdrop-blur-2xl
+      bg-gradient-to-br from-white/10 to-white/5
+      border border-white/20
+      rounded-[28px]
+      p-6
+      space-y-6
+      shadow-xl
+      text-white
+    "
+  >
+    <h3 className="text-lg font-semibold tracking-tight">
+      Customer
+    </h3>
 
-      {/* SEARCH */}
+    {/* ================= SEARCH ================= */}
+    <input
+      placeholder="Search by name or phone"
+      value={search}
+      onChange={(e) => setSearch(e.target.value)}
+      className="
+        w-full
+        px-4 py-3
+        rounded-xl
+        bg-white/10
+        border border-white/20
+        placeholder-gray-400
+        focus:outline-none
+        focus:ring-2 focus:ring-purple-400
+        transition
+      "
+    />
+
+    {/* ================= CUSTOMER LIST ================= */}
+    <div
+      className="
+        rounded-2xl
+        border border-white/10
+        divide-y divide-white/10
+        max-h-48 overflow-y-auto
+        bg-white/5
+      "
+    >
+      {filteredCustomers.map((customer) => {
+        const customerId = customer.id || customer._id;
+
+        return (
+          <button
+            key={customerId}
+            onClick={() => {
+              setSelectedCustomer(customer);
+              setName(customer.name);
+              setPhone(customer.phone);
+              onSelect(customer);
+            }}
+            className="
+              w-full text-left
+              px-4 py-3
+              hover:bg-white/10
+              transition-all
+            "
+          >
+            <div className="font-medium">
+              {customer.name}
+            </div>
+            <div className="text-xs text-gray-400">
+              {customer.phone}
+            </div>
+          </button>
+        );
+      })}
+
+      {filteredCustomers.length === 0 && (
+        <div className="p-4 text-sm text-gray-400 text-center">
+          No customer found
+        </div>
+      )}
+    </div>
+
+    {/* ================= ADD / EDIT ================= */}
+    <div
+      className="
+        rounded-2xl
+        border border-white/10
+        p-5
+        space-y-4
+        bg-white/5
+      "
+    >
+      <h4 className="text-sm font-semibold tracking-wide text-purple-300">
+        {selectedCustomer
+          ? "Edit Customer"
+          : "Add New Customer"}
+      </h4>
+
       <input
-        placeholder="Search by name or phone"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        className="w-full border rounded px-3 py-2 text-sm"
+        placeholder="Customer name"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        className="
+          w-full
+          px-4 py-2.5
+          rounded-xl
+          bg-white/10
+          border border-white/20
+          placeholder-gray-400
+          focus:outline-none
+          focus:ring-2 focus:ring-purple-400
+        "
       />
 
-      {/* LIST */}
-      <div className="border rounded divide-y max-h-48 overflow-y-auto">
-        {filteredCustomers.map((customer) => {
-          const customerId = customer.id || customer._id;
+      <input
+        placeholder="Mobile number"
+        value={phone}
+        maxLength={10}
+        onChange={(e) =>
+          setPhone(e.target.value.replace(/\D/g, ""))
+        }
+        className="
+          w-full
+          px-4 py-2.5
+          rounded-xl
+          bg-white/10
+          border border-white/20
+          placeholder-gray-400
+          focus:outline-none
+          focus:ring-2 focus:ring-purple-400
+        "
+      />
 
-          return (
-            <button
-              key={customerId}
-              onClick={() => {
-                setSelectedCustomer(customer);
-                setName(customer.name);
-                setPhone(customer.phone);
-                onSelect(customer); // ✅ FIX
-              }}
-              className="w-full text-left px-3 py-2 hover:bg-indigo-50"
-            >
-              <div className="font-medium">{customer.name}</div>
-              <div className="text-xs text-gray-500">
-                {customer.phone}
-              </div>
-            </button>
-          );
-        })}
+      {error && (
+        <p className="text-xs text-red-400">
+          {error}
+        </p>
+      )}
 
-        {filteredCustomers.length === 0 && (
-          <div className="p-3 text-sm text-gray-500 text-center">
-            No customer found
-          </div>
-        )}
-      </div>
-
-      {/* ADD / EDIT */}
-      <div className="border rounded-lg p-3 space-y-2">
-        <h4 className="text-sm font-semibold">
-          {selectedCustomer ? "Edit Customer" : "Add New Customer"}
-        </h4>
-
-        <input
-          placeholder="Customer name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          className="w-full border rounded px-3 py-2 text-sm"
-        />
-
-        <input
-          placeholder="Mobile number"
-          value={phone}
-          maxLength={10}
-          onChange={(e) =>
-            setPhone(e.target.value.replace(/\D/g, ""))
-          }
-          className="w-full border rounded px-3 py-2 text-sm"
-        />
-
-        {error && (
-          <p className="text-xs text-red-600">{error}</p>
-        )}
-
-        <button
-          onClick={handleSaveCustomer}
-          disabled={loading}
-          className="w-full bg-indigo-600 text-white rounded py-2 text-sm disabled:opacity-50"
-        >
-          {loading
-            ? "Saving..."
-            : selectedCustomer
-            ? "Update Customer"
-            : "Add Customer"}
-        </button>
-      </div>
+      <button
+        onClick={handleSaveCustomer}
+        disabled={loading}
+        className="
+          w-full
+          py-3
+          rounded-xl
+          font-semibold
+          bg-gradient-to-r from-purple-500 to-pink-500
+          hover:scale-[1.02]
+          transition-all duration-300
+          shadow-lg
+          disabled:opacity-50
+        "
+      >
+        {loading
+          ? "Saving..."
+          : selectedCustomer
+          ? "Update Customer"
+          : "Add Customer"}
+      </button>
     </div>
-  );
+  </div>
+);
+
 }

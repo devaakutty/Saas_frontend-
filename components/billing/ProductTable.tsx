@@ -161,40 +161,68 @@ export default function ProductTable({
   };
 
   /* ================= UI ================= */
+return (
+  <div className="
+    backdrop-blur-2xl
+    bg-gradient-to-br from-white/10 to-white/5
+    border border-white/20
+    rounded-[28px]
+    p-6
+    shadow-xl
+    space-y-5
+    text-white
+  ">
 
-  return (
-    <div className="bg-white border rounded p-4 space-y-3">
+    <div className="overflow-x-auto">
+
       <table className="w-full text-sm">
+
         <thead>
-          <tr className="border-b">
-            <th>#</th>
-            <th>Product</th>
-            <th>Qty</th>
-            <th>Rate</th>
-            <th>Amount</th>
-            <th></th>
+          <tr className="border-b border-white/10 text-gray-300 uppercase text-xs tracking-wider">
+            <th className="pb-3 text-left">#</th>
+            <th className="pb-3 text-left">Product</th>
+            <th className="pb-3 text-left">Qty</th>
+            <th className="pb-3 text-left">Rate</th>
+            <th className="pb-3 text-left">Amount</th>
+            <th className="pb-3"></th>
           </tr>
         </thead>
 
         <tbody>
           {products.map((p, i) => (
-            <tr key={i} className="border-b">
-              <td>{i + 1}</td>
+            <tr
+              key={i}
+              className="border-b border-white/10 hover:bg-white/5 transition-all"
+            >
+              <td className="py-4">{i + 1}</td>
 
-              <td>
-              <input
-                ref={(el) => {
-                  if (el) inputRefs.current[i] = el;
-                }}
-                className="border px-2 py-1 w-full"
-                value={p.name}
-                onChange={(e) =>
-                  handleTypeahead(i, e.target.value)
-                }
-              />
+              {/* PRODUCT INPUT */}
+              <td className="py-4">
+                <input
+                  ref={(el) => {
+                    if (el) inputRefs.current[i] = el;
+                  }}
+                  value={p.name}
+                  onChange={(e) =>
+                    handleTypeahead(i, e.target.value)
+                  }
+                  className="
+                    w-full
+                    px-4 py-2.5
+                    rounded-xl
+                    bg-white/10
+                    border border-white/20
+                    placeholder-gray-400
+                    focus:outline-none
+                    focus:ring-2 focus:ring-purple-400
+                    transition
+                  "
+                  placeholder="Product name"
+                />
               </td>
 
-              <td>
+              {/* QUANTITY */}
+              <td className="py-4">
                 <input
                   type="number"
                   min={1}
@@ -206,27 +234,54 @@ export default function ProductTable({
                       Math.max(1, Number(e.target.value))
                     )
                   }
+                  className="
+                    w-20
+                    px-3 py-2
+                    rounded-xl
+                    bg-white/10
+                    border border-white/20
+                    focus:outline-none
+                    focus:ring-2 focus:ring-purple-400
+                  "
                 />
               </td>
 
-              <td>
+              {/* RATE */}
+              <td className="py-4">
                 <input
                   type="number"
-                  className="border px-2 py-1 w-20"
                   value={p.rate}
                   onChange={(e) =>
                     updateProduct(i, "rate", e.target.value)
                   }
+                  className="
+                    w-24
+                    px-3 py-2
+                    rounded-xl
+                    bg-white/10
+                    border border-white/20
+                    focus:outline-none
+                    focus:ring-2 focus:ring-purple-400
+                  "
                 />
               </td>
 
-              <td>₹{p.quantity * p.rate}</td>
+              {/* AMOUNT */}
+              <td className="py-4 font-semibold text-purple-300">
+                ₹{p.quantity * p.rate}
+              </td>
 
-              <td>
+              {/* REMOVE */}
+              <td className="py-4">
                 <button
                   onClick={() => removeRow(i)}
                   disabled={products.length === 1}
-                  className="text-red-600 hover:underline disabled:opacity-40"
+                  className="
+                    text-red-400
+                    hover:text-red-300
+                    transition
+                    disabled:opacity-30
+                  "
                 >
                   Remove
                 </button>
@@ -234,14 +289,26 @@ export default function ProductTable({
             </tr>
           ))}
         </tbody>
-      </table>
 
-      <button
-        onClick={addRow}
-        className="text-sm text-blue-600 hover:underline"
-      >
-        + Add product
-      </button>
+      </table>
     </div>
-  );
+
+    {/* ADD BUTTON */}
+    <button
+      onClick={addRow}
+      className="
+        px-5 py-2.5
+        rounded-xl
+        bg-gradient-to-r from-purple-500 to-pink-500
+        font-semibold
+        hover:scale-[1.03]
+        transition-all duration-300
+        shadow-lg
+      "
+    >
+      + Add Product
+    </button>
+  </div>
+);
+
 }

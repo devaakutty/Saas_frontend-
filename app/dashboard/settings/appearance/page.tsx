@@ -3,21 +3,22 @@
 import { useEffect, useState } from "react";
 
 type Theme = "dark" | "light" | "system";
+type Accent = "default" | "pink" | "blue" | "green";
 
 export default function AppearanceSettingsPage() {
   const [theme, setTheme] = useState<Theme>("system");
+  const [accent, setAccent] = useState<Accent>("default");
 
-  /* ================= LOAD SAVED THEME ================= */
+  /* ================= LOAD SAVED SETTINGS ================= */
   useEffect(() => {
-    const saved = localStorage.getItem("theme") as Theme | null;
-    if (saved) {
-      setTheme(saved);
-    } else {
-      setTheme("system");
-    }
+    const savedTheme = localStorage.getItem("theme") as Theme | null;
+    const savedAccent = localStorage.getItem("accent") as Accent | null;
+
+    if (savedTheme) setTheme(savedTheme);
+    if (savedAccent) setAccent(savedAccent);
   }, []);
 
-  /* ================= APPLY THEME ================= */
+  /* ================= APPLY DARK / LIGHT ================= */
   useEffect(() => {
     const root = document.documentElement;
 
@@ -26,11 +27,8 @@ export default function AppearanceSettingsPage() {
         "(prefers-color-scheme: dark)"
       ).matches;
 
-      if (prefersDark) {
-        root.classList.add("dark");
-      } else {
-        root.classList.remove("dark");
-      }
+      if (prefersDark) root.classList.add("dark");
+      else root.classList.remove("dark");
     };
 
     if (theme === "system") {
@@ -39,53 +37,113 @@ export default function AppearanceSettingsPage() {
 
       const media = window.matchMedia("(prefers-color-scheme: dark)");
       media.addEventListener("change", applySystemTheme);
-
-      return () => {
-        media.removeEventListener("change", applySystemTheme);
-      };
+      return () => media.removeEventListener("change", applySystemTheme);
     }
 
-    if (theme === "dark") {
-      root.classList.add("dark");
-    } else {
-      root.classList.remove("dark");
-    }
+    if (theme === "dark") root.classList.add("dark");
+    else root.classList.remove("dark");
 
     localStorage.setItem("theme", theme);
   }, [theme]);
 
+  /* ================= APPLY ACCENT ================= */
+  useEffect(() => {
+    const root = document.documentElement;
+
+    root.classList.remove(
+      "theme-pink",
+      "theme-blue",
+      "theme-green"
+    );
+
+    if (accent !== "default") {
+      root.classList.add(`theme-${accent}`);
+    }
+
+    localStorage.setItem("accent", accent);
+  }, [accent]);
+
   /* ================= UI ================= */
+
   return (
-    <div className="min-h-screen bg-[#0b0e14] text-white p-8 rounded-xl">
-      <h1 className="text-2xl font-semibold mb-6">Appearance</h1>
+    <div className="space-y-14 max-w-5xl">
+      
+      {/* HEADER */}
+      <div>
+        <h1 className="font-playfair text-5xl leading-tight">
+          Appearance{" "}
+          <span className="font-bold text-primary">
+            Settings
+          </span>
+        </h1>
 
-      <div className="bg-[#11141c] border border-white/10 rounded-xl p-6 max-w-3xl space-y-6">
-        <p className="text-sm text-gray-400">
-          Customize how QuickBillz looks on your device.
+        <p className="mt-4 text-gray-500 dark:text-gray-400">
+          Customize theme and accent colors across your dashboard.
         </p>
+      </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <ThemeCard
-            title="Dark"
-            description="Best for low light environments"
-            active={theme === "dark"}
-            onClick={() => setTheme("dark")}
-          />
+      {/* THEME SECTION */}
+      <div className="bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-3xl p-10 space-y-8">
+        
+        <div>
+          <h2 className="text-lg font-semibold mb-4">
+            Theme Mode
+          </h2>
 
-          <ThemeCard
-            title="Light"
-            description="Bright and clean appearance"
-            active={theme === "light"}
-            onClick={() => setTheme("light")}
-          />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <ThemeCard
+              title="Dark"
+              active={theme === "dark"}
+              onClick={() => setTheme("dark")}
+            />
 
-          <ThemeCard
-            title="System"
-            description="Follow your system preference"
-            active={theme === "system"}
-            onClick={() => setTheme("system")}
-          />
+            <ThemeCard
+              title="Light"
+              active={theme === "light"}
+              onClick={() => setTheme("light")}
+            />
+
+            <ThemeCard
+              title="System"
+              active={theme === "system"}
+              onClick={() => setTheme("system")}
+            />
+          </div>
         </div>
+
+        {/* ACCENT SECTION */}
+        <div>
+          <h2 className="text-lg font-semibold mb-4">
+            Accent Color
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <AccentCard
+              title="Purple"
+              active={accent === "default"}
+              onClick={() => setAccent("default")}
+            />
+
+            <AccentCard
+              title="Pink"
+              active={accent === "pink"}
+              onClick={() => setAccent("pink")}
+            />
+
+            <AccentCard
+              title="Blue"
+              active={accent === "blue"}
+              onClick={() => setAccent("blue")}
+            />
+
+            <AccentCard
+              title="Green"
+              active={accent === "green"}
+              onClick={() => setAccent("green")}
+            />
+          </div>
+        </div>
+
       </div>
     </div>
   );
@@ -95,32 +153,53 @@ export default function AppearanceSettingsPage() {
 
 function ThemeCard({
   title,
-  description,
   active,
   onClick,
 }: {
   title: string;
-  description: string;
   active: boolean;
   onClick: () => void;
 }) {
   return (
     <button
       onClick={onClick}
-      className={`text-left p-4 rounded-lg border transition ${
+      className={`p-6 rounded-2xl border transition ${
         active
-          ? "border-indigo-500 bg-indigo-500/10"
-          : "border-white/10 hover:bg-white/5"
+          ? "border-primary bg-primary/10"
+          : "border-gray-200 dark:border-white/10 hover:bg-gray-100 dark:hover:bg-white/5"
       }`}
     >
-      <p className="font-medium mb-1">{title}</p>
-      <p className="text-sm text-gray-400">{description}</p>
-
+      <p className="font-medium">{title}</p>
       {active && (
-        <span className="inline-block mt-3 text-xs text-indigo-400">
+        <span className="text-xs text-primary mt-2 inline-block">
           Active
         </span>
       )}
+    </button>
+  );
+}
+
+/* ================= ACCENT CARD ================= */
+
+function AccentCard({
+  title,
+  active,
+  onClick,
+}: {
+  title: string;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`p-6 rounded-2xl border transition ${
+        active
+          ? "border-primary bg-primary/10"
+          : "border-gray-200 dark:border-white/10 hover:bg-gray-100 dark:hover:bg-white/5"
+      }`}
+    >
+      <p className="font-medium">{title}</p>
     </button>
   );
 }

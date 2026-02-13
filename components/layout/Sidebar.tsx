@@ -24,7 +24,7 @@ export default function Sidebar() {
   return (
     <>
       {/* ================= MOBILE HEADER ================= */}
-      <div className="md:hidden flex items-center justify-between p-4 bg-black text-white">
+      <div className="md:hidden flex items-center justify-between p-4 backdrop-blur-xl bg-white/10 border-b border-white/20 text-white">
         <div className="font-bold text-lg">QuickBillz</div>
         <button onClick={() => setOpen(true)}>
           <Menu size={26} />
@@ -34,17 +34,19 @@ export default function Sidebar() {
       {/* ================= MOBILE OVERLAY ================= */}
       {open && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden"
           onClick={() => setOpen(false)}
         />
       )}
 
       {/* ================= SIDEBAR ================= */}
       <div
-        className={`fixed md:static z-50 top-0 left-0 h-screen w-64 bg-gradient-to-b from-zinc-900 to-black text-white transform transition-transform duration-300
+        className={`fixed md:static z-50 top-0 left-0 h-screen w-64 
+        backdrop-blur-2xl bg-white/10 border-r border-white/20 text-white
+        transform transition-transform duration-300
         ${open ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}
       >
-        <aside className="h-full flex flex-col py-8 px-4">
+        <aside className="h-full flex flex-col py-8 px-5">
 
           {/* CLOSE BUTTON (MOBILE) */}
           <div className="md:hidden flex justify-end mb-6">
@@ -54,11 +56,13 @@ export default function Sidebar() {
           </div>
 
           {/* LOGO */}
-          <div className="mb-10 px-4">
-            <div className="bg-white text-black w-10 h-10 rounded-xl flex items-center justify-center font-black text-xl">
+          <div className="mb-12">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center font-black text-xl shadow-lg">
               QB
             </div>
-            <h1 className="text-xl font-bold mt-3">QuickBillz</h1>
+            <h1 className="text-xl font-bold mt-4 tracking-wide">
+              QuickBillz
+            </h1>
           </div>
 
           {/* NAVIGATION */}
@@ -76,24 +80,41 @@ export default function Sidebar() {
                   key={link.id}
                   href={link.href}
                   onClick={() => setOpen(false)}
-                  className={`flex items-center gap-4 px-4 py-3 rounded-xl transition ${
+                  className={`flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-300 group ${
                     active
-                      ? "bg-white text-black"
-                      : "text-zinc-400 hover:text-white hover:bg-white/10"
+                      ? "bg-gradient-to-r from-purple-500 to-pink-500 shadow-lg"
+                      : "hover:bg-white/10"
                   }`}
                 >
-                  {Icon && <Icon size={20} />}
-                  <span className="font-semibold">{link.label}</span>
+                  {Icon && (
+                    <Icon
+                      size={20}
+                      className={`transition ${
+                        active
+                          ? "text-white"
+                          : "text-gray-300 group-hover:text-white"
+                      }`}
+                    />
+                  )}
+                  <span
+                    className={`font-semibold ${
+                      active
+                        ? "text-white"
+                        : "text-gray-300 group-hover:text-white"
+                    }`}
+                  >
+                    {link.label}
+                  </span>
                 </Link>
               );
             })}
           </nav>
 
           {/* LOGOUT */}
-          <div className="mt-auto pt-4 border-t border-white/10">
+          <div className="mt-auto pt-6 border-t border-white/20">
             <button
               onClick={handleLogout}
-              className="flex items-center gap-4 w-full px-4 py-3 rounded-xl text-zinc-400 hover:bg-red-500 hover:text-white transition"
+              className="flex items-center gap-4 w-full px-4 py-3 rounded-xl text-gray-300 hover:bg-red-500 hover:text-white transition-all duration-300"
             >
               <LogOut size={20} />
               <span className="font-semibold">Logout</span>

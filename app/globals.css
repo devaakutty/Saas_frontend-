@@ -109,3 +109,79 @@ body {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+/* ================= GLOBAL TYPOGRAPHY ================= */
+
+h1, h2, h3, h4 {
+  font-family: var(--font-playfair);
+  letter-spacing: -0.02em;
+}
+
+body {
+  font-family: var(--font-inter);
+}
+
+.hero-heading {
+  font-family: var(--font-playfair);
+  font-weight: 300;
+  letter-spacing: -0.03em;
+}
+
+.hero-heading-bold {
+  font-family: var(--font-playfair);
+  font-weight: 700;
+}
+:root {
+  --primary: 139 92 246; /* purple default */
+}
+
+.theme-pink {
+  --primary: 236 72 153;
+}
+
+.theme-blue {
+  --primary: 59 130 246;
+}
+
+.theme-green {
+  --primary: 34 197 94;
+}
+:root {
+  --primary: 139 92 246;
+  --secondary: 168 85 247;
+  --accent: 236 72 153;
+}
+
+/* 🌸 Pink */
+.theme-pink {
+  --primary: 236 72 153;
+  --secondary: 168 85 247;
+  --accent: 244 114 182;
+}
+
+/* 🔵 Blue */
+.theme-blue {
+  --primary: 59 130 246;
+  --secondary: 14 165 233;
+  --accent: 6 182 212;
+}
+
+/* 🟢 Green */
+.theme-green {
+  --primary: 34 197 94;
+  --secondary: 16 185 129;
+  --accent: 132 204 22;
+}
+
+/* 🔥 Sunset (Triple) */
+.theme-sunset {
+  --primary: 249 115 22;
+  --secondary: 236 72 153;
+  --accent: 168 85 247;
+}
+
+/* 🌊 Ocean (Triple) */
+.theme-ocean {
+  --primary: 37 99 235;
+  --secondary: 20 184 166;
+  --accent: 6 182 212;
+}

@@ -13,15 +13,17 @@ type StatType =
   | "pendingPayment"
   | "paymentReceived";
 
+type Props = {
+  title: string;
+  value?: number;
+  type: StatType;
+};
+
 export default function StatCard({
   title,
   value = 0,
   type,
-}: {
-  title: string;
-  value?: number;
-  type: StatType;
-}) {
+}: Props) {
   const iconMap: Record<StatType, React.ReactNode> = {
     totalSales: <IndianRupee size={18} />,
     totalExpense: <Wallet size={18} />,
@@ -29,25 +31,35 @@ export default function StatCard({
     paymentReceived: <CreditCard size={18} />,
   };
 
-  const colorMap: Record<StatType, string> = {
-    totalSales: "bg-purple-100 text-purple-700",
-    totalExpense: "bg-blue-100 text-blue-700",
-    pendingPayment: "bg-orange-100 text-orange-700",
-    paymentReceived: "bg-green-100 text-green-700",
-  };
-
   return (
-    <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300">
-      
+    <div
+      className="
+        backdrop-blur-xl
+        bg-white/10
+        border border-white/20
+        rounded-[24px]
+        p-6
+        shadow-xl
+        hover:scale-[1.03]
+        transition-all duration-300
+        text-white
+      "
+    >
       {/* Icon */}
       <div
-        className={`w-10 h-10 rounded-lg flex items-center justify-center ${colorMap[type]}`}
+        className="
+          w-10 h-10
+          rounded-lg
+          flex items-center justify-center
+          bg-purple-500/20
+          text-purple-400
+        "
       >
         {iconMap[type]}
       </div>
 
       {/* Title */}
-      <p className="text-sm text-gray-500 mt-3">
+      <p className="text-sm text-white/60 mt-4">
         {title}
       </p>
 

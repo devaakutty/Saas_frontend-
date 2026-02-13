@@ -59,144 +59,148 @@ export default function ProductsPage() {
     );
   }
 
-  return (
-    <div className="space-y-4">
-      {/* ================= HEADER ================= */}
-      <div className="sticky top-0 z-30 bg-zinc-50 pb-4">
+return (
+  <div className="px-10 py-12">
+
+    <div className="relative rounded-[28px] overflow-hidden bg-[linear-gradient(135deg,#1b1f3a,#2b2e63)] p-16">
+
+      {/* Glow Effects */}
+      <div className="absolute -top-32 -right-32 w-[420px] h-[420px] bg-purple-500/30 blur-[150px] rounded-full" />
+      <div className="absolute -bottom-32 -left-32 w-[380px] h-[380px] bg-pink-500/20 blur-[140px] rounded-full" />
+
+      <div className="relative z-10 space-y-16">
+
+        {/* HEADER */}
         <div className="flex justify-between items-center">
-          <div className="flex items-center gap-3">
+
+          <div>
             <button
               onClick={() => router.back()}
-              className="px-3 py-1 border rounded text-sm hover:bg-gray-50"
+              className="mb-6 inline-flex items-center gap-2 px-5 py-2 rounded-[20px] bg-white/5 backdrop-blur-md border border-white/10 text-white/70 hover:text-white hover:bg-white/10 transition"
             >
               ← Back
             </button>
 
-            <h1 className="text-2xl font-bold">
-              Products
-              <span className="ml-2 text-sm text-gray-500">
-                ({products.length})
+            <h1 className="font-[var(--font-playfair)] text-[64px] leading-[0.95] tracking-tight text-white">
+              Manage{" "}
+              <span className="font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                Products
               </span>
             </h1>
+
+            <p className="font-[var(--font-inter)] mt-6 text-white/70 text-lg">
+              {products.length} total products in inventory
+            </p>
           </div>
 
-          <div className="flex gap-3">
+          <div className="flex gap-4">
             <Link
               href="/dashboard/products/bulk"
-              className="px-4 py-2 border rounded hover:bg-gray-50"
+              className="px-6 py-3 rounded-[20px] bg-white/5 backdrop-blur-md border border-white/10 text-white hover:bg-white/10 transition"
             >
               Bulk Add
             </Link>
 
             <Link
               href="/dashboard/products/create"
-              className="px-4 py-2 bg-black text-white rounded"
+              className="px-6 py-3 rounded-[20px] bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:opacity-90 transition"
             >
               + Add Product
             </Link>
           </div>
         </div>
-      </div>
 
-      {/* ================= TABLE ================= */}
-      <div className="bg-white border rounded-xl overflow-hidden max-h-[70vh] overflow-y-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="bg-gray-50 border-b">
-              <th className="p-4 text-left sticky top-0 bg-gray-50 z-20">
-                Name
-              </th>
-              <th className="p-4 text-left sticky top-0 bg-gray-50 z-20">
-                Rate
-              </th>
-              <th className="p-4 text-left sticky top-0 bg-gray-50 z-20">
-                Stock
-              </th>
-              <th className="p-4 text-left sticky top-0 bg-gray-50 z-20">
-                Unit
-              </th>
-              <th className="p-4 text-left sticky top-0 bg-gray-50 z-20">
-                Status
-              </th>
-              <th className="p-4 text-right sticky top-0 bg-gray-50 z-20">
-                Action
-              </th>
-            </tr>
-          </thead>
+        {/* TABLE */}
+        <div className="bg-white/5 backdrop-blur-md rounded-[20px] border border-white/10 overflow-hidden">
 
-          <tbody>
-            {products.map((p) => (
-              <tr
-                key={p._id}
-                onClick={() =>
-                  router.push(`/dashboard/products/${p._id}`)
-                }
-                className="border-t hover:bg-gray-50 cursor-pointer"
-              >
-                <td className="p-4 font-medium">
-                  {p.name}
-                </td>
+          <table className="w-full text-sm text-white">
+            <thead className="bg-white/5 text-white/60">
+              <tr>
+                <th className="p-5 text-left">Name</th>
+                <th className="p-5 text-left">Rate</th>
+                <th className="p-5 text-left">Stock</th>
+                <th className="p-5 text-left">Unit</th>
+                <th className="p-5 text-left">Status</th>
+                <th className="p-5 text-right">Action</th>
+              </tr>
+            </thead>
 
-                <td className="p-4">
-                  ₹{p.rate.toLocaleString("en-IN")}
-                </td>
-
-                <td
-                  className={`p-4 font-semibold ${
-                    p.stock <= 5
-                      ? "text-red-600"
-                      : "text-gray-900"
-                  }`}
+            <tbody>
+              {products.map((p) => (
+                <tr
+                  key={p._id}
+                  onClick={() =>
+                    router.push(`/dashboard/products/${p._id}`)
+                  }
+                  className="border-t border-white/10 hover:bg-white/5 transition cursor-pointer"
                 >
-                  {p.stock}
-                </td>
+                  <td className="p-5 font-medium">{p.name}</td>
 
-                <td className="p-4">
-                  {p.unit ?? "—"}
-                </td>
+                  <td className="p-5">
+                    ₹{p.rate.toLocaleString("en-IN")}
+                  </td>
 
-                <td className="p-4">
-                  <span
-                    className={`px-2 py-1 rounded text-xs font-medium ${
-                      p.isActive
-                        ? "bg-green-100 text-green-700"
-                        : "bg-gray-200 text-gray-600"
+                  <td
+                    className={`p-5 font-semibold ${
+                      p.stock <= 5
+                        ? "text-red-400"
+                        : "text-white"
                     }`}
                   >
-                    {p.isActive ? "Active" : "Inactive"}
-                  </span>
-                </td>
+                    {p.stock}
+                  </td>
 
-                <td className="p-4 text-right">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDelete(p._id);
-                    }}
-                    disabled={deletingId === p._id}
-                    className="text-red-600 hover:underline disabled:opacity-50"
+                  <td className="p-5">
+                    {p.unit ?? "—"}
+                  </td>
+
+                  <td className="p-5">
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        p.isActive
+                          ? "bg-green-500/20 text-green-400"
+                          : "bg-white/10 text-white/60"
+                      }`}
+                    >
+                      {p.isActive ? "Active" : "Inactive"}
+                    </span>
+                  </td>
+
+                  <td className="p-5 text-right">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(p._id);
+                      }}
+                      disabled={deletingId === p._id}
+                      className="text-red-400 hover:underline disabled:opacity-50"
+                    >
+                      {deletingId === p._id
+                        ? "Deleting…"
+                        : "Delete"}
+                    </button>
+                  </td>
+                </tr>
+              ))}
+
+              {products.length === 0 && (
+                <tr>
+                  <td
+                    colSpan={6}
+                    className="p-12 text-center text-white/40"
                   >
-                    {deletingId === p._id
-                      ? "Deleting…"
-                      : "Delete"}
-                  </button>
-                </td>
-              </tr>
-            ))}
+                    No products found
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
 
-            {products.length === 0 && (
-              <tr>
-                <td
-                  colSpan={6}
-                  className="p-10 text-center text-gray-400"
-                >
-                  No products found
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+        </div>
+
       </div>
     </div>
-  );
+  </div>
+);
+
 }

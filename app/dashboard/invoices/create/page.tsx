@@ -19,31 +19,19 @@ interface Item {
   price: number;
 }
 
-/* ================= HELPERS ================= */
+/* ================= INVOICE NUMBER ================= */
 
 function generateInvoiceNo() {
   const prefix = "MAI";
-  let userLetter = "X";
-
-  if (typeof window !== "undefined") {
-    const user = localStorage.getItem("user");
-    if (user) {
-      try {
-        const parsed = JSON.parse(user);
-        if (parsed?.email) {
-          userLetter = parsed.email.charAt(0).toUpperCase();
-        }
-      } catch {}
-    }
-  }
-
   const now = new Date();
+
   const day = now.getDate();
   const month = String(now.getMonth() + 1).padStart(2, "0");
   const year = String(now.getFullYear()).slice(-2);
 
-  const baseKey = `${prefix}-${userLetter}${day}${month}${year}`;
+  const baseKey = `${prefix}-${day}${month}${year}`;
   const count = (Number(localStorage.getItem(baseKey)) || 0) + 1;
+
   localStorage.setItem(baseKey, String(count));
 
   return `${baseKey}-${String(count).padStart(3, "0")}`;
@@ -63,7 +51,9 @@ export default function CreateInvoicePage() {
 
   /* ===== LOAD CUSTOMERS ===== */
   useEffect(() => {
-    apiFetch<Customer[]>("/customers").then(setCustomers);
+    apiFetch<Customer[]>("/customers")
+      .then((data) => setCustomers(data || []))
+      .catch(() => setCustomers([]));
   }, []);
 
   /* ===== TOTAL ===== */
@@ -73,175 +63,196 @@ export default function CreateInvoicePage() {
   );
 
   /* ===== ITEM HANDLERS ===== */
+
   const addItem = () =>
     setItems([...items, { name: "", quantity: 1, price: 0 }]);
 
-    const updateItem = (
-      index: number,
-      field: keyof Item,
-      value: string
-    ) => {
-      setItems((prev) => {
-        const copy = [...prev];
+  const updateItem = (
+    index: number,
+    field: keyof Item,
+    value: string
+  ) => {
+    setItems((prev) => {
+      const copy = [...prev];
 
-        if (field === "name") {
-          copy[index] = {
-            ...copy[index],
-            name: value,
-          };
-        } else if (field === "quantity") {
-          copy[index] = {
-            ...copy[index],
-            quantity: Number(value),
-          };
-        } else if (field === "price") {
-          copy[index] = {
-            ...copy[index],
-            price: Number(value),
-          };
-        }
+      copy[index] = {
+        ...copy[index],
+        [field]: field === "name" ? value : Number(value),
+      };
 
-        return copy;
-      });
-    };
-
+      return copy;
+    });
+  };
 
   const removeItem = (index: number) =>
     setItems(items.filter((_, i) => i !== index));
 
   /* ================= SAVE + PAYMENT ================= */
 
-    const handleConfirmPayment = async (
-      method: "CASH" | "UPI" | "CARD",
-      details: any
-    ) => {
-      if (!customerId) {
-        alert("Select a customer");
-        return;
-      }
+  const handleConfirmPayment = async (
+    method: "CASH" | "UPI" | "CARD",
+    details: any
+  ) => {
+    if (!customerId) {
+      alert("Select a customer");
+      return;
+    }
 
-      try {
-        const invoiceNo = generateInvoiceNo();
+    if (total <= 0) {
+      alert("Invoice total must be greater than 0");
+      return;
+    }
 
-        /* 🔥 FIXED PAYLOAD */
-        const cleanItems = items
-          .filter(
-            (i) =>
-              i.name.trim() &&
-              Number.isInteger(Number(i.quantity)) &&
-              Number(i.quantity) > 0 &&
-              Number.isFinite(Number(i.price))
-          )
-          .map((i) => ({
-            productName: i.name.trim(),
-            qty: Number(i.quantity),
-            rate: Number(i.price),
-          }));
+    const selectedCustomer = customers.find(
+      (c) => c.id === customerId
+    );
 
-        if (!cleanItems.length) {
-          alert("Please add valid product quantity");
-          return;
-        }
+    const cleanItems = items
+      .filter(
+        (i) =>
+          i.name.trim() &&
+          i.quantity > 0 &&
+          i.price >= 0
+      )
+      .map((i) => ({
+        productName: i.name.trim(),
+        qty: i.quantity,
+        rate: i.price,
+      }));
 
-        /* 1️⃣ BACKEND STORE */
-        await apiFetch("/invoices", {
-          method: "POST",
-          body: JSON.stringify({
-            invoiceNo,
-            customerId,
-            items: cleanItems,
-          }),
-        });
+    if (!cleanItems.length) {
+      alert("Add at least one valid product");
+      return;
+    }
 
-        /* 2️⃣ FRONTEND STORE */
+    try {
+      const invoiceNo = generateInvoiceNo();
+
+      /* ===== BACKEND SAVE ===== */
+      await apiFetch("/invoices", {
+        method: "POST",
+        body: JSON.stringify({
+          invoiceNo,
+          customerId,
+          items: cleanItems,
+          total,
+          status: "PAID",
+        }),
+      });
+
+      /* ===== FRONTEND STORE ===== */
       addInvoice({
         id: crypto.randomUUID(),
-        invoiceNo, // ✅ ADD THIS LINE
-
-        customer: { name: "", phone: "" },
-
+        invoiceNo,
+        customer: {
+          name: selectedCustomer?.name || "",
+          phone: "",
+        },
         products: cleanItems.map((i) => ({
           name: i.productName,
           qty: i.qty,
           rate: i.rate,
         })),
-
         billing: {
           subTotal: total,
           tax: 0,
           gst: 0,
           total,
         },
-
         payment: {
           method,
-          provider: details.provider,
+          provider: details?.provider,
         },
-
         status: "PAID",
         createdAt: new Date().toISOString(),
       });
-        router.push("/invoices");
-      } catch (err: any) {
-        alert(err.message || "Failed to create invoice");
-      }
-    };
 
+      // ✅ CORRECT ROUTE
+      router.push("/dashboard/invoices");
+
+    } catch (err: any) {
+      alert(err.message || "Failed to create invoice");
+    }
+  };
 
   /* ================= UI ================= */
 
   return (
-    <div className="max-w-4xl space-y-6">
+    <div className="max-w-4xl mx-auto space-y-6 p-6">
       <h1 className="text-2xl font-bold">Create Invoice</h1>
 
+      {/* CUSTOMER SELECT */}
       <select
         value={customerId}
         onChange={(e) => setCustomerId(e.target.value)}
         className="border px-3 py-2 rounded w-full"
       >
         <option value="">Select Customer</option>
-        {customers.map(c => (
-          <option key={c.id} value={c.id}>{c.name}</option>
+        {customers.map((c) => (
+          <option key={c.id} value={c.id}>
+            {c.name}
+          </option>
         ))}
       </select>
 
+      {/* ITEMS */}
       {items.map((item, i) => (
         <div key={i} className="flex gap-2">
           <input
             value={item.name}
-            onChange={(e) => updateItem(i, "name", e.target.value)}
+            onChange={(e) =>
+              updateItem(i, "name", e.target.value)
+            }
             className="border px-2 py-1 flex-1"
             placeholder="Product"
           />
+
           <input
             type="number"
             min={1}
             value={item.quantity}
-            onChange={(e) => updateItem(i, "quantity", e.target.value)}
+            onChange={(e) =>
+              updateItem(i, "quantity", e.target.value)
+            }
             className="border px-2 py-1 w-20"
           />
+
           <input
             type="number"
             min={0}
             value={item.price}
-            onChange={(e) => updateItem(i, "price", e.target.value)}
+            onChange={(e) =>
+              updateItem(i, "price", e.target.value)
+            }
             className="border px-2 py-1 w-28"
           />
-          <button onClick={() => removeItem(i)} className="text-red-600">
+
+          <button
+            onClick={() => removeItem(i)}
+            className="text-red-600"
+          >
             Remove
           </button>
         </div>
       ))}
 
-      <button onClick={addItem} className="text-blue-600">
+      <button
+        onClick={addItem}
+        className="text-blue-600"
+      >
         + Add Item
       </button>
 
+      {/* TOTAL */}
       <div className="text-right font-bold text-xl">
         Total: ₹{total.toFixed(2)}
       </div>
 
-      <PaymentMethod total={total} onConfirm={handleConfirmPayment} />
+      {/* PAYMENT */}
+      <PaymentMethod
+        total={total}
+        onConfirm={handleConfirmPayment}
+      />
     </div>
   );
 }
