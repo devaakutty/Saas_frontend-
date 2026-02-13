@@ -38,8 +38,8 @@ export interface Invoice {
     method: string;
     provider?: string;
   };
-
-  status: "PAID" | "UNPAID";
+  // status: "PAID" | "UNPAID";
+  status: "PAID" | "UNPAID" | "PENDING";
   createdAt: string;
 }
 
