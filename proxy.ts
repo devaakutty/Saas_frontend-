@@ -15,14 +15,12 @@ export function proxy(request: NextRequest) {
     pathname.startsWith("/customers") ||
     pathname.startsWith("/payment");
 
-  // ❌ Not logged in → block protected pages
   if (!token && isProtectedPage) {
     return NextResponse.redirect(
       new URL("/register", request.url)
     );
   }
 
-  // ✅ Logged in → block auth pages
   if (token && isAuthPage) {
     return NextResponse.redirect(
       new URL("/dashboard", request.url)
@@ -32,7 +30,6 @@ export function proxy(request: NextRequest) {
   return NextResponse.next();
 }
 
-/* ================= PROXY MATCHER ================= */
 export const config = {
   matcher: [
     "/dashboard/:path*",
