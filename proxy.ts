@@ -12,15 +12,16 @@ export function proxy(request: NextRequest) {
   const isProtectedPage =
     pathname.startsWith("/dashboard") ||
     pathname.startsWith("/invoices") ||
-    pathname.startsWith("/customers") ||
-    pathname.startsWith("/payment");
+    pathname.startsWith("/customers");
 
+  // ❌ Not logged in → block protected pages
   if (!token && isProtectedPage) {
     return NextResponse.redirect(
       new URL("/register", request.url)
     );
   }
 
+  // ✅ Logged in → block auth pages
   if (token && isAuthPage) {
     return NextResponse.redirect(
       new URL("/dashboard", request.url)
@@ -35,7 +36,6 @@ export const config = {
     "/dashboard/:path*",
     "/invoices/:path*",
     "/customers/:path*",
-    "/payment/:path*",
     "/login",
     "/register",
   ],
