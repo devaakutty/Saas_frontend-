@@ -81,50 +81,52 @@ export default function RegisterContent() {
 
   /* ================= SUBMIT ================= */
 
-  const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
     if (formData.mobile.length !== 10) {
-      setError("Mobile number must be exactly 10 digits");
-      return;
+        setError("Mobile number must be exactly 10 digits");
+        return;
     }
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      setError("Enter a valid email address");
-      return;
+        setError("Enter a valid email address");
+        return;
     }
 
     if (formData.password.length < 6) {
-      setError("Password must be at least 6 characters");
-      return;
+        setError("Password must be at least 6 characters");
+        return;
     }
 
     try {
-      setLoading(true);
+        setLoading(true);
 
-      await apiFetch("/auth/register", {
+        // ✅ SEND CORRECT FIELDS
+        await apiFetch("/auth/register", {
         method: "POST",
         body: JSON.stringify({
-          email: formData.email,
-          password: formData.password,
-          firstName: formData.name,
-          lastName: "",
+            name: formData.name,
+            mobile: formData.mobile,
+            email: formData.email,
+            password: formData.password,
         }),
-      });
+        });
 
-      if (plan === "starter") {
+        // 🔥 No need auto-login because backend already sets cookie
+        if (plan === "starter") {
         router.replace("/dashboard");
-      } else {
+        } else {
         router.replace(`/payment?plan=${plan}&billing=${billing}`);
-      }
+        }
 
     } catch (err: any) {
-      setError(err.message || "Registration failed");
+        setError(err.message || "Registration failed");
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
-  };
+    };
 
   /* ================= UI ================= */
 
