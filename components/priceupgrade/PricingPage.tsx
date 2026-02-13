@@ -3,6 +3,16 @@
 import React, { useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
+import { Playfair_Display, Inter } from "next/font/google";
+
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["400", "700"],
+});
+
+const inter = Inter({
+  subsets: ["latin"],
+});
 
 type BillingCycle = "monthly" | "yearly";
 type PlanId = "starter" | "pro" | "business";
@@ -73,34 +83,48 @@ export default function PricingPage() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
+    <div
+      className={`${inter.className} min-h-screen text-white bg-gradient-to-br from-[#1b1f3a] via-[#23265a] to-[#2b2e63] relative overflow-hidden`}
+    >
+      {/* Glow Effects */}
+      <div className="absolute top-[-200px] left-[-150px] w-[500px] h-[500px] bg-purple-600 opacity-20 blur-[140px] rounded-full" />
+      <div className="absolute bottom-[-200px] right-[-150px] w-[500px] h-[500px] bg-pink-600 opacity-20 blur-[140px] rounded-full" />
 
       {/* ================= HERO ================= */}
       <motion.div
         initial={{ opacity: 0, y: -40 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.7 }}
-        className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-center py-20 px-4"
+        transition={{ duration: 0.8 }}
+        className="text-center px-6 pt-[120px] pb-[100px]"
       >
-        <h1 className="text-4xl md:text-5xl font-extrabold mb-4">
-          QuickBillz Pricing
+        <h1
+          className={`${playfair.className} text-5xl md:text-7xl lg:text-8xl leading-tight tracking-tight`}
+        >
+          <span className="font-light">
+            Improve your
+          </span>
+          <br />
+          <span className="font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+            Billing Power
+          </span>
         </h1>
-        <p className="opacity-90 text-lg">
-          Simple billing & invoicing for startups
+
+        <p className="mt-6 text-lg text-gray-300 max-w-xl mx-auto">
+          Elegant invoicing and smart business tools for modern startups.
         </p>
       </motion.div>
 
       {/* ================= BILLING TOGGLE ================= */}
-      <div className="flex justify-center mt-10 px-4">
-        <div className="bg-white shadow-md rounded-full p-1 flex">
+      <div className="flex justify-center px-6">
+        <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-full p-2 flex shadow-lg">
           {(["monthly", "yearly"] as BillingCycle[]).map((cycle) => (
             <button
               key={cycle}
               onClick={() => setBillingCycle(cycle)}
-              className={`px-6 py-2 rounded-full font-medium transition-all duration-300 ${
+              className={`px-8 py-3 rounded-full transition-all duration-300 ${
                 billingCycle === cycle
-                  ? "bg-indigo-600 text-white shadow-md"
-                  : "text-gray-600 hover:text-indigo-600"
+                  ? "bg-white text-black font-semibold"
+                  : "text-gray-300 hover:text-white"
               }`}
             >
               {cycle === "monthly"
@@ -112,7 +136,7 @@ export default function PricingPage() {
       </div>
 
       {/* ================= PLANS ================= */}
-      <div className="flex flex-wrap justify-center gap-8 mt-16 pb-24 px-4">
+      <div className="flex flex-wrap justify-center gap-10 mt-20 pb-[120px] px-6 relative z-10">
 
         {plans.map((plan, index) => (
           <motion.div
@@ -121,36 +145,32 @@ export default function PricingPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.15 }}
             whileHover={{ scale: 1.05 }}
-            className={`bg-white rounded-3xl p-8 w-full sm:w-80 text-center shadow-xl transition-all duration-300 ${
+            className={`backdrop-blur-xl bg-white/10 border border-white/20 rounded-[24px] p-10 w-full sm:w-[340px] text-center shadow-2xl transition-all ${
               plan.popular
-                ? "border-4 border-indigo-600"
-                : "border border-gray-100"
+                ? "ring-2 ring-purple-400"
+                : ""
             }`}
           >
-            {/* PLAN TITLE */}
-            <h2 className="text-2xl font-bold mb-2">
-              {plan.name} {plan.popular && "🌟"}
+            <h2 className="text-2xl font-semibold mb-3">
+              {plan.name}
             </h2>
 
-            {/* PRICE */}
-            <p className="text-indigo-600 text-3xl mb-4 font-bold">
+            <p className="text-4xl font-bold mb-6">
               ₹{plan.price[billingCycle]}
-              <span className="text-base text-gray-500 ml-1">
+              <span className="text-base text-gray-300 ml-2">
                 /{billingCycle === "monthly" ? "mo" : "yr"}
               </span>
             </p>
 
-            {/* FEATURES */}
-            <ul className="text-left space-y-2 border-t pt-4 text-gray-700">
+            <ul className="space-y-3 text-gray-300 text-left mb-8">
               {plan.features.map((feature, i) => (
                 <li key={i}>• {feature}</li>
               ))}
             </ul>
 
-            {/* BUTTON */}
             <button
               onClick={() => handlePlanClick(plan.id)}
-              className="mt-6 w-full py-2 rounded-xl font-semibold bg-indigo-600 text-white hover:bg-indigo-700 transition"
+              className="w-full py-3 rounded-xl font-semibold backdrop-blur-md bg-white/20 hover:bg-white/30 transition-all"
             >
               {plan.buttonText}
             </button>

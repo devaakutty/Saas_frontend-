@@ -30,6 +30,14 @@
   }
 }
 
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+
 @media print {
   body {
     background: white;
@@ -73,4 +81,31 @@
 
 .animate-scaleIn {
   animation: scaleIn 0.2s ease-out;
+}
+/* ================= SCROLLBAR HIDE (GLOBAL) ================= */
+
+/* Chrome, Safari, Edge */
+::-webkit-scrollbar {
+  width: 0px;
+  height: 0px;
+}
+
+/* Firefox */
+html {
+  scrollbar-width: none;
+}
+
+/* IE & Edge */
+body {
+  -ms-overflow-style: none;
+}
+
+/* Optional utility class (if needed manually) */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

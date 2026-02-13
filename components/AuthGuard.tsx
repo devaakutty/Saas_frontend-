@@ -2,7 +2,7 @@
 
 import { useAuth } from "@/hooks/useAuth";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 
 export default function AuthGuard({
   children,
@@ -13,32 +13,48 @@ export default function AuthGuard({
   const router = useRouter();
   const pathname = usePathname();
 
-  const isProtectedRoute =
-    pathname.startsWith("/dashboard") ||
-    pathname.startsWith("/payment");
+  const isProtectedRoute = useMemo(() => {
+    return (
+      pathname.startsWith("/dashboard") ||
+      pathname.startsWith("/payment")
+    );
+  }, [pathname]);
+
+  const isAuthRoute =
+    pathname === "/login" || pathname === "/register";
 
   useEffect(() => {
     if (loading) return;
 
-    // If not logged in → block protected routes
+    // Not logged in → redirect to login
     if (!user && isProtectedRoute) {
       router.replace("/login");
       return;
     }
 
-    // If logged in → block auth pages
-    if (
-      user &&
-      (pathname === "/login" || pathname === "/register")
-    ) {
+    // Logged in → block login/register
+    if (user && isAuthRoute) {
       router.replace("/dashboard");
+      return;
     }
-  }, [user, loading, pathname, router, isProtectedRoute]);
+  }, [user, loading, isProtectedRoute, isAuthRoute, router]);
 
-  if (loading) return null;
+  /* ================= LOADING UI ================= */
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#1b1f3a] via-[#23265a] to-[#2b2e63] text-white">
+        <div className="animate-pulse text-lg tracking-wide">
+          Loading...
+        </div>
+      </div>
+    );
+  }
+
+  /* ================= BLOCK PROTECTED CONTENT ================= */
 
   if (!user && isProtectedRoute) {
-    return null;
+    return null; // will redirect via useEffect
   }
 
   return <>{children}</>;

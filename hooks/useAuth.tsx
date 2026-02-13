@@ -21,7 +21,7 @@ type User = {
 type AuthContextType = {
   user: User | null;
   isAuthenticated: boolean;
-  login: () => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
   loading: boolean;
@@ -39,36 +39,37 @@ export function AuthProvider({
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  /* ================= REFRESH USER ================= */
+  /* ================= RESTORE SESSION ================= */
 
   const refreshUser = useCallback(async () => {
     try {
       const me = await apiFetch<User>("/users/me");
       setUser(me);
-    } catch (err: any) {
-      // If unauthorized, clear user
+    } catch {
       setUser(null);
     }
   }, []);
 
-  /* ================= RESTORE SESSION ================= */
-
   useEffect(() => {
     const init = async () => {
-      try {
-        await refreshUser();
-      } finally {
-        setLoading(false); // 🔥 always stop loading
-      }
+      await refreshUser();
+      setLoading(false);
     };
 
     init();
   }, [refreshUser]);
 
-  /* ================= LOGIN ================= */
+  /* ================= LOGIN (FIXED) ================= */
 
-  const login = async () => {
-    await refreshUser();
+  const login = async (email: string, password: string) => {
+    const res = await apiFetch<{ user: User }>("/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ email, password }),
+    });
+
+    // 🔥 Immediately set user from response
+    setUser(res.user);
+
     router.replace("/dashboard");
   };
 
@@ -79,7 +80,7 @@ export function AuthProvider({
       await apiFetch("/auth/logout", {
         method: "POST",
       });
-    } catch (err) {
+    } catch {
       console.error("Logout failed");
     }
 
