@@ -9,11 +9,10 @@ export default function AuthGuard({
 }: {
   children: React.ReactNode;
 }) {
-  const { isAuthenticated, loading } = useAuth();
+  const { user, loading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
 
-  // 🔐 Protected routes
   const isProtectedRoute =
     pathname.startsWith("/dashboard") ||
     pathname.startsWith("/payment");
@@ -21,25 +20,24 @@ export default function AuthGuard({
   useEffect(() => {
     if (loading) return;
 
-    // If NOT logged in → block protected routes
-    if (!isAuthenticated && isProtectedRoute) {
+    // If not logged in → block protected routes
+    if (!user && isProtectedRoute) {
       router.replace("/login");
       return;
     }
 
     // If logged in → block auth pages
     if (
-      isAuthenticated &&
+      user &&
       (pathname === "/login" || pathname === "/register")
     ) {
       router.replace("/dashboard");
     }
-  }, [isAuthenticated, loading, pathname, router, isProtectedRoute]);
+  }, [user, loading, pathname, router, isProtectedRoute]);
 
-  // 🛑 Prevent rendering protected pages until auth resolved
   if (loading) return null;
 
-  if (!isAuthenticated && isProtectedRoute) {
+  if (!user && isProtectedRoute) {
     return null;
   }
 
