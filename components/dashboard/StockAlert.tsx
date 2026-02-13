@@ -33,7 +33,6 @@ export default function StockAlert() {
       } catch (err: any) {
         if (!isMounted) return;
 
-        // 🔐 Handle auth error
         if (err.message === "Not authorized, please login") {
           router.replace("/login");
           return;
@@ -53,7 +52,7 @@ export default function StockAlert() {
     };
   }, [router]);
 
-  /* ===== GROUP BY UNIT (Memoized) ===== */
+  /* ===== GROUP BY UNIT ===== */
   const unitCount = useMemo(() => {
     const map: Record<string, number> = {};
 
@@ -69,7 +68,7 @@ export default function StockAlert() {
 
   if (loading) {
     return (
-      <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 text-sm text-gray-400 text-center">
+      <div className="bg-white dark:bg-white/5 backdrop-blur-md rounded-2xl p-6 border border-white/10 text-sm text-center text-white/60">
         Loading stock alerts…
       </div>
     );
@@ -79,13 +78,14 @@ export default function StockAlert() {
 
   if (error === "Upgrade to access analytics") {
     return (
-      <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 text-center space-y-3">
-        <p className="text-gray-500 font-semibold">
+      <div className="bg-white dark:bg-white/5 backdrop-blur-md rounded-2xl p-6 border border-white/10 text-center space-y-4">
+        <p className="text-white/60 font-medium">
           Stock analytics available in Pro Plan
         </p>
+
         <button
           onClick={() => router.push("/pricing")}
-          className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition"
+          className="bg-primary hover:bg-primary/80 text-white px-5 py-2 rounded-xl transition shadow-lg"
         >
           Upgrade Now
         </button>
@@ -97,7 +97,7 @@ export default function StockAlert() {
 
   if (error) {
     return (
-      <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 text-sm text-red-500 text-center">
+      <div className="bg-white dark:bg-white/5 backdrop-blur-md rounded-2xl p-6 border border-white/10 text-sm text-red-400 text-center">
         {error}
       </div>
     );
@@ -107,9 +107,11 @@ export default function StockAlert() {
 
   if (!items.length) {
     return (
-      <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-        <h3 className="font-semibold mb-2">Stock Alert</h3>
-        <p className="text-sm text-green-600">
+      <div className="bg-white dark:bg-white/5 backdrop-blur-md rounded-2xl p-6 border border-white/10">
+        <h3 className="font-semibold mb-2 text-primary">
+          Stock Status
+        </h3>
+        <p className="text-sm text-primary/80">
           All items are sufficiently stocked
         </p>
       </div>
@@ -119,13 +121,14 @@ export default function StockAlert() {
   /* ================= LOW STOCK UI ================= */
 
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-4">
-      <h3 className="font-semibold text-red-600">
-        ⚠ Stock Alert (Below 5)
+    <div className="bg-white dark:bg-white/5 backdrop-blur-md rounded-2xl p-6 border border-white/10 space-y-5 shadow-lg">
+
+      <h3 className="font-semibold text-primary">
+        ⚠ Low Stock Alert (Below 5)
       </h3>
 
       {/* SUMMARY */}
-      <div className="text-sm text-gray-700 space-y-1">
+      <div className="text-sm text-white/70 space-y-1">
         {Object.entries(unitCount).map(([unit, count]) => (
           <div key={unit}>
             • <b>{count}</b> product(s) in <b>{unit}</b>
@@ -134,17 +137,17 @@ export default function StockAlert() {
       </div>
 
       {/* LIST */}
-      <ul className="space-y-3 pt-2 border-t">
+      <ul className="space-y-3 pt-3 border-t border-white/10">
         {items.map((item) => (
           <li
             key={item._id}
             className="flex items-center justify-between text-sm"
           >
-            <span className="font-medium">
+            <span className="font-medium text-white">
               {item.name}
             </span>
 
-            <span className="bg-red-100 text-red-700 px-2 py-0.5 rounded text-xs font-semibold">
+            <span className="bg-primary/15 text-primary px-3 py-1 rounded-full text-xs font-semibold">
               {item.quantity} {item.unit ?? "pcs"}
             </span>
           </li>

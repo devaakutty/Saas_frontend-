@@ -2,11 +2,10 @@
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL ||
-  // "http://localhost:5000"; // local fallback
-  "https://saas-billz-backend.onrender.com"; // local fallback
+  "http://localhost:5000"; // fallback for local dev
 
-if (!API_URL) {
-  console.error("NEXT_PUBLIC_API_URL not defined");
+if (!process.env.NEXT_PUBLIC_API_URL) {
+  console.warn("Using local API fallback:", API_URL);
 }
 
 /* ================= API FETCH ================= */
@@ -21,7 +20,7 @@ export async function apiFetch<T = any>(
   try {
     const res = await fetch(url, {
       ...options,
-      credentials: "include", // required for cookies
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
         ...(options.headers || {}),
@@ -36,55 +35,58 @@ export async function apiFetch<T = any>(
 
     /* ================= SAFE RESPONSE PARSE ================= */
 
-    const contentType = res.headers.get("content-type") || "";
-
     let data: any = null;
 
     if (responseType === "blob") {
       data = await res.blob();
-    } else if (contentType.includes("application/json")) {
-      data = await res.json();
     } else {
-      // If backend returns HTML (Vercel 404, wrong URL, etc.)
-      const text = await res.text();
+      const contentType = res.headers.get("content-type") || "";
 
-      throw new Error(
-        `Invalid server response. Check backend URL or deployment.`
-      );
+      if (contentType.includes("application/json")) {
+        data = await res.json();
+      } else {
+        const text = await res.text();
+
+        // Backend returned HTML (wrong URL, 404 page, etc.)
+        throw new Error(
+          "Invalid server response. Check backend URL or deployment."
+        );
+      }
     }
 
     /* ================= HANDLE API ERROR ================= */
 
     if (!res.ok) {
       const message = data?.message || `Error ${res.status}`;
+
+      // Do NOT spam console for normal auth errors
+    if (!res.ok) {
+      const message = data?.message || `Error ${res.status}`;
+
+      const expectedErrors = [
+        "Not authorized, please login",
+        "Upgrade to access analytics",
+        "Upgrade required",
+        "Plan limit exceeded",
+      ];
+
+      // Only log real system errors
+      if (!expectedErrors.includes(message) && res.status >= 500) {
+        console.error("API ERROR:", message);
+      }
+
+      throw new Error(message);
+    }
       throw new Error(message);
     }
 
     return data as T;
-
   } catch (error: any) {
-
-    /* ================= EXPECTED USER ERRORS ================= */
-
-    const expectedErrors = [
-      "Not authorized, please login",
-      "Upgrade to access analytics",
-      "User already exists",
-      "Invalid email or password",
-    ];
-
-    if (
-      !expectedErrors.includes(error.message) &&
-      !(error instanceof TypeError)
-    ) {
-      console.error("API ERROR:", error.message);
-    }
-
     /* ================= NETWORK ERROR ================= */
 
     if (error instanceof TypeError) {
       throw new Error(
-        "Cannot connect to server. Please check backend deployment."
+        "Cannot connect to server. Check backend deployment or API URL."
       );
     }
 

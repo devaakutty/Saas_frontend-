@@ -4,6 +4,16 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { apiFetch } from "@/server/api";
 import { useAuth } from "@/hooks/useAuth";
+import { Playfair_Display, Inter } from "next/font/google";
+
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["400", "700"],
+});
+
+const inter = Inter({
+  subsets: ["latin"],
+});
 
 type PlanType = "starter" | "pro" | "business";
 type BillingType = "monthly" | "yearly";
@@ -45,35 +55,6 @@ export default function PaymentContent() {
     setInitialized(true);
   }, [searchParams]);
 
-  useEffect(() => {
-    if (!initialized || !plan || !billing) return;
-    if (plan !== "starter") return;
-
-    const processFreePlan = async () => {
-      try {
-        setLoading(true);
-
-        await apiFetch("/payments/verify", {
-          method: "POST",
-          body: JSON.stringify({
-            plan,
-            billing,
-            provider: "free",
-          }),
-        });
-
-        await refreshUser();
-        router.replace("/dashboard");
-      } catch (err: any) {
-        alert(err.message || "Upgrade failed");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    processFreePlan();
-  }, [initialized, plan, billing, router, refreshUser]);
-
   const handlePayment = async (
     provider: "razorpay" | "stripe"
   ) => {
@@ -100,17 +81,11 @@ export default function PaymentContent() {
     }
   };
 
-  if (!initialized) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        Loading payment details...
-      </div>
-    );
-  }
+  if (!initialized) return null;
 
   if (!plan || !billing) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-red-500">
+      <div className="min-h-screen flex items-center justify-center text-red-400">
         Invalid payment details
       </div>
     );
@@ -119,50 +94,83 @@ export default function PaymentContent() {
   const price = PLAN_PRICES[plan][billing];
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
-      <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">
-        <h1 className="text-2xl font-bold text-center mb-6">
-          Complete Payment
-        </h1>
+    <div
+      className={`${inter.className} min-h-screen bg-[linear-gradient(135deg,#1b1f3a,#2b2e63)] text-white relative overflow-hidden`}
+    >
+      {/* Glow Effects */}
+      <div className="absolute -top-40 -right-40 w-[420px] h-[420px] bg-primary/30 blur-[160px] rounded-full" />
+      <div className="absolute -bottom-40 -left-40 w-[380px] h-[380px] bg-primary/20 blur-[140px] rounded-full" />
 
-        <div className="border rounded-xl p-5 mb-6 space-y-3 bg-gray-50">
-          <div className="flex justify-between">
-            <span>Plan</span>
-            <span className="capitalize font-semibold">{plan}</span>
-          </div>
+      <div className="relative z-10 px-6 py-[120px] flex flex-col items-center">
 
-          <div className="flex justify-between">
-            <span>Billing</span>
-            <span className="capitalize font-semibold">{billing}</span>
-          </div>
-
-          <div className="flex justify-between border-t pt-3 mt-3">
-            <span>Total Amount</span>
-            <span className="text-indigo-600 font-bold text-xl">
-              ₹{price}
+        {/* HERO */}
+        <div className="text-center mb-16 max-w-3xl">
+          <h1
+            className={`${playfair.className} text-[64px] md:text-[80px] leading-[0.95] tracking-tight`}
+          >
+            Complete your{" "}
+            <span className="font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+              Upgrade
             </span>
-          </div>
+          </h1>
+
+          <p className="mt-6 text-white/60 text-lg">
+            Secure checkout powered by trusted payment providers.
+          </p>
         </div>
 
-        {plan !== "starter" && (
-          <>
-            <button
-              disabled={loading}
-              onClick={() => handlePayment("razorpay")}
-              className="w-full bg-indigo-600 text-white py-3 rounded-lg mb-3"
-            >
-              {loading ? "Processing..." : "Pay with Razorpay"}
-            </button>
+        {/* GLASS CARD */}
+        <div className="w-full max-w-lg bg-white/5 backdrop-blur-xl border border-white/10 rounded-[28px] p-10 shadow-2xl">
 
-            <button
-              disabled={loading}
-              onClick={() => handlePayment("stripe")}
-              className="w-full border py-3 rounded-lg"
-            >
-              {loading ? "Processing..." : "Pay with Stripe"}
-            </button>
-          </>
-        )}
+          {/* PLAN SUMMARY */}
+          <div className="space-y-4 text-white/80 text-sm">
+
+            <div className="flex justify-between">
+              <span>Plan</span>
+              <span className="capitalize font-semibold text-white">
+                {plan}
+              </span>
+            </div>
+
+            <div className="flex justify-between">
+              <span>Billing</span>
+              <span className="capitalize font-semibold text-white">
+                {billing}
+              </span>
+            </div>
+
+            <div className="flex justify-between border-t border-white/10 pt-4 mt-4">
+              <span>Total</span>
+              <span className="text-3xl font-bold text-primary">
+                ₹{price}
+              </span>
+            </div>
+          </div>
+
+          {/* BUTTONS */}
+          {plan !== "starter" && (
+            <div className="mt-10 space-y-4">
+
+              <button
+                disabled={loading}
+                onClick={() => handlePayment("razorpay")}
+                className="w-full py-4 rounded-[20px] bg-primary text-white font-semibold transition-all duration-300 hover:bg-primary/80 shadow-lg"
+              >
+                {loading ? "Processing..." : "Pay with Razorpay"}
+              </button>
+
+              <button
+                disabled={loading}
+                onClick={() => handlePayment("stripe")}
+                className="w-full py-4 rounded-[20px] bg-white/10 hover:bg-white/20 border border-white/20 transition-all duration-300"
+              >
+                {loading ? "Processing..." : "Pay with Stripe"}
+              </button>
+
+            </div>
+          )}
+
+        </div>
       </div>
     </div>
   );

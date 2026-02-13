@@ -12,8 +12,6 @@ import { useEffect, useState } from "react";
 import { apiFetch } from "@/server/api";
 import { useRouter } from "next/navigation";
 
-const COLORS = ["#6366f1", "#22c55e", "#f59e0b", "#ef4444", "#0ea5e9"];
-
 export default function DevicesChart() {
   const router = useRouter();
 
@@ -43,7 +41,6 @@ export default function DevicesChart() {
       } catch (err: any) {
         if (!isMounted) return;
 
-        // Handle auth error
         if (err.message === "Not authorized, please login") {
           router.replace("/login");
           return;
@@ -67,23 +64,24 @@ export default function DevicesChart() {
 
   if (loading) {
     return (
-      <div className="h-full flex items-center justify-center text-gray-400 text-sm">
+      <div className="h-full flex items-center justify-center text-white/60 text-sm">
         Loading analytics…
       </div>
     );
   }
 
-  /* ================= PLAN RESTRICTION ================= */
+  /* ================= PLAN LOCK ================= */
 
   if (error === "Upgrade to access analytics") {
     return (
       <div className="h-full flex flex-col items-center justify-center text-center space-y-4">
-        <p className="text-gray-500 font-semibold">
+        <p className="text-white/60 font-medium">
           Analytics available in Pro Plan
         </p>
+
         <button
           onClick={() => router.push("/pricing")}
-          className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition"
+          className="bg-primary hover:bg-primary/80 text-white px-5 py-2 rounded-xl transition shadow-lg"
         >
           Upgrade Now
         </button>
@@ -95,7 +93,7 @@ export default function DevicesChart() {
 
   if (error) {
     return (
-      <div className="h-full flex items-center justify-center text-red-500 text-sm">
+      <div className="h-full flex items-center justify-center text-red-400 text-sm">
         {error}
       </div>
     );
@@ -105,11 +103,23 @@ export default function DevicesChart() {
 
   if (!data.length) {
     return (
-      <div className="h-full flex items-center justify-center text-gray-400 text-sm">
+      <div className="h-full flex items-center justify-center text-white/50 text-sm">
         No analytics data available
       </div>
     );
   }
+
+  /* ================= DYNAMIC COLORS ================= */
+
+  const primaryColor = "rgb(var(--primary))";
+
+  const COLORS = [
+    primaryColor,
+    "rgba(var(--primary),0.75)",
+    "rgba(var(--primary),0.55)",
+    "rgba(var(--primary),0.35)",
+    "rgba(var(--primary),0.2)",
+  ];
 
   /* ================= CHART ================= */
 
@@ -120,9 +130,9 @@ export default function DevicesChart() {
           data={data}
           dataKey="value"
           nameKey="name"
-          innerRadius={45}
+          innerRadius={50}
           outerRadius={95}
-          paddingAngle={2}
+          paddingAngle={3}
         >
           {data.map((_, i) => (
             <Cell
@@ -131,7 +141,15 @@ export default function DevicesChart() {
             />
           ))}
         </Pie>
-        <Tooltip />
+
+        <Tooltip
+          contentStyle={{
+            background: "#111827",
+            borderRadius: "12px",
+            border: "1px solid rgba(255,255,255,0.1)",
+          }}
+        />
+
         <Legend />
       </PieChart>
     </ResponsiveContainer>
