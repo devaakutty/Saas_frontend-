@@ -15,7 +15,6 @@ type User = {
   email: string;
   role: "owner" | "member";
   plan?: string;
-  userLimit?: number;
 };
 
 type AuthContextType = {
@@ -39,8 +38,6 @@ export function AuthProvider({
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  /* ================= RESTORE SESSION ================= */
-
   const refreshUser = useCallback(async () => {
     try {
       const me = await apiFetch<User>("/users/me");
@@ -59,30 +56,20 @@ export function AuthProvider({
     init();
   }, [refreshUser]);
 
-  /* ================= LOGIN (FIXED) ================= */
-
   const login = async (email: string, password: string) => {
     const res = await apiFetch<{ user: User }>("/auth/login", {
       method: "POST",
       body: JSON.stringify({ email, password }),
     });
 
-    // 🔥 Immediately set user from response
     setUser(res.user);
-
     router.replace("/dashboard");
   };
 
-  /* ================= LOGOUT ================= */
-
   const logout = async () => {
-    try {
-      await apiFetch("/auth/logout", {
-        method: "POST",
-      });
-    } catch {
-      console.error("Logout failed");
-    }
+    await apiFetch("/auth/logout", {
+      method: "POST",
+    });
 
     setUser(null);
     router.replace("/login");

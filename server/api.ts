@@ -21,6 +21,7 @@ export async function apiFetch<T = any>(
     const res = await fetch(url, {
       ...options,
       credentials: "include",
+      cache: "no-store",
       headers: {
         "Content-Type": "application/json",
         ...(options.headers || {}),

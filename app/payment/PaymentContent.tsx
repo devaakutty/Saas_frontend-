@@ -6,6 +6,8 @@ import { apiFetch } from "@/server/api";
 import { useAuth } from "@/hooks/useAuth";
 import { Playfair_Display, Inter } from "next/font/google";
 
+/* ================= FONTS ================= */
+
 const playfair = Playfair_Display({
   subsets: ["latin"],
   weight: ["400", "700"],
@@ -15,8 +17,12 @@ const inter = Inter({
   subsets: ["latin"],
 });
 
+/* ================= TYPES ================= */
+
 type PlanType = "starter" | "pro" | "business";
 type BillingType = "monthly" | "yearly";
+
+/* ================= PLAN PRICES ================= */
 
 const PLAN_PRICES: Record<
   PlanType,
@@ -37,6 +43,8 @@ export default function PaymentContent() {
   const [billing, setBilling] = useState<BillingType | null>(null);
   const [initialized, setInitialized] = useState(false);
 
+  /* ================= READ QUERY ================= */
+
   useEffect(() => {
     const rawPlan = searchParams.get("plan");
     const rawBilling = searchParams.get("billing");
@@ -55,6 +63,8 @@ export default function PaymentContent() {
     setInitialized(true);
   }, [searchParams]);
 
+  /* ================= HANDLE PAYMENT ================= */
+
   const handlePayment = async (
     provider: "razorpay" | "stripe"
   ) => {
@@ -63,15 +73,24 @@ export default function PaymentContent() {
     try {
       setLoading(true);
 
+      // 🔥 Get email saved during register
+      const email = localStorage.getItem("pendingEmail");
+
+      if (!email) {
+        alert("Session expired. Please register again.");
+        router.replace("/register");
+        return;
+      }
       await apiFetch("/payments/verify", {
         method: "POST",
         body: JSON.stringify({
+          email,
           plan,
-          billing,
-          provider,
         }),
       });
-
+      // 🔥 Remove temp storage
+      localStorage.removeItem("pendingEmail");
+      // 🔥 Restore logged-in user
       await refreshUser();
       router.replace("/dashboard");
     } catch (err: any) {
@@ -81,8 +100,9 @@ export default function PaymentContent() {
     }
   };
 
-  if (!initialized) return null;
+  /* ================= GUARDS ================= */
 
+  if (!initialized) return null;
   if (!plan || !billing) {
     return (
       <div className="min-h-screen flex items-center justify-center text-red-400">
@@ -93,13 +113,15 @@ export default function PaymentContent() {
 
   const price = PLAN_PRICES[plan][billing];
 
+  /* ================= UI ================= */
+
   return (
     <div
       className={`${inter.className} min-h-screen bg-[linear-gradient(135deg,#1b1f3a,#2b2e63)] text-white relative overflow-hidden`}
     >
       {/* Glow Effects */}
-      <div className="absolute -top-40 -right-40 w-[420px] h-[420px] bg-primary/30 blur-[160px] rounded-full" />
-      <div className="absolute -bottom-40 -left-40 w-[380px] h-[380px] bg-primary/20 blur-[140px] rounded-full" />
+      <div className="absolute -top-40 -right-40 w-[420px] h-[420px] bg-purple-600/30 blur-[160px] rounded-full" />
+      <div className="absolute -bottom-40 -left-40 w-[380px] h-[380px] bg-pink-600/20 blur-[140px] rounded-full" />
 
       <div className="relative z-10 px-6 py-[120px] flex flex-col items-center">
 
@@ -109,7 +131,7 @@ export default function PaymentContent() {
             className={`${playfair.className} text-[64px] md:text-[80px] leading-[0.95] tracking-tight`}
           >
             Complete your{" "}
-            <span className="font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+            <span className="font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
               Upgrade
             </span>
           </h1>
@@ -141,20 +163,20 @@ export default function PaymentContent() {
 
             <div className="flex justify-between border-t border-white/10 pt-4 mt-4">
               <span>Total</span>
-              <span className="text-3xl font-bold text-primary">
+              <span className="text-3xl font-bold text-purple-400">
                 ₹{price}
               </span>
             </div>
           </div>
 
-          {/* BUTTONS */}
+          {/* PAYMENT BUTTONS */}
           {plan !== "starter" && (
             <div className="mt-10 space-y-4">
 
               <button
                 disabled={loading}
                 onClick={() => handlePayment("razorpay")}
-                className="w-full py-4 rounded-[20px] bg-primary text-white font-semibold transition-all duration-300 hover:bg-primary/80 shadow-lg"
+                className="w-full py-4 rounded-[20px] bg-purple-500 text-white font-semibold transition-all duration-300 hover:bg-purple-600 shadow-lg"
               >
                 {loading ? "Processing..." : "Pay with Razorpay"}
               </button>
