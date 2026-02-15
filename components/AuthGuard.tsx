@@ -22,25 +22,39 @@ export default function AuthGuard({
     const isDashboard = pathname.startsWith("/dashboard");
     const isPayment = pathname.startsWith("/payment");
 
+    const pendingEmail =
+      typeof window !== "undefined"
+        ? localStorage.getItem("pendingEmail")
+        : null;
+
     /* ================= NOT LOGGED IN ================= */
 
     if (!user) {
-      if (isDashboard || isPayment) {
+      // ❌ Block dashboard always
+      if (isDashboard) {
         router.replace("/login");
+        return;
       }
+
+      // ❌ Block payment if not coming from register
+      if (isPayment && !pendingEmail) {
+        router.replace("/login");
+        return;
+      }
+
       return;
     }
 
     /* ================= BLOCK LOGIN WHEN LOGGED IN ================= */
 
-    if (user && isAuthPage) {
+    if (isAuthPage) {
       router.replace("/dashboard");
       return;
     }
 
     /* ================= PLAN ENFORCEMENT ================= */
 
-    // Pro/Business must complete payment
+    // 🔵 Pro / Business must complete payment
     if (
       user.plan !== "starter" &&
       !user.isPaymentVerified &&
@@ -50,13 +64,15 @@ export default function AuthGuard({
       return;
     }
 
-    // Starter should not access payment page
+    // 🟢 Starter should not access payment page
     if (user.plan === "starter" && isPayment) {
       router.replace("/dashboard");
       return;
     }
 
   }, [user, loading, pathname, router]);
+
+  /* ================= LOADING SCREEN ================= */
 
   if (loading) {
     return (

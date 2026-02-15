@@ -80,21 +80,21 @@ const handlePayment = async (
       return;
     }
 
-    await apiFetch("/payments/verify", {
-      method: "POST",
-      body: JSON.stringify({
-        email,
-        plan,
-      }),
-    });
+      await apiFetch("/payments/verify", {
+        method: "POST",
+        body: JSON.stringify({
+          email,
+          plan,
+        }),
+      });
 
-    // Clear temp storage
-    localStorage.removeItem("pendingEmail");
+      // remove temp storage
+      localStorage.removeItem("pendingEmail");
 
-    // Refresh user state (important)
-    await refreshUser();
+      // 🔥 IMPORTANT
+      await refreshUser();
 
-    router.replace("/dashboard");
+      router.replace("/dashboard");
 
   } catch (err: any) {
     alert(err.message || "Payment failed");
