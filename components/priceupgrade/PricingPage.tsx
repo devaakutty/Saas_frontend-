@@ -3,6 +3,7 @@
 import React, { useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/useAuth";
 import { Playfair_Display, Inter } from "next/font/google";
 
 const playfair = Playfair_Display({
@@ -28,6 +29,7 @@ type Plan = {
 
 export default function PricingPage() {
   const router = useRouter();
+  const { user } = useAuth(); // 🔥 important
   const [billingCycle, setBillingCycle] =
     useState<BillingCycle>("monthly");
 
@@ -73,13 +75,38 @@ export default function PricingPage() {
     },
   ];
 
+  /* ================= SMART PLAN NAVIGATION ================= */
+
   const handlePlanClick = useCallback(
     (planId: PlanId) => {
+
+      // 🟢 STARTER PLAN
+      if (planId === "starter") {
+        if (user) {
+          router.push("/dashboard");
+        } else {
+          router.push("/register?plan=starter&billing=monthly");
+        }
+        return;
+      }
+
+      // 🔵 PRO / BUSINESS
+
+      // If NOT logged in → Register first
+      if (!user) {
+        router.push(
+          `/register?plan=${planId}&billing=${billingCycle}`
+        );
+        return;
+      }
+
+      // If logged in → Direct to payment
       router.push(
-        `/register?plan=${planId}&billing=${billingCycle}`
+        `/payment?plan=${planId}&billing=${billingCycle}`
       );
+
     },
-    [billingCycle, router]
+    [billingCycle, router, user]
   );
 
   return (

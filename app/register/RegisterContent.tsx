@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { apiFetch } from "@/server/api";
+import { useAuth } from "@/hooks/useAuth";
 import { Playfair_Display, Inter } from "next/font/google";
 
 const playfair = Playfair_Display({
@@ -30,6 +31,7 @@ const PLAN_PRICES: Record<
 export default function RegisterContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { user } = useAuth();
 
   const [plan, setPlan] = useState<PlanId>("starter");
   const [billing, setBilling] =
@@ -44,6 +46,14 @@ export default function RegisterContent() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  /* ================= BLOCK IF LOGGED IN ================= */
+
+  useEffect(() => {
+    if (user) {
+      router.replace("/dashboard");
+    }
+  }, [user, router]);
 
   /* ================= READ PLAN PARAMS ================= */
 
@@ -114,11 +124,16 @@ export default function RegisterContent() {
     try {
       setLoading(true);
 
+      const normalizedEmail = formData.email
+        .trim()
+        .toLowerCase();
+
       /* 1️⃣ Register */
       await apiFetch("/auth/register", {
         method: "POST",
         body: JSON.stringify({
           ...formData,
+          email: normalizedEmail,
           plan,
         }),
       });
@@ -128,7 +143,7 @@ export default function RegisterContent() {
         await apiFetch("/auth/login", {
           method: "POST",
           body: JSON.stringify({
-            email: formData.email,
+            email: normalizedEmail,
             password: formData.password,
           }),
         });
@@ -138,7 +153,7 @@ export default function RegisterContent() {
       }
 
       /* 3️⃣ Pro / Business → Payment */
-      localStorage.setItem("pendingEmail", formData.email);
+      localStorage.setItem("pendingEmail", normalizedEmail);
 
       router.replace(
         `/payment?plan=${plan}&billing=${billing}`

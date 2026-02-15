@@ -22,65 +22,56 @@ export default function AuthGuard({
     const isDashboard = pathname.startsWith("/dashboard");
     const isPayment = pathname.startsWith("/payment");
 
-    const pendingEmail =
-      typeof window !== "undefined"
-        ? localStorage.getItem("pendingEmail")
-        : null;
-
     /* ================= NOT LOGGED IN ================= */
 
     if (!user) {
-      // ❌ Block dashboard always
       if (isDashboard) {
         router.replace("/login");
-        return;
       }
-
-      // ❌ Block payment if not coming from register
-      if (isPayment && !pendingEmail) {
-        router.replace("/login");
-        return;
-      }
-
       return;
     }
 
-    /* ================= BLOCK LOGIN WHEN LOGGED IN ================= */
+    /* ================= BLOCK LOGIN IF LOGGED IN ================= */
 
     if (isAuthPage) {
       router.replace("/dashboard");
       return;
     }
 
-    /* ================= PLAN ENFORCEMENT ================= */
+    /* ================= STARTER PLAN ================= */
 
-    // 🔵 Pro / Business must complete payment
-    if (
-      user.plan !== "starter" &&
-      !user.isPaymentVerified &&
-      !isPayment
-    ) {
-      router.replace(
-        `/payment?plan=${user.plan}&billing=monthly`
-      );
+    if (user.plan === "starter") {
+      if (isPayment) {
+        router.replace("/dashboard");
+      }
       return;
     }
 
+    /* ================= PRO / BUSINESS ================= */
 
-    // 🟢 Starter should not access payment page
-    if (user.plan === "starter" && isPayment) {
+    // 🚨 IMPORTANT FIX:
+    // Only redirect if value is explicitly false
+    // if (user.isPaymentVerified === false) {
+    //   if (!isPayment) {
+    //     router.replace(
+    //       `/payment?plan=${user.plan}&billing=monthly`
+    //     );
+    //   }
+    //   return;
+    // }
+
+    // If verified, block payment page
+    if (user.isPaymentVerified === true && isPayment) {
       router.replace("/dashboard");
       return;
     }
 
   }, [user, loading, pathname, router]);
 
-  /* ================= LOADING SCREEN ================= */
-
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#1b1f3a] via-[#23265a] to-[#2b2e63] text-white">
-        <div className="animate-pulse text-lg tracking-wide">
+      <div className="min-h-screen flex items-center justify-center text-white bg-gradient-to-br from-[#1b1f3a] via-[#23265a] to-[#2b2e63]">
+        <div className="animate-pulse text-lg">
           Loading...
         </div>
       </div>

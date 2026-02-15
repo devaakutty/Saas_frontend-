@@ -126,6 +126,14 @@ export default function PaymentContent() {
     <div
       className={`${inter.className} min-h-screen bg-[linear-gradient(135deg,#1b1f3a,#2b2e63)] text-white relative overflow-hidden`}
     >
+      {/* Back Button */}
+      <button
+        onClick={() => router.back()}
+        className="absolute top-6 left-6 z-20 px-6 py-2 rounded-full backdrop-blur-md bg-white/10 border border-white/20 text-sm text-white hover:bg-white/20 hover:scale-105 transition-all duration-300 shadow-md"
+      >
+        ← Back
+      </button>
+
       <div className="absolute -top-40 -right-40 w-[420px] h-[420px] bg-purple-600/30 blur-[160px] rounded-full" />
       <div className="absolute -bottom-40 -left-40 w-[380px] h-[380px] bg-pink-600/20 blur-[140px] rounded-full" />
 
