@@ -1,8 +1,8 @@
 import "./globals.css";
 import { AuthProvider } from "@/hooks/useAuth";
 import AuthGuard from "@/components/AuthGuard";
-import { Playfair_Display, Inter } from "next/font/google";
 import ThemeLoader from "@/components/ThemeLoader";
+import { Playfair_Display, Inter } from "next/font/google";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -23,12 +23,14 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${playfair.variable} ${inter.variable}`}
       suppressHydrationWarning
+      className={`${playfair.variable} ${inter.variable}`}
     >
       <body className="font-[var(--font-inter)] bg-white text-black dark:bg-[#0b0e14] dark:text-white">
+        {/* Theme Loader */}
         <ThemeLoader />
 
+        {/* Authentication Context */}
         <AuthProvider>
           <AuthGuard>{children}</AuthGuard>
         </AuthProvider>

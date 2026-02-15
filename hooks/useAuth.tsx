@@ -10,11 +10,12 @@ import {
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/server/api";
 
-type User = {
+export type User = {
   id: string;
   email: string;
   role: "owner" | "member";
-  plan?: string;
+  plan: "starter" | "pro" | "business";
+  isPaymentVerified: boolean;
 };
 
 type AuthContextType = {
@@ -57,12 +58,14 @@ export function AuthProvider({
   }, [refreshUser]);
 
   const login = async (email: string, password: string) => {
-    const res = await apiFetch<{ user: User }>("/auth/login", {
+    await apiFetch("/auth/login", {
       method: "POST",
       body: JSON.stringify({ email, password }),
     });
 
-    setUser(res.user);
+    // 🔥 IMPORTANT: Refresh user after login
+    await refreshUser();
+
     router.replace("/dashboard");
   };
 

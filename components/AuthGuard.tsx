@@ -2,7 +2,7 @@
 
 import { useAuth } from "@/hooks/useAuth";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useMemo } from "react";
+import { useEffect } from "react";
 
 export default function AuthGuard({
   children,
@@ -13,33 +13,48 @@ export default function AuthGuard({
   const router = useRouter();
   const pathname = usePathname();
 
-  const isProtectedRoute = useMemo(() => {
-    return (
-      pathname.startsWith("/dashboard") ||
-      pathname.startsWith("/payment")
-    );
-  }, [pathname]);
-
-  const isAuthRoute =
-    pathname === "/login" || pathname === "/register";
-
   useEffect(() => {
     if (loading) return;
 
-    // Not logged in → redirect to login
-    if (!user && isProtectedRoute) {
+    const isProtected =
+      pathname.startsWith("/dashboard") ||
+      pathname.startsWith("/payment");
+
+    const isAuthPage =
+      pathname === "/login" || pathname === "/register";
+
+    // ❌ Not logged in → login
+    if (!user && isProtected) {
       router.replace("/login");
       return;
     }
 
-    // Logged in → block login/register
-    if (user && isAuthRoute) {
+    // ✅ Logged in → block login/register
+    if (user && isAuthPage) {
       router.replace("/dashboard");
       return;
     }
-  }, [user, loading, isProtectedRoute, isAuthRoute, router]);
 
-  /* ================= LOADING UI ================= */
+    // 💎 Plan Enforcement
+    if (user) {
+      // Pro/Business must complete payment
+      if (
+        user.plan !== "starter" &&
+        !user.isPaymentVerified &&
+        pathname !== "/payment"
+      ) {
+        router.replace("/payment");
+        return;
+      }
+
+      // Starter should not access payment
+      if (user.plan === "starter" && pathname === "/payment") {
+        router.replace("/dashboard");
+        return;
+      }
+    }
+
+  }, [user, loading, pathname, router]);
 
   if (loading) {
     return (
@@ -49,12 +64,6 @@ export default function AuthGuard({
         </div>
       </div>
     );
-  }
-
-  /* ================= BLOCK PROTECTED CONTENT ================= */
-
-  if (!user && isProtectedRoute) {
-    return null; // will redirect via useEffect
   }
 
   return <>{children}</>;
