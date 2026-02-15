@@ -98,44 +98,37 @@ export default function RegisterContent() {
 
   /* ================= SUBMIT ================= */
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
+ const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setError("");
 
-    if (
-      !formData.name ||
-      !formData.mobile ||
-      !formData.email ||
-      !formData.password
-    ) {
-      setError("All fields are required");
-      return;
-    }
+  if (
+    !formData.name ||
+    !formData.mobile ||
+    !formData.email ||
+    !formData.password
+  ) {
+    setError("All fields are required");
+    return;
+  }
 
-    if (formData.mobile.length !== 10) {
-      setError("Mobile number must be exactly 10 digits");
-      return;
-    }
+  try {
+    setLoading(true);
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email)) {
-      setError("Please enter a valid email address");
-      return;
-    }
+    // 1️⃣ Register user
+    await apiFetch("/auth/register", {
+      method: "POST",
+      body: JSON.stringify({
+        ...formData,
+        plan,
+      }),
+    });
 
-    try {
-      setLoading(true);
+    // Save email for payment verification
+    localStorage.setItem("pendingEmail", formData.email);
 
-      // ✅ Register
-      await apiFetch("/auth/register", {
-        method: "POST",
-        body: JSON.stringify({
-          ...formData,
-          plan,
-        }),
-      });
-
-      // ✅ Auto login after register
+    // 2️⃣ If Starter → Auto Login
+    if (plan === "starter") {
       await apiFetch("/auth/login", {
         method: "POST",
         body: JSON.stringify({
@@ -144,24 +137,19 @@ export default function RegisterContent() {
         }),
       });
 
-      // ✅ Save email for payment verification
-      localStorage.setItem("pendingEmail", formData.email);
-
-      // ✅ Correct SaaS flow
-      if (plan === "starter") {
-        router.replace("/dashboard");
-      } else {
-        router.replace(
-          `/payment?plan=${plan}&billing=${billing}`
-        );
-      }
-
-    } catch (err: any) {
-      setError(err.message || "Registration failed");
-    } finally {
-      setLoading(false);
+      router.replace("/dashboard");
+    } 
+    // 3️⃣ If Pro/Business → Go To Payment
+    else {
+      router.replace(`/payment?plan=${plan}&billing=${billing}`);
     }
-  };
+
+  } catch (err: any) {
+    setError(err.message || "Registration failed");
+  } finally {
+    setLoading(false);
+  }
+};
 
   /* ================= UI ================= */
 

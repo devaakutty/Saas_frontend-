@@ -16,42 +16,44 @@ export default function AuthGuard({
   useEffect(() => {
     if (loading) return;
 
-    const isProtected =
-      pathname.startsWith("/dashboard") ||
-      pathname.startsWith("/payment");
-
     const isAuthPage =
       pathname === "/login" || pathname === "/register";
 
-    // ❌ Not logged in → login
-    if (!user && isProtected) {
-      router.replace("/login");
+    const isDashboard = pathname.startsWith("/dashboard");
+    const isPayment = pathname.startsWith("/payment");
+
+    /* ================= NOT LOGGED IN ================= */
+
+    if (!user) {
+      if (isDashboard || isPayment) {
+        router.replace("/login");
+      }
       return;
     }
 
-    // ✅ Logged in → block login/register
+    /* ================= BLOCK LOGIN WHEN LOGGED IN ================= */
+
     if (user && isAuthPage) {
       router.replace("/dashboard");
       return;
     }
 
-    // 💎 Plan Enforcement
-    if (user) {
-      // Pro/Business must complete payment
-      if (
-        user.plan !== "starter" &&
-        !user.isPaymentVerified &&
-        pathname !== "/payment"
-      ) {
-        router.replace("/payment");
-        return;
-      }
+    /* ================= PLAN ENFORCEMENT ================= */
 
-      // Starter should not access payment
-      if (user.plan === "starter" && pathname === "/payment") {
-        router.replace("/dashboard");
-        return;
-      }
+    // Pro/Business must complete payment
+    if (
+      user.plan !== "starter" &&
+      !user.isPaymentVerified &&
+      !isPayment
+    ) {
+      router.replace("/payment");
+      return;
+    }
+
+    // Starter should not access payment page
+    if (user.plan === "starter" && isPayment) {
+      router.replace("/dashboard");
+      return;
     }
 
   }, [user, loading, pathname, router]);

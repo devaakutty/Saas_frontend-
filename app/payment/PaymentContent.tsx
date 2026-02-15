@@ -64,30 +64,45 @@ export default function PaymentContent() {
   }, [searchParams]);
 
   /* ================= HANDLE PAYMENT ================= */
-    const handlePayment = async (
-      provider: "razorpay" | "stripe"
-    ) => {
-      if (!plan) return;
+const handlePayment = async (
+  provider: "razorpay" | "stripe"
+) => {
+  if (!plan) return;
 
-      try {
-        setLoading(true);
+  try {
+    setLoading(true);
 
-        await apiFetch("/payments/verify", {
-          method: "POST",
-          body: JSON.stringify({
-            plan,
-          }),
-        });
+    const email = localStorage.getItem("pendingEmail");
 
-        await refreshUser();
-        router.replace("/dashboard");
+    if (!email) {
+      alert("Session expired. Please register again.");
+      router.replace("/register");
+      return;
+    }
 
-      } catch (err: any) {
-        alert(err.message || "Payment failed");
-      } finally {
-        setLoading(false);
-      }
-    };
+    await apiFetch("/payments/verify", {
+      method: "POST",
+      body: JSON.stringify({
+        email,
+        plan,
+      }),
+    });
+
+    // Clear temp storage
+    localStorage.removeItem("pendingEmail");
+
+    // Refresh user state (important)
+    await refreshUser();
+
+    router.replace("/dashboard");
+
+  } catch (err: any) {
+    alert(err.message || "Payment failed");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   /* ================= GUARDS ================= */
 
