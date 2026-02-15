@@ -135,7 +135,8 @@ export default function RegisterContent() {
         await refreshUser();
 
         if (plan === "starter") {
-          router.replace("/dashboard");
+          // router.replace("/dashboard");
+          router.replace(`/payment?plan=${plan}&billing=${billing}`);
         } else {
           router.replace(`/payment?plan=${plan}&billing=${billing}`);
 }
