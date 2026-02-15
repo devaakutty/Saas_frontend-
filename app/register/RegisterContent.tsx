@@ -96,39 +96,67 @@ export default function RegisterContent() {
 
   /* ================= SUBMIT ================= */
 
+    // const handleSubmit = async (e: React.FormEvent) => {
+    //   e.preventDefault();
+    //   setError("");
+
+    //   if (
+    //     !formData.name ||
+    //     !formData.mobile ||
+    //     !formData.email ||
+    //     !formData.password
+    //   ) {
+    //     setError("All fields are required");
+    //     return;
+    //   }
+
+    //   if (formData.mobile.length !== 10) {
+    //     setError("Mobile number must be exactly 10 digits");
+    //     return;
+    //   }
+
+    //   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    //   if (!emailRegex.test(formData.email)) {
+    //     setError("Please enter a valid email address");
+    //     return;
+    //   }
+
+    //   try {
+    //     setLoading(true);
+
+    //     await apiFetch("/auth/register", {
+    //       method: "POST",
+    //       body: JSON.stringify({
+    //         ...formData,
+    //         plan,
+    //       }),
+    //     });
+
+    //     // ✅ STARTER → auto login → dashboard
+    //     if (plan === "starter") {
+    //       await refreshUser();
+    //       router.replace("/dashboard");
+    //       return;
+    //     }
+
+    //     // ✅ PRO / BUSINESS → go to payment
+    //     router.replace(`/payment?plan=${plan}&billing=${billing}`);
+
+    //   } catch (err: any) {
+    //     setError(err.message || "Registration failed");
+    //   } finally {
+    //     setLoading(false);
+    //   }
+    // };
+
 const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
   setError("");
 
-  // ================= VALIDATION =================
-
-  if (
-    !formData.name ||
-    !formData.mobile ||
-    !formData.email ||
-    !formData.password
-  ) {
-    setError("All fields are required");
-    return;
-  }
-
-  if (formData.mobile.length !== 10) {
-    setError("Mobile number must be exactly 10 digits");
-    return;
-  }
-
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(formData.email)) {
-    setError("Please enter a valid email address");
-    return;
-  }
-
   try {
     setLoading(true);
 
-    // ================= REGISTER =================
-
-    const res = await apiFetch<{ user: any }>("/auth/register", {
+    await apiFetch("/auth/register", {
       method: "POST",
       body: JSON.stringify({
         ...formData,
@@ -136,20 +164,8 @@ const handleSubmit = async (e: React.FormEvent) => {
       }),
     });
 
-    // ================= FLOW CONTROL =================
-
-    if (plan === "starter") {
-      // Backend already set cookie
-      // await refreshUser(); // restore session
-      // router.replace("/dashboard");
-         router.replace(`/payment?plan=${plan}&billing=${billing}`);
-      return;
-    }
-
-    // For paid plans → go to payment
-    // router.replace(`/payment?plan=${plan}&billing=${billing}`);
-    await refreshUser(); // restore session
-      router.replace("/dashboard");
+    // 🔥 ALWAYS go to payment page
+    router.replace(`/payment?plan=${plan}&billing=${billing}`);
 
   } catch (err: any) {
     setError(err.message || "Registration failed");
