@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-export async function proxy(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   const isAuthPage =
@@ -14,7 +14,7 @@ export async function proxy(request: NextRequest) {
     pathname.startsWith("/customers");
 
   const isPaymentPage =
-    pathname.startsWith("/payment"); // 🔥 ADD HERE
+    pathname.startsWith("/payment");
 
   let isLoggedIn = false;
 
@@ -25,6 +25,7 @@ export async function proxy(request: NextRequest) {
         headers: {
           cookie: request.headers.get("cookie") || "",
         },
+        cache: "no-store",
       }
     );
 
@@ -33,23 +34,21 @@ export async function proxy(request: NextRequest) {
     isLoggedIn = false;
   }
 
-  // ❌ Not logged in → block protected pages
+  // ❌ Block protected pages if NOT logged in
   if (!isLoggedIn && isProtectedPage) {
     return NextResponse.redirect(
       new URL("/login", request.url)
     );
   }
 
-  // 🚫 DO NOT block payment page
-  // Payment page must work even if user not logged in yet
-
-  // ✅ Logged in → block only login/register
+  // ✅ Block login/register if already logged in
   if (isLoggedIn && isAuthPage) {
     return NextResponse.redirect(
       new URL("/dashboard", request.url)
     );
   }
 
+  // ✅ Always allow payment page
   return NextResponse.next();
 }
 
@@ -58,7 +57,7 @@ export const config = {
     "/dashboard/:path*",
     "/invoices/:path*",
     "/customers/:path*",
-    "/payment/:path*", // 🔥 VERY IMPORTANT
+    "/payment/:path*",
     "/login",
     "/register",
   ],
