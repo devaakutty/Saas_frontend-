@@ -6,8 +6,6 @@ import Link from "next/link";
 import { apiFetch } from "@/server/api";
 import { Playfair_Display, Inter } from "next/font/google";
 
-/* ================= FONTS ================= */
-
 const playfair = Playfair_Display({
   subsets: ["latin"],
   weight: ["400", "700"],
@@ -17,12 +15,8 @@ const inter = Inter({
   subsets: ["latin"],
 });
 
-/* ================= TYPES ================= */
-
 type PlanId = "starter" | "pro" | "business";
 type BillingCycle = "monthly" | "yearly";
-
-/* ================= PLAN PRICES ================= */
 
 const PLAN_PRICES: Record<
   PlanId,
@@ -98,58 +92,64 @@ export default function RegisterContent() {
 
   /* ================= SUBMIT ================= */
 
- const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  setError("");
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
 
-  if (
-    !formData.name ||
-    !formData.mobile ||
-    !formData.email ||
-    !formData.password
-  ) {
-    setError("All fields are required");
-    return;
-  }
+    if (
+      !formData.name ||
+      !formData.mobile ||
+      !formData.email ||
+      !formData.password
+    ) {
+      setError("All fields are required");
+      return;
+    }
 
-  try {
-    setLoading(true);
+    if (formData.mobile.length !== 10) {
+      setError("Mobile number must be 10 digits");
+      return;
+    }
 
-    // 1️⃣ Register user
-    await apiFetch("/auth/register", {
-      method: "POST",
-      body: JSON.stringify({
-        ...formData,
-        plan,
-      }),
-    });
+    try {
+      setLoading(true);
 
-    // Save email for payment verification
-    localStorage.setItem("pendingEmail", formData.email);
-
-    // 2️⃣ If Starter → Auto Login
-    if (plan === "starter") {
-      await apiFetch("/auth/login", {
+      /* 1️⃣ Register */
+      await apiFetch("/auth/register", {
         method: "POST",
         body: JSON.stringify({
-          email: formData.email,
-          password: formData.password,
+          ...formData,
+          plan,
         }),
       });
 
-      router.replace("/dashboard");
-    } 
-    // 3️⃣ If Pro/Business → Go To Payment
-    else {
-      router.replace(`/payment?plan=${plan}&billing=${billing}`);
-    }
+      /* 2️⃣ Starter → Auto Login */
+      if (plan === "starter") {
+        await apiFetch("/auth/login", {
+          method: "POST",
+          body: JSON.stringify({
+            email: formData.email,
+            password: formData.password,
+          }),
+        });
 
-  } catch (err: any) {
-    setError(err.message || "Registration failed");
-  } finally {
-    setLoading(false);
-  }
-};
+        router.replace("/dashboard");
+        return;
+      }
+
+      /* 3️⃣ Pro / Business → Payment */
+      localStorage.setItem("pendingEmail", formData.email);
+
+      router.replace(
+        `/payment?plan=${plan}&billing=${billing}`
+      );
+
+    } catch (err: any) {
+      setError(err.message || "Registration failed");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   /* ================= UI ================= */
 

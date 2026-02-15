@@ -60,9 +60,12 @@ export default function AuthGuard({
       !user.isPaymentVerified &&
       !isPayment
     ) {
-      router.replace("/payment");
+      router.replace(
+        `/payment?plan=${user.plan}&billing=monthly`
+      );
       return;
     }
+
 
     // 🟢 Starter should not access payment page
     if (user.plan === "starter" && isPayment) {
