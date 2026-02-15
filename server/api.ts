@@ -4,10 +4,6 @@ const API_URL =
   process.env.NEXT_PUBLIC_API_URL ||
   "https://saas-billz-backend.onrender.com";
 
-if (!process.env.NEXT_PUBLIC_API_URL) {
-  console.warn("Using fallback API URL:", API_URL);
-}
-
 /* ================= API FETCH ================= */
 
 export async function apiFetch<T = any>(
@@ -19,13 +15,15 @@ export async function apiFetch<T = any>(
 
   try {
     const res = await fetch(url, {
-      ...options,
-      credentials: "include",
-      cache: "no-store",
+      method: options.method || "GET",
+      credentials: "include", // 🔥 VERY IMPORTANT
+      mode: "cors",           // 🔥 EXPLICIT CORS
+      cache: "no-store",      // 🔥 disable caching (fix 304 issues)
       headers: {
-        "Content-Type": "application/json",
+        ...(options.body ? { "Content-Type": "application/json" } : {}),
         ...(options.headers || {}),
       },
+      body: options.body,
     });
 
     /* ========== HANDLE 204 ========== */
@@ -34,7 +32,7 @@ export async function apiFetch<T = any>(
       return null as T;
     }
 
-    /* ========== SAFE PARSE ========== */
+    /* ========== PARSE RESPONSE ========== */
 
     let data: any = null;
 
@@ -46,37 +44,20 @@ export async function apiFetch<T = any>(
       if (contentType.includes("application/json")) {
         data = await res.json();
       } else {
-        throw new Error(
-          "Invalid server response. Check backend deployment."
-        );
+        throw new Error("Invalid server response.");
       }
     }
 
-    /* ========== HANDLE API ERROR ========== */
+    /* ========== HANDLE ERROR ========== */
 
     if (!res.ok) {
-      const message = data?.message || `Error ${res.status}`;
-
-      const expectedErrors = [
-        "Not authorized, please login",
-        "Upgrade to access analytics",
-        "Upgrade required",
-        "Plan limit exceeded",
-      ];
-
-      if (!expectedErrors.includes(message) && res.status >= 500) {
-        console.error("API ERROR:", message);
-      }
-
-      throw new Error(message);
+      throw new Error(data?.message || `Error ${res.status}`);
     }
 
     return data as T;
   } catch (error: any) {
     if (error instanceof TypeError) {
-      throw new Error(
-        "Cannot connect to server. Check backend deployment or API URL."
-      );
+      throw new Error("Cannot connect to server.");
     }
 
     throw error;

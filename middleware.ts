@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-export async function middleware(request: NextRequest) {
+export function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
+
+  const token = request.cookies.get("token")?.value;
 
   const isAuthPage =
     pathname.startsWith("/login") ||
@@ -16,32 +18,16 @@ export async function middleware(request: NextRequest) {
   const isPaymentPage =
     pathname.startsWith("/payment");
 
-  let isLoggedIn = false;
+  const isLoggedIn = !!token;
 
-  try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/users/me`,
-      {
-        headers: {
-          cookie: request.headers.get("cookie") || "",
-        },
-        cache: "no-store",
-      }
-    );
-
-    isLoggedIn = res.status === 200;
-  } catch {
-    isLoggedIn = false;
-  }
-
-  // ❌ Block protected pages if NOT logged in
+  // ❌ Not logged in → block protected pages
   if (!isLoggedIn && isProtectedPage) {
     return NextResponse.redirect(
       new URL("/login", request.url)
     );
   }
 
-  // ✅ Block login/register if already logged in
+  // ✅ Logged in → block login/register
   if (isLoggedIn && isAuthPage) {
     return NextResponse.redirect(
       new URL("/dashboard", request.url)
