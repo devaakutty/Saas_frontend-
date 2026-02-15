@@ -4,8 +4,6 @@ import type { NextRequest } from "next/server";
 export function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
-  const token = request.cookies.get("token")?.value;
-
   const isAuthPage =
     pathname.startsWith("/login") ||
     pathname.startsWith("/register");
@@ -13,28 +11,12 @@ export function middleware(request: NextRequest) {
   const isProtectedPage =
     pathname.startsWith("/dashboard") ||
     pathname.startsWith("/invoices") ||
-    pathname.startsWith("/customers");
-
-  const isPaymentPage =
+    pathname.startsWith("/customers") ||
     pathname.startsWith("/payment");
 
-  const isLoggedIn = !!token;
+  // 🚀 DO NOT check token here
+  // Backend + AuthGuard will handle authentication
 
-  // ❌ Not logged in → block protected pages
-  if (!isLoggedIn && isProtectedPage) {
-    return NextResponse.redirect(
-      new URL("/login", request.url)
-    );
-  }
-
-  // ✅ Logged in → block login/register
-  if (isLoggedIn && isAuthPage) {
-    return NextResponse.redirect(
-      new URL("/dashboard", request.url)
-    );
-  }
-
-  // ✅ Always allow payment page
   return NextResponse.next();
 }
 
