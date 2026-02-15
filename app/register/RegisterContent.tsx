@@ -102,7 +102,6 @@ export default function RegisterContent() {
     e.preventDefault();
     setError("");
 
-    // 🔎 VALIDATION
     if (
       !formData.name ||
       !formData.mobile ||
@@ -127,6 +126,7 @@ export default function RegisterContent() {
     try {
       setLoading(true);
 
+      // ✅ Register
       await apiFetch("/auth/register", {
         method: "POST",
         body: JSON.stringify({
@@ -135,13 +135,26 @@ export default function RegisterContent() {
         }),
       });
 
-      // 🔥 Save email temporarily for payment verification
+      // ✅ Auto login after register
+      await apiFetch("/auth/login", {
+        method: "POST",
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
+
+      // ✅ Save email for payment verification
       localStorage.setItem("pendingEmail", formData.email);
 
-      // 🔥 Always go to payment page
-      router.replace(
-        `/payment?plan=${plan}&billing=${billing}`
-      );
+      // ✅ Correct SaaS flow
+      if (plan === "starter") {
+        router.replace("/dashboard");
+      } else {
+        router.replace(
+          `/payment?plan=${plan}&billing=${billing}`
+        );
+      }
 
     } catch (err: any) {
       setError(err.message || "Registration failed");
@@ -162,7 +175,7 @@ export default function RegisterContent() {
 
       <Link
         href="/"
-        className="absolute top-6 left-6 z-20 px-6 py-2 rounded-full backdrop-blur-md bg-white/10 border border-white/20 text-sm text-white hover:bg-white/20 hover:scale-105 transition-all duration-300 shadow-md"
+        className="absolute top-6 left-6 z-20 px-6 py-2 rounded-full backdrop-blur-md bg-white/10 border border-white/20 text-sm text-white hover:bg-white/20 transition-all duration-300 shadow-md"
       >
         ← Home
       </Link>
