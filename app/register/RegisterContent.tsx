@@ -32,7 +32,7 @@ export default function RegisterContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user } = useAuth();
-
+  const { refreshUser } = useAuth(); 
   const [plan, setPlan] = useState<PlanId>("starter");
   const [billing, setBilling] =
     useState<BillingCycle>("monthly");
@@ -102,69 +102,75 @@ export default function RegisterContent() {
 
   /* ================= SUBMIT ================= */
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
+// const { refreshUser } = useAuth(); // 🔥 ADD THIS
 
-    if (
-      !formData.name ||
-      !formData.mobile ||
-      !formData.email ||
-      !formData.password
-    ) {
-      setError("All fields are required");
-      return;
-    }
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setError("");
 
-    if (formData.mobile.length !== 10) {
-      setError("Mobile number must be 10 digits");
-      return;
-    }
+  if (
+    !formData.name ||
+    !formData.mobile ||
+    !formData.email ||
+    !formData.password
+  ) {
+    setError("All fields are required");
+    return;
+  }
 
-    try {
-      setLoading(true);
+  if (formData.mobile.length !== 10) {
+    setError("Mobile number must be 10 digits");
+    return;
+  }
 
-      const normalizedEmail = formData.email
-        .trim()
-        .toLowerCase();
+  try {
+    setLoading(true);
 
-      /* 1️⃣ Register */
-      await apiFetch("/auth/register", {
+    const normalizedEmail = formData.email
+      .trim()
+      .toLowerCase();
+
+    /* 1️⃣ Register */
+    await apiFetch("/auth/register", {
+      method: "POST",
+      body: JSON.stringify({
+        ...formData,
+        email: normalizedEmail,
+        plan,
+      }),
+    });
+
+    /* 2️⃣ Starter → Auto Login */
+    if (plan === "starter") {
+      await apiFetch("/auth/login", {
         method: "POST",
         body: JSON.stringify({
-          ...formData,
           email: normalizedEmail,
-          plan,
+          password: formData.password,
         }),
       });
 
-      /* 2️⃣ Starter → Auto Login */
-      if (plan === "starter") {
-        await apiFetch("/auth/login", {
-          method: "POST",
-          body: JSON.stringify({
-            email: normalizedEmail,
-            password: formData.password,
-          }),
-        });
+      // 🔥 VERY IMPORTANT
+      await refreshUser();
 
-        router.replace("/dashboard");
-        return;
-      }
-
-      /* 3️⃣ Pro / Business → Payment */
-      localStorage.setItem("pendingEmail", normalizedEmail);
-
-      router.replace(
-        `/payment?plan=${plan}&billing=${billing}`
-      );
-
-    } catch (err: any) {
-      setError(err.message || "Registration failed");
-    } finally {
-      setLoading(false);
+      router.replace("/dashboard");
+      return;
     }
-  };
+
+    /* 3️⃣ Pro / Business → Payment */
+    localStorage.setItem("pendingEmail", normalizedEmail);
+
+    router.replace(
+      `/payment?plan=${plan}&billing=${billing}`
+    );
+
+  } catch (err: any) {
+    setError(err.message || "Registration failed");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   /* ================= UI ================= */
 

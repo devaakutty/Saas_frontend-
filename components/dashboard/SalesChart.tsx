@@ -124,12 +124,12 @@ export default function SalesChart() {
   if (error === "Upgrade to access analytics") {
     return (
       <div className="h-full flex flex-col items-center justify-center text-center space-y-4">
-        <p className="text-gray-500 font-semibold">
+        <p className="text-white/80 font-semibold text-lg">
           Sales analytics available in Pro Plan
         </p>
         <button
-          onClick={() => router.push("/pricing")}
-          className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition"
+          onClick={() => router.push("/dashboard/settings/company")}
+          className="bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white px-6 py-2 rounded-xl transition shadow-lg"
         >
           Upgrade Now
         </button>
@@ -161,10 +161,18 @@ export default function SalesChart() {
 
   return (
     <ResponsiveContainer width="100%" height={300}>
-      <BarChart data={chartData} barGap={6}>
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="month" />
-        <YAxis />
+      <BarChart data={chartData} barGap={3} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
+        <CartesianGrid strokeDasharray="3 3"  />
+        <YAxis
+          stroke="rgba(255,255,255,0.4)"
+          tick={{ fill: "rgba(255,255,255,0.8)", fontSize: 12 }}
+        />
+
+        <XAxis
+          stroke="rgba(255,255,255,0.4)"
+          tick={{ fill: "rgba(255,255,255,0.8)", fontSize: 12 }}
+        />
+
         <Tooltip
           formatter={(value) =>
             typeof value === "number"

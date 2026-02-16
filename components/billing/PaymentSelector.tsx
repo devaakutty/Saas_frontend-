@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
 
 export type PaymentMethodType = "CASH" | "UPI" | "CARD";
 
@@ -12,12 +13,22 @@ export default function PaymentSelector({
     provider?: string;
   }) => void;
 }) {
+  const { user } = useAuth();
+
   const [method, setMethod] = useState<PaymentMethodType>("CASH");
   const [provider, setProvider] = useState("");
 
+  const allowedMethods: PaymentMethodType[] =
+    user?.plan === "business"
+      ? ["CASH", "UPI", "CARD"]
+      : ["CASH", "UPI"];
+
   const handleSelect = (m: PaymentMethodType) => {
     setMethod(m);
-    onChange({ method: m, provider: m === "CASH" ? undefined : provider });
+    onChange({
+      method: m,
+      provider: m === "CASH" ? undefined : provider,
+    });
   };
 
   return (
@@ -39,7 +50,7 @@ export default function PaymentSelector({
 
       {/* ================= METHOD BUTTONS ================= */}
       <div className="flex gap-3">
-        {(["CASH", "UPI", "CARD"] as PaymentMethodType[]).map((m) => (
+        {allowedMethods.map((m) => (
           <button
             key={m}
             onClick={() => handleSelect(m)}

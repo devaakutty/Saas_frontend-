@@ -76,22 +76,31 @@ export default function StockAlert() {
 
   /* ================= PLAN RESTRICTION ================= */
 
-  if (error === "Upgrade to access analytics") {
-    return (
-      <div className="bg-white dark:bg-white/5 backdrop-blur-md rounded-2xl p-6 border border-white/10 text-center space-y-4">
-        <p className="text-white/60 font-medium">
-          Stock analytics available in Pro Plan
-        </p>
+if (error === "Upgrade to access analytics") {
+  return (
+    <div className="bg-white/5 backdrop-blur-md rounded-2xl p-6 border border-white/10 text-center space-y-4 shadow-lg">
 
-        <button
-          onClick={() => router.push("/pricing")}
-          className="bg-primary hover:bg-primary/80 text-white px-5 py-2 rounded-xl transition shadow-lg"
-        >
-          Upgrade Now
-        </button>
-      </div>
-    );
-  }
+      <div className="text-4xl"></div>
+
+      <p className="text-white/80 font-semibold text-lg">
+        Stock Analytics Available in Pro Plan
+      </p>
+
+      {/* <p className="text-white/50 text-sm">
+        Upgrade your plan to unlock low stock insights and advanced inventory tracking.
+      </p> */}
+
+      <button
+        onClick={() => router.push("/dashboard/settings/company")}
+        className="bg-primary hover:bg-primary/80 text-white px-5 py-2 rounded-xl transition shadow-lg"
+        // className="bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white px-6 py-2 rounded-xl transition shadow-lg"
+      >
+        Upgrade Now
+      </button>
+    </div>
+  );
+}
+
 
   /* ================= GENERIC ERROR ================= */
 

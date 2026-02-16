@@ -18,23 +18,32 @@ export default function CreateUserPage() {
   /* ================= CREATE TEAM MEMBER ================= */
 
   const handleCreateUser = async () => {
+    if (loading) return; // 🔥 prevent double click
+
     setError("");
+
+    const trimmedName = name.trim();
+    const trimmedEmail = email.trim().toLowerCase();
 
     // 🔴 VALIDATIONS
 
-    if (!name.trim()) {
+    if (!trimmedName) {
       setError("Name is required");
       return;
     }
 
-    if (!email || !password) {
-      setError("Email and password are required");
+    if (!trimmedEmail) {
+      setError("Email is required");
       return;
     }
 
-    // Gmail only
-    if (!/^[^\s@]+@gmail\.com$/.test(email)) {
-      setError("Email must be a valid @gmail.com address");
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+      setError("Please enter a valid email address");
+      return;
+    }
+
+    if (!password) {
+      setError("Password is required");
       return;
     }
 
@@ -43,7 +52,6 @@ export default function CreateUserPage() {
       return;
     }
 
-    // Mobile 10 digit only
     if (phone && !/^\d{10}$/.test(phone)) {
       setError("Mobile number must be exactly 10 digits");
       return;
@@ -55,22 +63,25 @@ export default function CreateUserPage() {
       await apiFetch("/users/team-members", {
         method: "POST",
         body: JSON.stringify({
-          firstName: name.trim(),
-          email: email.trim().toLowerCase(),
+          firstName: trimmedName,
+          email: trimmedEmail,
           password,
-          phone,
+          phone: phone || undefined,
         }),
       });
 
       alert("Team member created successfully ✅");
 
       router.push("/dashboard/settings/security");
+    } catch (err: unknown) {
+      let message = "Failed to create user";
 
-    } catch (err: any) {
-      const message = err.message || "Failed to create user";
+      if (err instanceof Error) {
+        message = err.message;
+      }
 
       // 🔥 PLAN LIMIT HANDLING
-      if (message.includes("Upgrade")) {
+      if (message.toLowerCase().includes("upgrade")) {
         setError("PLAN_LIMIT");
       } else {
         setError(message);
@@ -126,7 +137,7 @@ export default function CreateUserPage() {
 
         {/* EMAIL */}
         <input
-          placeholder="Email (@gmail.com)"
+          placeholder="Email"
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}

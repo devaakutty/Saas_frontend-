@@ -16,10 +16,23 @@ export type User = {
   role: "owner" | "member";
   plan: "starter" | "pro" | "business";
   isPaymentVerified: boolean;
+  // 🔥 Add limits here so global update works
+  userLimit?: number;
+  invoiceLimit?: number;
+
+
+  // 🔥 Add profile fields here so global update works
+  firstName?: string;
+  lastName?: string;
+  company?: string;
+  phone?: string;
+  gstNumber?: string;
+  address?: string;
 };
 
 type AuthContextType = {
   user: User | null;
+  setUser: React.Dispatch<React.SetStateAction<User | null>>; // ✅ Added
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -63,9 +76,7 @@ export function AuthProvider({
       body: JSON.stringify({ email, password }),
     });
 
-    // 🔥 IMPORTANT: Refresh user after login
     await refreshUser();
-
     router.replace("/dashboard");
   };
 
@@ -82,6 +93,7 @@ export function AuthProvider({
     <AuthContext.Provider
       value={{
         user,
+        setUser, // ✅ Exposed now
         isAuthenticated: !!user,
         login,
         logout,

@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { useRouter } from "next/navigation";
+
 
 /* ================= TYPES ================= */
 
@@ -16,11 +18,16 @@ interface AuditLog {
 /* ================= PAGE ================= */
 
 export default function AuditLogsPage() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
 
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const router = useRouter();
+
+
+  const isPremium =
+    user?.plan === "pro" || user?.plan === "business";
 
   /* ================= LOAD LOGS ================= */
 
@@ -38,7 +45,6 @@ export default function AuditLogsPage() {
       setLoading(true);
       setError("");
 
-      // Demo Data
       setLogs([
         {
           id: "1",
@@ -54,13 +60,6 @@ export default function AuditLogsPage() {
           ip: "192.168.1.10",
           createdAt: "2024-02-14 06:10 PM",
         },
-        {
-          id: "3",
-          action: "Created invoice",
-          resource: "INV-1023",
-          ip: "192.168.1.10",
-          createdAt: "2024-02-14 11:20 AM",
-        },
       ]);
     } catch (err: any) {
       setError(err.message || "Failed to load audit logs");
@@ -72,27 +71,11 @@ export default function AuditLogsPage() {
   /* ================= UI STATES ================= */
 
   if (loading) {
-    return (
-      <div className="p-8 text-white/60">
-        Loading audit logs…
-      </div>
-    );
+    return <div className="p-8 text-white/60">Loading audit logs…</div>;
   }
 
   if (!isAuthenticated) {
-    return (
-      <div className="p-8 text-white/60">
-        Please log in to view audit logs.
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="p-8 text-red-400">
-        {error}
-      </div>
-    );
+    return <div className="p-8 text-white/60">Please log in.</div>;
   }
 
   /* ================= UI ================= */
@@ -104,27 +87,105 @@ export default function AuditLogsPage() {
       <div>
         <h1 className="font-[var(--font-playfair)] text-[56px] leading-[0.95] tracking-tight">
           Activity{" "}
-          <span className="font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+          <span className="font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
             Audit Logs
           </span>
         </h1>
 
-        <p className="font-[var(--font-inter)] mt-4 text-white/70 text-lg">
-          Track important system and user activity across your platform.
+        <p className="mt-4 text-white/70 text-lg">
+          Track system and user activity.
         </p>
       </div>
 
-      {/* TABLE CARD */}
+      {/* ================= PREMIUM COMPANY DETAILS ================= */}
+
+      {isPremium && (
+        <div className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-400/30 rounded-[28px] p-8 backdrop-blur-md">
+          <h2 className="text-2xl font-semibold mb-6">
+            Premium Support & Company Info
+          </h2>
+
+          <div className="grid md:grid-cols-2 gap-6 text-white/80">
+          <div>
+              <p className="text-sm text-white/60">
+                Company Name
+              </p>
+
+              <p className="font-medium text-purple-300">
+                🏢 {user?.company || "N/A"}
+              </p>
+            </div>
+            <div>
+                <a
+              href="mailto:moyo@gmail.com"
+              className="inline-flex items-center gap-2 mt-2 px-4 py-2 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-300 hover:bg-blue-500/30 transition"
+            >
+              📧 Email Support
+            </a>
+            </div>
+            <div>
+              <p className="text-sm text-white/60">
+                24/7 Support Phone
+              </p>
+
+              <a
+                href="tel:+919876543210"
+                className="inline-flex items-center gap-2 mt-2 px-4 py-2 rounded-full bg-green-500/20 border border-green-400/30 text-green-300 hover:bg-green-500/30 transition"
+              >
+                📞 Call Support
+              </a>
+            </div>
+            <div>
+              <p className="text-sm text-white/60">
+                Live Office Location
+              </p>
+
+              <a
+                href="https://www.google.com/maps/place/No.10,+2nd+Main+Rd,+Sundar+Nagar,+Pallavaram,+Chennai,+Tamil+Nadu+600117"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 font-medium text-purple-400 hover:text-pink-400 transition"
+              >
+                📍 Pallavaram, Chennai, Tamil Nadu 🇮🇳
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ================= STARTER LOCK MESSAGE ================= */}
+
+{!isPremium && (
+  <div className="bg-white/5 border border-white/10 rounded-[28px] p-8 text-center space-y-6">
+
+    <p className="text-white/70">
+      Premium audit insights and support details
+      are available on Pro & Business plans.
+    </p>
+
+    <button
+      onClick={() => router.push("/dashboard/settings/company")}
+      className="px-6 py-3 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold hover:opacity-90 transition"
+    >
+      🚀 Upgrade Plan
+    </button>
+
+  </div>
+)}
+
+
+      {/* ================= AUDIT TABLE ================= */}
+
       <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-[28px] overflow-hidden">
 
         <table className="w-full text-sm">
 
           <thead className="bg-white/5 text-white/60">
             <tr>
-              <th className="p-6 text-left font-medium">Action</th>
-              <th className="p-6 text-left font-medium">Resource</th>
-              <th className="p-6 text-center font-medium">IP Address</th>
-              <th className="p-6 text-center font-medium">Date</th>
+              <th className="p-6 text-left">Action</th>
+              <th className="p-6 text-left">Resource</th>
+              <th className="p-6 text-center">IP</th>
+              <th className="p-6 text-center">Date</th>
             </tr>
           </thead>
 
@@ -132,46 +193,22 @@ export default function AuditLogsPage() {
             {logs.map((log) => (
               <tr
                 key={log.id}
-                className="border-t border-white/10 hover:bg-white/10 transition-all duration-300"
+                className="border-t border-white/10 hover:bg-white/10"
               >
-                <td className="p-6 font-medium text-white">
-                  {log.action}
-                </td>
-
-                <td className="p-6 text-white/70">
-                  {log.resource}
-                </td>
-
+                <td className="p-6">{log.action}</td>
+                <td className="p-6 text-white/70">{log.resource}</td>
                 <td className="p-6 text-center text-white/60">
                   {log.ip}
                 </td>
-
                 <td className="p-6 text-center text-white/60">
                   {log.createdAt}
                 </td>
               </tr>
             ))}
-
-            {logs.length === 0 && (
-              <tr>
-                <td
-                  colSpan={4}
-                  className="p-10 text-center text-white/50"
-                >
-                  No audit logs available
-                </td>
-              </tr>
-            )}
           </tbody>
 
         </table>
-
       </div>
-
-      <p className="text-sm text-white/50">
-        Audit logs track login activity, profile updates,
-        invoice creation, and security changes.
-      </p>
 
     </div>
   );

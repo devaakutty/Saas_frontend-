@@ -43,6 +43,8 @@ export default function BillingPage() {
     total: 0,
   });
   const [loading, setLoading] = useState(false);
+  const [resetKey, setResetKey] = useState(0);
+
   const [lastInvoiceId, setLastInvoiceId] = useState<string | null>(null);
 
   /* ================= LOAD CUSTOMERS ================= */
@@ -61,18 +63,20 @@ export default function BillingPage() {
   }, []);
 
   /* ================= RESET BILLING ================= */
+    const resetBilling = () => {
+      setCustomer(null);
+      setProducts([]);
+      setBilling({
+        subTotal: 0,
+        tax: 0,
+        gst: 0,
+        total: 0,
+      });
+      setLastInvoiceId(null);
 
-  const resetBilling = () => {
-    setCustomer(null);
-    setProducts([]);
-    setBilling({
-      subTotal: 0,
-      tax: 0,
-      gst: 0,
-      total: 0,
-    });
-    setLastInvoiceId(null);
-  };
+      // 🔥 Force ProductTable remount
+      setResetKey(prev => prev + 1);
+    };
 
   /* ================= ADD / UPDATE CUSTOMER ================= */
 
@@ -124,47 +128,49 @@ export default function BillingPage() {
 
   /* ================= PAYMENT HANDLER ================= */
 
-  const handlePayment = async (
-    method: PaymentMethodType,
-    details: PaymentDetails
-  ) => {
-    if (!customer || products.length === 0) {
-      alert("Customer and products required");
-      return;
-    }
+    const handlePayment = async (
+      method: PaymentMethodType,
+      details: PaymentDetails
+    ) => {
+      if (!customer || products.length === 0) {
+        alert("Customer and products required");
+        return;
+      }
 
-    try {
-      setLoading(true);
+      try {
+        setLoading(true);
 
-      const invoice = await apiFetch<any>("/invoices", {
-        method: "POST",
-        body: JSON.stringify({
-          customerId: customer.id || customer._id,
-          items: products.map((p) => ({
-            productId: p.productId, // ✅ REQUIRED
-            productName: p.name,
-            quantity: p.quantity,
-            rate: p.rate,
-            amount: p.quantity * p.rate,
-          })),
-          total: billing.total,
-          status: "PAID",
-          payment: {
-            method,
-            ...details,
-          },
-        }),
-      });
+        await apiFetch("/invoices", {
+          method: "POST",
+          body: JSON.stringify({
+            customerId: customer.id || customer._id,
+            items: products.map((p) => ({
+              productId: p.productId,
+              productName: p.name,
+              quantity: p.quantity,
+              rate: p.rate,
+              amount: p.quantity * p.rate,
+            })),
+            total: billing.total,
+            status: "PAID",
+            payment: {
+              method,
+              ...details,
+            },
+          }),
+        });
 
-      setLastInvoiceId(invoice.id || invoice._id);
-      alert("Payment successful 🎉");
-      resetBilling();
-    } catch (err: any) {
-      alert(err.message || "Payment failed");
-    } finally {
-      setLoading(false);
-    }
-  };
+        alert("Payment successful 🎉");
+
+        // 🔥 Fully reset everything cleanly
+        resetBilling();
+
+      } catch (err: any) {
+        alert(err.message || "Payment failed");
+      } finally {
+        setLoading(false);
+      }
+    };
 
   /* ================= DOWNLOAD HANDLER ================= */
 
@@ -243,10 +249,12 @@ return (
           )}
 
           <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl p-6">
-            <ProductTable
-              onProductsChange={setProducts}
-              onBillingChange={setBilling}
-            />
+          <ProductTable
+            key={resetKey}
+            onProductsChange={setProducts}
+            onBillingChange={setBilling}
+          />
+
           </div>
 
         </div>

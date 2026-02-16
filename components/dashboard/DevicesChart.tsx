@@ -75,12 +75,12 @@ export default function DevicesChart() {
   if (error === "Upgrade to access analytics") {
     return (
       <div className="h-full flex flex-col items-center justify-center text-center space-y-4">
-        <p className="text-white/60 font-medium">
-          Analytics available in Pro Plan
-        </p>
+      <p className="text-white/80 font-semibold text-lg">
+        Stock Analytics Available in Pro Plan
+      </p>
 
         <button
-          onClick={() => router.push("/pricing")}
+          onClick={() => router.push("/dashboard/settings/company")}
           className="bg-primary hover:bg-primary/80 text-white px-5 py-2 rounded-xl transition shadow-lg"
         >
           Upgrade Now

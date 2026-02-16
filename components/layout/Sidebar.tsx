@@ -10,8 +10,17 @@ import { useAuth } from "@/hooks/useAuth";
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const [open, setOpen] = useState(false);
+  const companyName = user?.company || "QuickBillz";
+
+    const companyInitials = companyName
+      .split(" ")
+      .map((word) => word[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+
 
   const handleLogout = async () => {
     const ok = confirm("Are you sure you want to logout?");
@@ -56,14 +65,25 @@ export default function Sidebar() {
           </div>
 
           {/* LOGO */}
-          <div className="mb-12">
+          {/* <div className="mb-12">
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center font-black text-xl shadow-lg">
               QB
             </div>
             <h1 className="text-xl font-bold mt-4 tracking-wide">
               QuickBillz
             </h1>
-          </div>
+          </div> */}
+          {/* LOGO */}
+<div className="mb-12">
+  <div className="w-12 h-12 rounded-2xl bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center font-black text-xl shadow-lg">
+    {companyInitials}
+  </div>
+
+  <h1 className="text-xl font-bold mt-4 tracking-wide">
+    {companyName}
+  </h1>
+</div>
+
 
           {/* NAVIGATION */}
           <nav className="flex-1 space-y-2">
