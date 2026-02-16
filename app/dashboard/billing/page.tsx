@@ -205,8 +205,7 @@ export default function BillingPage() {
   /* ================= UI ================= */
 
 return (
-  <div className="relative px-6 pt-6 pb-12">
-
+<div className="relative px-6 pt-6 pb-12 min-h-screen">
     {/* Main Rounded Glass Container */}
     <div className="relative backdrop-blur-2xl 
       bg-gradient-to-br from-white/10 to-white/5 
@@ -217,6 +216,7 @@ return (
       text-white"
     >
 
+      {/* <div className="grid grid-cols-1 xl:grid-cols-12 gap-8"> */}
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
 
         {/* LEFT SIDE */}

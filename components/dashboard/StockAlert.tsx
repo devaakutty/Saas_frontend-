@@ -92,7 +92,7 @@ if (error === "Upgrade to access analytics") {
 
       <button
         onClick={() => router.push("/dashboard/settings/company")}
-        className="bg-primary hover:bg-primary/80 text-white px-5 py-2 rounded-xl transition shadow-lg"
+         className="bg-primary hover:bg-primary/80 text-white px-5 py-2 rounded-xl transition shadow-lg"
         // className="bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white px-6 py-2 rounded-xl transition shadow-lg"
       >
         Upgrade Now
@@ -116,11 +116,11 @@ if (error === "Upgrade to access analytics") {
 
   if (!items.length) {
     return (
-      <div className="bg-white dark:bg-white/5 backdrop-blur-md rounded-2xl p-6 border border-white/10">
-        <h3 className="font-semibold mb-2 text-primary">
+      <div className="border-b border-white/10 last:border-none hover:bg-white/5 transition rounded-2xl p-6 text-center">
+        <h3 className="font-semibold mb-2 text-white/70">
           Stock Status
         </h3>
-        <p className="text-sm text-primary/80">
+        <p className="text-sm text-white/80">
           All items are sufficiently stocked
         </p>
       </div>

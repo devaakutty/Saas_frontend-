@@ -134,7 +134,7 @@ export default function InvoicesPage() {
         </h1>
 
         <button
-          onClick={() => router.push("/dashboard/invoices/create")}
+          onClick={() => router.push("/dashboard/billing")}
           className="px-6 py-2 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 transition"
         >
           + New Invoice

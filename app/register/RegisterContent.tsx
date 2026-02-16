@@ -99,10 +99,7 @@ export default function RegisterContent() {
       [name]: value,
     }));
   };
-
   /* ================= SUBMIT ================= */
-
-// const { refreshUser } = useAuth(); // 🔥 ADD THIS
 
 const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
@@ -170,7 +167,6 @@ const handleSubmit = async (e: React.FormEvent) => {
     setLoading(false);
   }
 };
-
 
   /* ================= UI ================= */
 
