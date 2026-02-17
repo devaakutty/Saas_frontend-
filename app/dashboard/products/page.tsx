@@ -13,7 +13,7 @@ interface Product {
   rate: number;
   unit?: string | null;
   stock: number;
-  isActive: boolean;
+  createdAt: string; 
 }
 
 /* ================= PAGE ================= */
@@ -121,7 +121,9 @@ return (
                 <th className="p-5 text-left">Rate</th>
                 <th className="p-5 text-left">Stock</th>
                 <th className="p-5 text-left">Unit</th>
-                <th className="p-5 text-left">Status</th>
+                {/* <th className="p-5 text-left">Status</th> */}
+                <th className="p-5 text-left">Created</th>
+
                 <th className="p-5 text-right">Action</th>
               </tr>
             </thead>
@@ -154,19 +156,13 @@ return (
                   <td className="p-5">
                     {p.unit ?? "—"}
                   </td>
-
-                  <td className="p-5">
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-medium ${
-                        p.isActive
-                          ? "bg-green-500/20 text-green-400"
-                          : "bg-white/10 text-white/60"
-                      }`}
-                    >
-                      {p.isActive ? "Active" : "Inactive"}
-                    </span>
+                  <td className="p-5 text-white/70">
+                    {new Date(p.createdAt).toLocaleDateString("en-IN", {
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
+                    })}
                   </td>
-
                   <td className="p-5 text-right">
                     <button
                       onClick={(e) => {

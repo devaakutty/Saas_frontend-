@@ -24,8 +24,9 @@ export default function StockAlert() {
     const loadLowStock = async () => {
       try {
         const res = await apiFetch<StockItem[]>(
-          "/dashboard/low-stock"
+          "/api/dashboard/low-stock"
         );
+
 
         if (!isMounted) return;
 

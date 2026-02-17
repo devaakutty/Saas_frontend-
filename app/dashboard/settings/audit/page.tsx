@@ -141,7 +141,7 @@ export default function AuditLogsPage() {
               </p>
 
               <a
-                href="https://www.google.com/maps/place/No.10,+2nd+Main+Rd,+Sundar+Nagar,+Pallavaram,+Chennai,+Tamil+Nadu+600117"
+                href="https://share.google/shbqqMtMjvuBsBADN"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 font-medium text-purple-400 hover:text-pink-400 transition"

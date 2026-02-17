@@ -31,6 +31,7 @@ export default function PaymentContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { user, refreshUser } = useAuth();
+  const from = searchParams.get("from");
 
   const [loading, setLoading] = useState(false);
   const [plan, setPlan] = useState<PlanType | null>(null);
@@ -144,12 +145,23 @@ export default function PaymentContent() {
       className={`${inter.className} min-h-screen bg-gradient-to-br from-[#1b1f3a] via-[#23265a] to-[#2b2e63] text-white relative overflow-hidden`}
     >
       {/* Back Button */}
-      <button
-        onClick={() => router.back()}
-        className="absolute top-6 left-6 px-6 py-2 rounded-full bg-white/10 border border-white/20 text-sm hover:bg-white/20 transition"
-      >
-        ← Back
-      </button>
+        <button
+          onClick={() => {
+            if (from === "register") {
+              router.push("/register");
+            } else if (from === "upgrade") {
+              router.push("/upgrade");
+            } else {
+              router.push("/dashboard");
+            }
+          }}
+          className="absolute top-6 left-6 px-6 py-2 rounded-full 
+          bg-white/10 border border-white/20 text-sm 
+          hover:bg-white/20 transition"
+        >
+          ← Back
+        </button>
+
 
       <div className="relative z-10 px-6 py-[120px] flex flex-col items-center">
 
