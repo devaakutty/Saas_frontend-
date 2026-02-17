@@ -39,16 +39,17 @@ export default function PaymentMethod({
   const [method, setMethod] = useState<PaymentMethodType | null>(null);
   const [upiApp, setUpiApp] =
     useState<"GPay" | "PhonePe" | "Paytm">("GPay");
+
   const [cashPart, setCashPart] = useState(0);
 
-  // Card states
+  // 🔥 Card states
   const [cardNumber, setCardNumber] = useState("");
   const [expiry, setExpiry] = useState("");
   const [cvv, setCvv] = useState("");
 
-  const upiAmount = Math.max(total - cashPart, 0);
-
   const isBusiness = user?.plan === "business";
+
+  const upiAmount = Math.max(total - cashPart, 0);
 
   /* ================= RESET ON METHOD CHANGE ================= */
 
@@ -59,6 +60,37 @@ export default function PaymentMethod({
     setExpiry("");
     setCvv("");
   }, [method]);
+
+  /* ================= CARD VALIDATION ================= */
+
+  const handleCardPayment = () => {
+    if (!isBusiness) {
+      alert("Upgrade to Business Plan to use card payments.");
+      return;
+    }
+
+    if (cardNumber.length !== 16) {
+      alert("Enter valid 16-digit card number");
+      return;
+    }
+
+    if (!/^\d{2}\/\d{2}$/.test(expiry)) {
+      alert("Enter expiry in MM/YY format");
+      return;
+    }
+
+    if (cvv.length !== 3) {
+      alert("Enter valid 3-digit CVV");
+      return;
+    }
+
+    onConfirm("CARD", {
+      provider: "CARD",
+      amount: total,
+    });
+  };
+
+  /* ================= UI ================= */
 
   return (
     <div className="backdrop-blur-2xl bg-gradient-to-br from-white/10 to-white/5 border border-white/20 rounded-[28px] p-6 space-y-6 shadow-xl text-white">
@@ -91,9 +123,7 @@ export default function PaymentMethod({
       {method === "CASH" && (
         <button
           disabled={loading}
-          onClick={() =>
-            onConfirm("CASH", { amount: total })
-          }
+          onClick={() => onConfirm("CASH", { amount: total })}
           className="w-full py-3 rounded-xl font-semibold bg-gradient-to-r from-purple-500 to-pink-500 hover:scale-[1.02] transition-all duration-300 shadow-lg"
         >
           Confirm Cash Payment ₹{total}
@@ -104,6 +134,7 @@ export default function PaymentMethod({
 
       {method === "UPI" && (
         <div className="space-y-5">
+
           <div className="flex gap-3">
             {(["GPay", "PhonePe", "Paytm"] as const).map((app) => (
               <button
@@ -164,9 +195,11 @@ export default function PaymentMethod({
           )}
 
           <input
-            placeholder="Card Number"
+            placeholder="Card Number (16 digits)"
             value={cardNumber}
-            onChange={(e) => setCardNumber(e.target.value)}
+            onChange={(e) =>
+              setCardNumber(e.target.value.replace(/\D/g, "").slice(0, 16))
+            }
             disabled={!isBusiness}
             className="w-full px-4 py-2.5 rounded-xl bg-white/10 border border-white/20 disabled:opacity-50"
           />
@@ -180,22 +213,19 @@ export default function PaymentMethod({
           />
 
           <input
-            placeholder="CVV"
+            placeholder="CVV (3 digits)"
             type="password"
             value={cvv}
-            onChange={(e) => setCvv(e.target.value)}
+            onChange={(e) =>
+              setCvv(e.target.value.replace(/\D/g, "").slice(0, 3))
+            }
             disabled={!isBusiness}
             className="w-full px-4 py-2.5 rounded-xl bg-white/10 border border-white/20 disabled:opacity-50"
           />
 
           <button
             disabled={!isBusiness || loading}
-            onClick={() =>
-              onConfirm("CARD", {
-                provider: "CARD",
-                amount: total,
-              })
-            }
+            onClick={handleCardPayment}
             className="w-full py-3 rounded-xl font-semibold bg-gradient-to-r from-purple-500 to-pink-500 hover:scale-[1.02] transition-all duration-300 shadow-lg disabled:opacity-50"
           >
             Pay ₹{total} by Card

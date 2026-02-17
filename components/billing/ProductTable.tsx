@@ -246,26 +246,30 @@ return (
                 />
               </td>
 
-              {/* RATE */}
-              <td className="py-4">
-                <input
-                  type="number"
-                  value={p.rate}
-                  onChange={(e) =>
-                    updateProduct(i, "rate", e.target.value)
+            {/* RATE */}
+            <td className="py-4">
+              <input
+                type="number"
+                value={p.rate}
+                disabled={!!p.productId}   // 🔥 LOCK if DB product
+                onChange={(e) =>
+                  updateProduct(i, "rate", e.target.value)
+                }
+                className={`
+                  w-24
+                  px-3 py-2
+                  rounded-xl
+                  border border-white/90
+                  focus:outline-none
+                  focus:ring-2 focus:ring-purple-400
+                  ${
+                    p.productId
+                      ? "bg-white/5 text-white-800 cursor-not-allowed"
+                      : "bg-white/10"
                   }
-                  className="
-                    w-24
-                    px-3 py-2
-                    rounded-xl
-                    bg-white/10
-                    border border-white/20
-                    focus:outline-none
-                    focus:ring-2 focus:ring-purple-400
-                  "
-                />
-              </td>
-
+                `}
+              />
+            </td>
               {/* AMOUNT */}
               <td className="py-4 font-semibold text-purple-300">
                 ₹{p.quantity * p.rate}

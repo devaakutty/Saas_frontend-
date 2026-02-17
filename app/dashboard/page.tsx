@@ -105,7 +105,7 @@ const baseStyle =
   /* ================= DASHBOARD UI ================= */
 
   return (
-    <div className="relative px-6 pt-6 pb-12">
+    <div className="relative px-1 pb-12 justify-top-0 mt-0">
 
       {/* Main Rounded Container */}
       <div className="relative backdrop-blur-2xl bg-gradient-to-br 

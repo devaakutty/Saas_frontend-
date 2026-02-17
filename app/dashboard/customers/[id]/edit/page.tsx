@@ -165,7 +165,7 @@ export default function CustomerEditPage() {
             onChange={(v) => setForm({ ...form, company: v })}
           />
 
-          <div>
+          {/* <div>
             <label className="block text-sm text-gray-300 mb-2">
               Status
             </label>
@@ -183,7 +183,7 @@ export default function CustomerEditPage() {
               <option>Active</option>
               <option>Inactive</option>
             </select>
-          </div>
+          </div> */}
         </div>
 
         {error && (

@@ -25,7 +25,8 @@ export default function SettingsLayout({
     pathname === href || pathname.startsWith(`${href}/`);
 
   return (
-    <div className="px-10 py-12 relative z-0">
+    // <div className="px-10 py-12 relative z-0">
+          <div className="relative px-1 pb-12 justify-top-0 mt-0">
 
       {/* 🔥 IMPORTANT: Removed overflow-hidden */}
       <div className="relative rounded-[28px] bg-[linear-gradient(135deg,#1b1f3a,#2b2e63)] p-16">

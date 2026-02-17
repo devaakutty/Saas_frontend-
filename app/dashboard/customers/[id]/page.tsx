@@ -94,7 +94,7 @@ export default function CustomerDetailsPage() {
 
           <div>
             <p className="text-sm text-white/50 mb-1">Status</p>
-            <span
+            {/* <span
               className={`px-4 py-1 rounded-full text-sm font-medium ${
                 customer.isActive
                   ? "bg-green-500/20 text-green-300"
@@ -102,7 +102,7 @@ export default function CustomerDetailsPage() {
               }`}
             >
               {customer.isActive ? "Active" : "Inactive"}
-            </span>
+            </span> */}
           </div>
 
         </div>

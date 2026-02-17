@@ -60,7 +60,8 @@ export default function ProductsPage() {
   }
 
 return (
-  <div className="px-10 py-12">
+  // <div className="px-10 py-12">
+      <div className="relative px-1 pb-12 justify-top-0 mt-0">
 
     <div className="relative rounded-[28px] overflow-hidden bg-[linear-gradient(135deg,#1b1f3a,#2b2e63)] p-16">
 

@@ -205,7 +205,12 @@ export default function BillingPage() {
   /* ================= UI ================= */
 
 return (
-<div className="relative px-6 pt-6 pb-12 min-h-screen">
+//  <div className="relative px-6 pt-6 pb-12 min-h-screen"> 
+    // <div className="relative px-1 pb-12 justify-top-0 mt-0">
+    <div className="relative px-6 pt-4 pb-12 min-h-screen">
+
+
+
     {/* Main Rounded Glass Container */}
     <div className="relative backdrop-blur-2xl 
       bg-gradient-to-br from-white/10 to-white/5 

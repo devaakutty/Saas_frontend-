@@ -96,7 +96,7 @@ return (
           maxLength={10}
         />
 
-        <div>
+        {/* <div>
           <label className="block text-sm text-gray-300 mb-2">
             Status
           </label>
@@ -110,7 +110,7 @@ return (
             <option>Active</option>
             <option>Inactive</option>
           </select>
-        </div>
+        </div> */}
 
       </div>
 

@@ -105,7 +105,8 @@ export default function CustomersPage() {
   /* ================= UI ================= */
 
   return (
-    <div className="relative px-8 pt-6 pb-12 text-white overflow-hidden">
+    // <div className="relative px-8 pt-6 pb-12 text-white overflow-hidden">
+      <div className="relative px-1 pb-12 justify-top-0 mt-0">
 
       {/* ================= HEADER ================= */}
       <div className="flex justify-between items-center mb-10">
@@ -152,7 +153,7 @@ export default function CustomersPage() {
           "
         />
 
-        <select
+        {/* <select
           value={statusFilter}
           onChange={(e) =>
             setStatusFilter(e.target.value as StatusFilter)
@@ -170,7 +171,7 @@ export default function CustomersPage() {
           <option value="All">All</option>
           <option value="Active">Active</option>
           <option value="Inactive">Inactive</option>
-        </select>
+        </select> */}
       </div>
 
       {/* ================= CUSTOMER CARDS ================= */}
@@ -204,7 +205,7 @@ export default function CustomersPage() {
                   {c.name}
                 </h3>
 
-                <span
+                {/* <span
                   className={`px-3 py-1 rounded-full text-xs font-medium ${
                     c.isActive
                       ? "bg-green-500/20 text-green-300"
@@ -212,7 +213,7 @@ export default function CustomersPage() {
                   }`}
                 >
                   {c.isActive ? "Active" : "Inactive"}
-                </span>
+                </span> */}
               </div>
 
               <p className="text-sm text-gray-300">

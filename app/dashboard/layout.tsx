@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 
 import Sidebar from "@/components/layout/Sidebar";
-import Topbar from "@/components/layout/Topbar";
+// import Topbar from "@/components/layout/Topbar";
 import AuthGuard from "@/components/AuthGuard";
 import { InvoiceStoreProvider } from "@/hooks/useInvoicesStore";
 
@@ -38,7 +38,7 @@ export default function DashboardLayout({
           {/* Right Side */}
           <div className="flex-1 flex flex-col overflow-hidden relative z-10">
 
-            <Topbar />
+            {/* <Topbar /> */}
 
             {/* Main Content */}
             <main

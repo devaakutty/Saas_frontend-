@@ -40,36 +40,32 @@ export default function PaymentContent() {
 
   /* ================= DETERMINE PLAN SOURCE ================= */
 
-  useEffect(() => {
-    // 🔵 If user is logged in → use backend plan
-    if (user) {
-      if (user.plan === "starter") {
-        router.replace("/dashboard");
-        return;
+    useEffect(() => {
+      const rawPlan = searchParams.get("plan");
+      const rawBilling = searchParams.get("billing");
+
+      // ✅ FIRST: Use plan from URL if it exists
+      if (
+        rawPlan === "starter" ||
+        rawPlan === "pro" ||
+        rawPlan === "business"
+      ) {
+        setPlan(rawPlan as PlanType);
+      }
+      // ✅ Fallback to user plan only if no query
+      else if (user) {
+        setPlan(user.plan as PlanType);
       }
 
-      setPlan(user.plan as PlanType);
+      // Billing
+      if (rawBilling === "yearly") {
+        setBilling("yearly");
+      } else {
+        setBilling("monthly");
+      }
+
       setReady(true);
-      return;
-    }
-
-    // 🟡 If coming from register → use query params
-    const rawPlan = searchParams.get("plan");
-    const rawBilling = searchParams.get("billing");
-
-    if (
-      rawPlan === "pro" ||
-      rawPlan === "business"
-    ) {
-      setPlan(rawPlan);
-    }
-
-    if (rawBilling === "yearly") {
-      setBilling("yearly");
-    }
-
-    setReady(true);
-  }, [user, searchParams, router]);
+    }, [searchParams, user]);
 
   /* ================= HANDLE PAYMENT ================= */
 
@@ -110,6 +106,25 @@ export default function PaymentContent() {
       setLoading(false);
     }
   };
+
+  const handleStripePayment = async () => {
+  if (!plan) return;
+
+  const amount = PLAN_PRICES[plan][billing];
+
+  const res = await apiFetch("/payments/create-stripe-session", {
+    method: "POST",
+    body: JSON.stringify({
+      amount,
+      plan,
+      email: user?.email,
+    }),
+  });
+
+  // backend should return { url: session.url }
+  window.location.href = res.url;
+};
+
 
   /* ================= SAFETY GUARD ================= */
 
@@ -171,15 +186,26 @@ export default function PaymentContent() {
               </span>
             </div>
           </div>
+          <div className="mt-10 space-y-4">
 
-          <div className="mt-10">
+            {/* Razorpay Button */}
             <button
               disabled={loading}
-              onClick={handlePayment}
+              onClick={handlePayment}   // Razorpay function
               className="w-full py-4 rounded-[20px] bg-purple-500 hover:bg-purple-600 transition font-semibold"
             >
-              {loading ? "Processing..." : "Complete Payment"}
+              {loading ? "Processing..." : "Pay with Razorpay"}
             </button>
+
+            {/* Stripe Button */}
+            <button
+              disabled={loading}
+              onClick={handleStripePayment}   // Stripe function (create separately)
+              className="w-full py-4 rounded-[20px] bg-indigo-600 hover:bg-indigo-700 transition font-semibold"
+            >
+              {loading ? "Processing..." : "Pay with Stripe"}
+            </button>
+
           </div>
 
         </div>

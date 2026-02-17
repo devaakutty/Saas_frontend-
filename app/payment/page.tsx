@@ -1,5 +1,7 @@
 import { Suspense } from "react";
 import PaymentContent from "./PaymentContent";
+import Script from "next/script";
+
 
 export default function PaymentPage() {
   return (
@@ -15,7 +17,15 @@ export default function PaymentPage() {
           </div>
         }
       >
-        <PaymentContent />
+<>
+      <Script
+        src="https://checkout.razorpay.com/v1/checkout.js"
+        strategy="afterInteractive"
+      />
+      
+      <PaymentContent />
+    </>
+
       </Suspense>
 
     </div>

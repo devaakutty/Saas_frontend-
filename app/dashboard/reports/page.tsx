@@ -32,7 +32,7 @@ export default function ReportsPage() {
   const isStarter = user.plan === "starter";
 
   return (
-    <div className="px-8 py-10">
+      <div className="relative px-1 pb-12 justify-top-0 mt-0">
       <div className="relative rounded-[32px] overflow-hidden bg-gradient-to-br from-[#1b1f3a] via-[#24285f] to-[#2b2e63] p-16">
 
         {/* Glow */}
