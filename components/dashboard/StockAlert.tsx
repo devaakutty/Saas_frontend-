@@ -23,9 +23,10 @@ export default function StockAlert() {
 
     const loadLowStock = async () => {
       try {
-        const res = await apiFetch<StockItem[]>(
-          "/api/dashboard/low-stock"
-        );
+const res = await apiFetch<StockItem[]>(
+  "/dashboard/low-stock"
+);
+
 
 
         if (!isMounted) return;
@@ -131,9 +132,9 @@ if (error === "Upgrade to access analytics") {
   /* ================= LOW STOCK UI ================= */
 
   return (
-    <div className="bg-white dark:bg-white/5 backdrop-blur-md rounded-2xl p-6 border border-white/10 space-y-5 shadow-lg">
+    <div className="bg-white/5 dark:bg-white/5 backdrop-blur-md rounded-2xl p-6 border border-white/10 space-y-5 shadow-lg">
 
-      <h3 className="font-semibold text-primary">
+      <h3 className="font-semibold text-white/80 text-sm flex items-center gap-2">
         ⚠ Low Stock Alert (Below 5)
       </h3>
 
@@ -157,7 +158,7 @@ if (error === "Upgrade to access analytics") {
               {item.name}
             </span>
 
-            <span className="bg-primary/15 text-primary px-3 py-1 rounded-full text-xs font-semibold">
+            <span className="bg-primary/45 text-white px-3 py-1 rounded-full text-xs font-semibold">
               {item.quantity} {item.unit ?? "pcs"}
             </span>
           </li>

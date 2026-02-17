@@ -113,13 +113,25 @@ export default function DevicesChart() {
 
   const primaryColor = "rgb(var(--primary))";
 
-  const COLORS = [
-    primaryColor,
-    "rgba(var(--primary),0.75)",
-    "rgba(var(--primary),0.55)",
-    "rgba(var(--primary),0.35)",
-    "rgba(var(--primary),0.2)",
-  ];
+const COLORS = [
+  "#8B5CF6", // Purple
+  "#EC4899", // Pink
+  "#06B6D4", // Cyan
+  "#F59E0B", // Amber
+  "#10B981", // Emerald
+  "#EF4444", // Red
+  "#3B82F6", // Blue
+  "#A855F7", // Violet
+   "#7C3AED",
+  "#DB2777",
+  "#0891B2",
+  "#D97706",
+  "#059669",
+  "#DC2626",
+  "#2563EB",
+  "#9333EA",
+];
+
 
   /* ================= CHART ================= */
 
@@ -144,7 +156,7 @@ export default function DevicesChart() {
 
         <Tooltip
           contentStyle={{
-            background: "#111827",
+            background: "#1147bb",
             borderRadius: "12px",
             border: "1px solid rgba(255,255,255,0.1)",
           }}

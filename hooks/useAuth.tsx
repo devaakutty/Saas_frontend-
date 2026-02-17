@@ -16,18 +16,21 @@ export type User = {
   role: "owner" | "member";
   plan: "starter" | "pro" | "business";
   isPaymentVerified: boolean;
-  // 🔥 Add limits here so global update works
+
   userLimit?: number;
   invoiceLimit?: number;
 
-
-  // 🔥 Add profile fields here so global update works
   firstName?: string;
   lastName?: string;
   company?: string;
   phone?: string;
   gstNumber?: string;
   address?: string;
+
+  // 🔥 ADD THESE
+  invoicePrefix?: string;
+  upiId?: string;
+  upiQrImage?: string;
 };
 
 type AuthContextType = {

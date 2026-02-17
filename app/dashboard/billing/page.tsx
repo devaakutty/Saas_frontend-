@@ -206,8 +206,6 @@ export default function BillingPage() {
 
 return (
   <div className="relative px-6 pt-4 pb-12 min-h-screen">
-
-    {/* Main Rounded Glass Container */}
     <div
       className="backdrop-blur-2xl 
       bg-gradient-to-br from-white/10 to-white/5 
@@ -215,39 +213,40 @@ return (
       rounded-[32px] 
       shadow-[0_0_60px_rgba(0,0,0,0.4)] 
       p-8 
-      text-white space-y-6"
+      text-white space-y-10"
     >
 
-      {/* 1️⃣ Customer Selector */}
-      <CustomerSelector
-        customers={customers}
-        onSelect={setCustomer}
-        onAddCustomer={handleAddCustomer}
-      />
+      {/* 🔹 CUSTOMER SECTION */}
+      <div className="space-y-6">
+        <CustomerSelector
+          customers={customers}
+          onSelect={setCustomer}
+          onAddCustomer={handleAddCustomer}
+        />
 
-      {/* Selected Customer Card */}
-      {customer && (
-        <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl p-4 flex justify-between items-center">
-          <div>
-            <p className="text-xs uppercase tracking-widest text-gray-400">
-              Selected Customer
-            </p>
-            <p className="font-semibold text-lg">
-              {customer.name}
-            </p>
-            <p className="text-sm text-gray-300">
-              {customer.phone}
-            </p>
+        {customer && (
+          <div className="bg-white/10 border border-white/20 rounded-2xl p-4 flex justify-between items-center">
+            <div>
+              <p className="text-xs uppercase tracking-widest text-gray-400">
+                Selected Customer
+              </p>
+              <p className="font-semibold text-lg">
+                {customer.name}
+              </p>
+              <p className="text-sm text-gray-300">
+                {customer.phone}
+              </p>
+            </div>
+
+            <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white h-10 w-10 rounded-full flex items-center justify-center shadow-lg">
+              ✓
+            </div>
           </div>
+        )}
+      </div>
 
-          <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white h-10 w-10 rounded-full flex items-center justify-center shadow-lg">
-            ✓
-          </div>
-        </div>
-      )}
-
-      {/* 2️⃣ Product Table */}
-      <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl p-6">
+      {/* 🔹 PRODUCT TABLE */}
+      <div className="bg-white/10 border border-white/20 rounded-2xl p-6">
         <ProductTable
           key={resetKey}
           onProductsChange={setProducts}
@@ -255,24 +254,28 @@ return (
         />
       </div>
 
-      {/* 3️⃣ Billing Summary */}
-      <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl p-6">
-        <BillingSummary billing={billing} />
-      </div>
+      {/* 🔹 BILLING + PAYMENT SIDE BY SIDE */}
+      <div className="grid md:grid-cols-2 gap-6">
 
-      {/* 4️⃣ Payment Method */}
-      {billing.total > 0 && (
-        <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl p-6">
-          <PaymentMethod
-            total={billing.total}
-            loading={loading}
-            onConfirm={handlePayment}
-            onDownload={handleDownload}
-          />
+        <div className="bg-white/10 border border-white/20 rounded-2xl p-6">
+          <BillingSummary billing={billing} />
         </div>
-      )}
+
+        {billing.total > 0 && (
+          <div className="bg-white/10 border border-white/20 rounded-2xl p-6">
+            <PaymentMethod
+              total={billing.total}
+              loading={loading}
+              onConfirm={handlePayment}
+              onDownload={handleDownload}
+            />
+          </div>
+        )}
+
+      </div>
 
     </div>
   </div>
 );
+
 }

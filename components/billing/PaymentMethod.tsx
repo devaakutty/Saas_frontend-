@@ -133,55 +133,74 @@ export default function PaymentMethod({
       {/* ================= UPI ================= */}
 
       {method === "UPI" && (
-        <div className="space-y-5">
+  <div className="space-y-5">
 
-          <div className="flex gap-3">
-            {(["GPay", "PhonePe", "Paytm"] as const).map((app) => (
-              <button
-                key={app}
-                disabled={loading}
-                onClick={() => setUpiApp(app)}
-                className={`px-4 py-2 rounded-xl text-sm font-medium transition ${
-                  upiApp === app
-                    ? "bg-gradient-to-r from-purple-500 to-pink-500"
-                    : "bg-white/10 border border-white/20 hover:bg-white/20"
-                }`}
-              >
-                {app}
-              </button>
-            ))}
-          </div>
+    {/* UPI App Selector */}
+    <div className="flex gap-3">
+      {(["GPay", "PhonePe", "Paytm"] as const).map((app) => (
+        <button
+          key={app}
+          disabled={loading}
+          onClick={() => setUpiApp(app)}
+          className={`px-4 py-2 rounded-xl text-sm font-medium transition ${
+            upiApp === app
+              ? "bg-gradient-to-r from-purple-500 to-pink-500"
+              : "bg-white/10 border border-white/20 hover:bg-white/20"
+          }`}
+        >
+          {app}
+        </button>
+      ))}
+    </div>
 
-          <div className="flex flex-col items-center rounded-2xl border border-white/20 bg-white/5 p-6">
-            <img
-              src="/qr.png"
-              alt="UPI QR"
-              className="w-40 h-40 object-contain rounded-xl"
-            />
-            <p className="text-sm text-gray-300 mt-3">
-              Scan with <b>{upiApp}</b>
-            </p>
-            <p className="text-2xl font-semibold mt-2 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-              ₹{upiAmount}
-            </p>
-          </div>
+    {/* QR Container */}
+    <div className="flex flex-col items-center rounded-2xl border border-white/20 bg-white/5 p-6">
 
-          <button
-            disabled={loading}
-            onClick={() =>
-              onConfirm("UPI", {
-                provider: upiApp,
-                cashAmount: cashPart,
-                upiAmount,
-                amount: total,
-              })
-            }
-            className="w-full py-3 rounded-xl font-semibold bg-gradient-to-r from-purple-500 to-pink-500 hover:scale-[1.02] transition-all duration-300 shadow-lg"
-          >
-            Confirm UPI Payment ₹{total}
-          </button>
+      {/* 🔥 IMPORTANT: Safe Image Rendering */}
+      {user?.upiQrImage && user.upiQrImage.startsWith("data:image") ? (
+        <img
+          src={user.upiQrImage}
+          alt="UPI QR"
+          className="w-44 h-44 object-contain rounded-xl bg-white p-2"
+        />
+      ) : (
+        <div className="w-44 h-44 flex items-center justify-center bg-white/10 rounded-xl text-sm text-white/50">
+          No QR Uploaded
         </div>
       )}
+
+      {/* UPI ID */}
+      {user?.upiId && (
+        <p className="text-xs text-gray-400 mt-3">
+          UPI ID: {user.upiId}
+        </p>
+      )}
+
+      <p className="text-sm text-gray-300 mt-2">
+        Scan with <b>{upiApp}</b>
+      </p>
+
+      <p className="text-2xl font-semibold mt-2 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+        ₹{upiAmount}
+      </p>
+    </div>
+
+    <button
+      disabled={loading}
+      onClick={() =>
+        onConfirm("UPI", {
+          provider: upiApp,
+          cashAmount: cashPart,
+          upiAmount,
+          amount: total,
+        })
+      }
+      className="w-full py-3 rounded-xl font-semibold bg-gradient-to-r from-purple-500 to-pink-500 hover:scale-[1.02] transition-all duration-300 shadow-lg"
+    >
+      Confirm UPI Payment ₹{total}
+    </button>
+  </div>
+        )}
 
       {/* ================= CARD ================= */}
 

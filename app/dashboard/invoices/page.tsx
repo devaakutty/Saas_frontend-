@@ -127,7 +127,6 @@ export default function InvoicesPage() {
   return (
     // <div className="px-8 py-10 text-white">
         <div className="relative px-1 pb-12 justify-top-0 mt-0">
-
       {/* HEADER */}
       <div className="flex justify-between items-center mb-10">
         <h1 className="text-3xl font-semibold">

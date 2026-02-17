@@ -144,7 +144,7 @@ return (
 
         {/* HERO */}
         <div className="max-w-4xl">
-          <h1 className="font-[var(--font-playfair)] text-[64px] md:text-[80px] lg:text-[96px] leading-[0.95] tracking-tight text-white">
+          <h1 className="font-[var(--font-playfair)] text-[34px] md:text-[40px] lg:text-[46px] leading-[0.95] tracking-tight text-white">
             GST{" "}
             <span className="font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
               Report

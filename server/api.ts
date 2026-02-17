@@ -34,19 +34,35 @@ export async function apiFetch<T = any>(
 
     /* ========== PARSE RESPONSE ========== */
 
-    let data: any = null;
+    // let data: any = null;
 
-    if (responseType === "blob") {
-      data = await res.blob();
-    } else {
-      const contentType = res.headers.get("content-type") || "";
+    // if (responseType === "blob") {
+    //   data = await res.blob();
+    // } else {
+    //   const contentType = res.headers.get("content-type") || "";
 
-      if (contentType.includes("application/json")) {
-        data = await res.json();
-      } else {
-        throw new Error("Invalid server response.");
-      }
-    }
+    //   if (contentType.includes("application/json")) {
+    //     data = await res.json();
+    //   } else {
+    //     throw new Error("Invalid server response.");
+    //   }
+    // }
+/* ========== PARSE RESPONSE ========== */
+
+let data: any = null;
+
+if (responseType === "blob") {
+  data = await res.blob();
+} else {
+  const text = await res.text();
+  console.log("RAW SERVER RESPONSE:", text);
+
+  try {
+    data = JSON.parse(text);
+  } catch {
+    throw new Error("Server returned non-JSON response.");
+  }
+}
 
     /* ========== HANDLE ERROR ========== */
 
