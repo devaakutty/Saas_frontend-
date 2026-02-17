@@ -60,6 +60,7 @@ if (responseType === "blob") {
   try {
     data = JSON.parse(text);
   } catch {
+    // throw new Error("Server returned non-JSON response.");
     throw new Error("Server returned non-JSON response.");
   }
 }
