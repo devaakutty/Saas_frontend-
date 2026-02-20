@@ -74,15 +74,15 @@ export default function Sidebar() {
             </h1>
           </div> */}
           {/* LOGO */}
-<div className="mb-12">
-  <div className="w-12 h-12 rounded-2xl bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center font-black text-xl shadow-lg">
-    {companyInitials}
-  </div>
+        <div className="mb-12">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center font-black text-xl shadow-lg">
+            {companyInitials}
+          </div>
 
-  <h1 className="text-xl font-bold mt-4 tracking-wide">
-    {companyName}
-  </h1>
-</div>
+          <h1 className="text-xl font-bold mt-4 tracking-wide">
+            {companyName}
+          </h1>
+        </div>
 
 
           {/* NAVIGATION */}

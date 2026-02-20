@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { useRouter } from "next/navigation";
 
 /* ================= TYPES ================= */
 
@@ -50,6 +51,10 @@ export default function PaymentMethod({
   const isBusiness = user?.plan === "business";
 
   const upiAmount = Math.max(total - cashPart, 0);
+  const router = useRouter();
+  const hasValidQr =
+  !!user?.upiQrImage &&
+  user.upiQrImage.startsWith("data:image");
 
   /* ================= RESET ON METHOD CHANGE ================= */
 
@@ -157,17 +162,23 @@ export default function PaymentMethod({
     <div className="flex flex-col items-center rounded-2xl border border-white/20 bg-white/5 p-6">
 
       {/* 🔥 IMPORTANT: Safe Image Rendering */}
-      {user?.upiQrImage && user.upiQrImage.startsWith("data:image") ? (
-        <img
-          src={user.upiQrImage}
-          alt="UPI QR"
-          className="w-44 h-44 object-contain rounded-xl bg-white p-2"
-        />
-      ) : (
-        <div className="w-44 h-44 flex items-center justify-center bg-white/10 rounded-xl text-sm text-white/50">
-          No QR Uploaded
-        </div>
-      )}
+{user?.upiQrImage && user.upiQrImage.startsWith("data:image") ? (
+  <img
+    src={user.upiQrImage}
+    alt="UPI QR"
+    className="w-44 h-44 object-contain rounded-xl bg-white p-2"
+  />
+) : (
+  <div className="w-44 h-44 flex flex-col items-center justify-center bg-white/10 rounded-xl text-sm text-red-400 text-center px-4">
+    <p>No QR Uploaded</p>
+    <button
+      onClick={() => router.push("/dashboard/settings/audit")}
+      className="mt-2 text-xs text-pink-400 underline hover:text-pink-300"
+    >
+      Add in Profile Settings
+    </button>
+  </div>
+)}
 
       {/* UPI ID */}
       {user?.upiId && (
@@ -184,21 +195,26 @@ export default function PaymentMethod({
         ₹{upiAmount}
       </p>
     </div>
-
-    <button
-      disabled={loading}
-      onClick={() =>
-        onConfirm("UPI", {
-          provider: upiApp,
-          cashAmount: cashPart,
-          upiAmount,
-          amount: total,
-        })
-      }
-      className="w-full py-3 rounded-xl font-semibold bg-gradient-to-r from-purple-500 to-pink-500 hover:scale-[1.02] transition-all duration-300 shadow-lg"
-    >
-      Confirm UPI Payment ₹{total}
-    </button>
+<button
+  disabled={loading || !hasValidQr}
+  onClick={() =>
+    onConfirm("UPI", {
+      provider: upiApp,
+      amount: total,
+    })
+  }
+  className={`w-full py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg
+    ${
+      hasValidQr
+        ? "bg-gradient-to-r from-purple-500 to-pink-500 hover:scale-[1.02]"
+        : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
+    }
+  `}
+  
+>
+  
+  Confirm UPI Payment ₹{total}
+</button>
   </div>
         )}
 

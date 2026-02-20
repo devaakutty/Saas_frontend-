@@ -143,6 +143,7 @@ export default function ProfileSettingsPage() {
 
   return (
     <div className="space-y-10 text-white">
+      
 
       <div>
         <h1 className="text-5xl font-bold">
@@ -258,14 +259,22 @@ function GlassSelect({
 }: GlassSelectProps) {
   return (
     <div>
-      <label className="block text-sm mb-2 text-white/60">{label}</label>
+      <label 
+      className="block text-sm mb-2 text-white/60"
+      >{label}</label>
       <select
         value={value}
         disabled={disabled}
         onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
           onChange(e.target.value)
         }
-        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-purple-500/40 outline-none transition"
+        // className="w-full bg-black/20 border border-white/70 rounded-xl px-4 py-3 text-white/90 focus:ring-2 focus:ring-purple-50/40 outline-none transition"
+        // className="w-full bg-purple/5 border border-white/10 rounded-xl px-4 py-3 text-black/90 placeholder-black/30 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 transition-all duration-200"
+      className="w-full bg-black/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 transition-all duration-200"
+
+      
+      
+      
       >
         <option value="">Select {label}</option>
         {options.map((o) => (

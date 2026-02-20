@@ -35,6 +35,7 @@ export default function InvoicesPage() {
   // 🔥 Editing state
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editedInvoiceNo, setEditedInvoiceNo] = useState("");
+  const [selectedInvoice, setSelectedInvoice] = useState<any | null>(null);
 
   /* 🔐 AUTH GUARD */
   useEffect(() => {
@@ -224,11 +225,11 @@ export default function InvoicesPage() {
                 <td className="p-4">
                   {new Date(inv.createdAt).toLocaleDateString()}
                 </td>
-
                 <td
-                  className="p-4 text-right space-x-4"
+                  className="p-4 text-right space-x-3"
                   onClick={(e) => e.stopPropagation()}
                 >
+                  {/* View */}
                   <button
                     onClick={() =>
                       router.push(`/dashboard/invoices/${inv.id}`)
@@ -238,6 +239,19 @@ export default function InvoicesPage() {
                     View
                   </button>
 
+                  {/* Pay Now (Only if Pending) */}
+                  {inv.status === "PENDING" && (
+                    <button
+                      onClick={() => setSelectedInvoice(inv)}
+                      className="text-[10px] bg-gradient-to-r from-pink-500 to-purple-500
+                                hover:opacity-80 text-white
+                                px-2 py-[2px] rounded leading-none transition"
+                    >
+                      Pay
+                    </button>
+                  )}
+
+                  {/* Delete */}
                   <button
                     onClick={(e) =>
                       handleDelete(e, inv.id!)

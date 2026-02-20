@@ -115,9 +115,13 @@ export default function RecentInvoices() {
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto">
+      {/* <div className="overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="text-white/60 border-b border-white/10">
+          <thead className="text-white/60 border-b border-white/10"> */}
+          <div className="overflow-x-auto max-h-[300px] overflow-y-auto rounded-xl border border-white/10">
+          <table className="w-full text-sm">
+            <thead className="text-white/80 border-b border-white/10 sticky top-0 bg-black/40 backdrop-blur-md">
+
             <tr>
               <th className="text-left py-2">Invoice</th>
               <th className="text-left py-2">Customer</th>

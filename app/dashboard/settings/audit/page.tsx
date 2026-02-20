@@ -24,6 +24,7 @@ export default function AuditLogsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const router = useRouter();
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
 
   const isPremium =
@@ -96,63 +97,6 @@ export default function AuditLogsPage() {
           Track system and user activity.
         </p>
       </div>
-
-      {/* ================= PREMIUM COMPANY DETAILS ================= */}
-{/* 
-      {isPremium && (
-        <div className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-400/30 rounded-[28px] p-8 backdrop-blur-md">
-          <h2 className="text-2xl font-semibold mb-6">
-            Premium Support & Company Info
-          </h2>
-
-          <div className="grid md:grid-cols-2 gap-6 text-white/80">
-          <div>
-              <p className="text-sm text-white/60">
-                Company Name
-              </p>
-
-              <p className="font-medium text-purple-300">
-                🏢 {user?.company || "N/A"}
-              </p>
-            </div>
-            <div>
-                <a
-              href="mailto:moyo@gmail.com"
-              className="inline-flex items-center gap-2 mt-2 px-4 py-2 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-300 hover:bg-blue-500/30 transition"
-            >
-              📧 Email Support
-            </a>
-            </div>
-            <div>
-              <p className="text-sm text-white/60">
-                24/7 Support Phone
-              </p>
-
-              <a
-                href="tel:+919876543210"
-                className="inline-flex items-center gap-2 mt-2 px-4 py-2 rounded-full bg-green-500/20 border border-green-400/30 text-green-300 hover:bg-green-500/30 transition"
-              >
-                📞 Call Support
-              </a>
-            </div>
-            <div>
-              <p className="text-sm text-white/60">
-                Live Office Location
-              </p>
-
-              <a
-                href="https://share.google/shbqqMtMjvuBsBADN"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 font-medium text-purple-400 hover:text-pink-400 transition"
-              >
-                📍 Pallavaram, Chennai, Tamil Nadu 🇮🇳
-              </a>
-            </div>
-          </div>
-        </div>
-      )} */}
-
       {/* ================= STARTER LOCK MESSAGE ================= */}
 
       {!isPremium && (
@@ -283,6 +227,7 @@ function InvoiceSettings() {
   const [upiQrImage, setUpiQrImage] = useState("");
   const [preview, setPreview] = useState("");
   const [saving, setSaving] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const handleImageUpload = (e: any) => {
     const file = e.target.files?.[0];
@@ -320,7 +265,11 @@ function InvoiceSettings() {
         }
       );
 
-      alert("Invoice settings updated ✅");
+      setSuccessMessage("Invoice settings updated ✅");
+
+      setTimeout(() => {
+        setSuccessMessage(null);
+      }, 2000);
 
     } catch {
       alert("Update failed");
@@ -331,7 +280,7 @@ function InvoiceSettings() {
 
   return (
     <div className="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-8">
-
+      
       <h3 className="text-lg font-semibold">
         Invoice Customization
       </h3>
@@ -397,7 +346,12 @@ function InvoiceSettings() {
           </div>
         )}
       </div>
-
+        {successMessage && (
+          <div className="bg-green-500/10 border border-green-500/30 text-green-300 
+                          rounded-xl px-4 py-3 text-sm font-medium">
+            {successMessage}
+          </div>
+        )}
       {/* Save Button */}
       <button
         onClick={handleSave}

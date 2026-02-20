@@ -41,6 +41,7 @@ export default function InvoiceDetailsPage() {
   const invoiceId = params?.id as string;
 
   const [invoice, setInvoice] = useState<Invoice | null>(null);
+    const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [paying, setPaying] = useState(false);
 
@@ -109,13 +110,16 @@ export default function InvoiceDetailsPage() {
         }),
       });
 
-      alert("Payment successful ✅");
+      // alert("Payment successful ✅");.
+          setTimeout(() => {
+      setSuccessMessage(null);
+    }, 2000);
 
       setInvoice((prev) =>
         prev ? { ...prev, status: "PAID" } : prev
       );
 
-      router.push("/dashboard/invoices");
+      router.push("/dashboard/billing");
 
     } catch (err: any) {
       alert(err.message || "Payment failed");
@@ -250,6 +254,12 @@ return (
           >
             Download Invoice (PDF)
           </button>
+                        {successMessage && (
+              <div className="bg-green-500/10 border border-green-500/30 text-green-300 
+                              rounded-xl px-4 py-3 text-sm font-medium animate-pulse">
+                {successMessage}
+              </div>
+            )}
 
           {invoice.status === "PENDING" && (
             <PaymentMethod

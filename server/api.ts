@@ -67,10 +67,14 @@ if (responseType === "blob") {
 
     /* ========== HANDLE ERROR ========== */
 
-    if (!res.ok) {
-      throw new Error(data?.message || `Error ${res.status}`);
-    }
-
+    // if (!res.ok) {
+    //   throw new Error(data?.message || `Error ${res.status}`);
+    // }
+if (!res.ok) {
+  console.log("API ERROR STATUS:", res.status);
+  console.log("API ERROR DATA:", data);
+  throw new Error(data?.message || `Error ${res.status}`);
+}
     return data as T;
   } catch (error: any) {
     if (error instanceof TypeError) {
